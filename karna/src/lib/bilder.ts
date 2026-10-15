@@ -23,14 +23,17 @@ export function bild(vilken: 'hero' | 'om') {
 }
 
 /**
- * Loggan i sidhuvudet. En SVG läggs direkt i sidan, så att den inte kostar
- * en extra hämtning och kan ta textfärgen med currentColor.
+ * Loggan i sidhuvudet. En SVG läggs direkt i sidan, så att den inte kostar en
+ * extra hämtning och kan ta textfärgen med currentColor. En tung SVG har
+ * astro.config.mjs redan gjort om till <fil>.png, och den blir en vanlig bild.
  */
 export function logo(): { svg: string } | { src: ImageMetadata } | undefined {
   const falt = arMorkt(kund.design.tema) && kund.bilder.logoMork ? 'logoMork' : 'logo';
   const fil = kund.bilder[falt];
   if (!fil) return undefined;
   if (!/\.svg$/i.test(fil)) return { src: hitta(filer, fil, falt).default };
+  const png = Object.entries(filer).find(([sokvag]) => sokvag.endsWith(`/${fil}.png`));
+  if (png) return { src: png[1].default };
 
   const kalla = hitta(svgFiler, fil, falt);
   if (/<script|\son\w+\s*=|javascript:/i.test(kalla)) {

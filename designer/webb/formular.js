@@ -124,23 +124,27 @@ export function ritaFormular(ctx) {
   const s = ctx.schemafil.schema;
   const sektioner = [];
   let enkla = null;
+  const sektion = (id, namn, hjalp) => h('section', { class: 'sektion', id },
+    h('header', { class: 'sektion-huvud' }, h('span', { class: 'steg' }, sektioner.length + 1), h('h2', {}, namn)),
+    hjalp && h('p', { class: 'hjalp sektion-hjalp' }, hjalp));
   for (const [k, p] of Object.entries(s.properties)) {
     const kravd = Boolean(s.required?.includes(k));
     const grupp = p.type === 'object' || (p.type === 'array' && p.items?.type === 'object');
     if (!grupp) {
       // Fälten på översta nivån som inte är grupper samlas i en egen sektion först.
       if (!enkla) {
-        enkla = { id: 's-restaurangen', namn: 'Restaurangen', el: h('section', { class: 'sektion', id: 's-restaurangen' }, h('h2', {}, 'Restaurangen')) };
+        enkla = { id: 's-restaurangen', namn: 'Restaurangen', nycklar: [], el: sektion('s-restaurangen', 'Restaurangen') };
         sektioner.push(enkla);
       }
+      enkla.nycklar.push(k);
       enkla.el.append(falt(p, [k], kravd, ctx));
       continue;
     }
     const { namn, hjalp } = etikett(p);
     const id = `s-${k}`;
-    const el = h('section', { class: 'sektion', id }, h('h2', {}, namn), hjalp && h('p', { class: 'hjalp' }, hjalp));
+    const el = sektion(id, namn, hjalp);
     el.append(falt(p, [k], kravd, ctx, { utanRubrik: true }));
-    sektioner.push({ id, namn, el });
+    sektioner.push({ id, namn, el, nycklar: [k] });
   }
   return sektioner;
 }

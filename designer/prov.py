@@ -85,6 +85,10 @@ def main() -> int:
         problem = json.loads(svar).get("problem", [])
         kolla(status == 200 and any(f == "design.stil" for f, _ in problem), "en stil som inte finns syns direkt")
         kolla(any(f == "doman" for f, _ in problem), "ett tomt fält som krävs syns direkt")
+        status, svar = fraga(bas, "GET", f"/api/kunder/{PROVKUND}")
+        nu = json.loads(svar)
+        status, svar = fraga(bas, "PUT", f"/api/kunder/{PROVKUND}", {"data": {**nu["data"], "kontakt": {"telefon": "040-12"}}, "andrad": nu["andrad"]})
+        kolla(any(f == "kontakt.telefon" for f, _ in json.loads(svar).get("problem", [])), "ett fält i fel format syns direkt")
         kolla(fraga(bas, "PUT", f"/api/kunder/{PROVKUND}", {"data": ny["data"], "andrad": 1.0})[0] == 409,
               "en ändring utanför formuläret upptäcks")
         status, svar = fraga(bas, "POST", f"/api/kunder/{PROVKUND}/bygg")
@@ -93,6 +97,14 @@ def main() -> int:
         r = urllib.request.Request(f"{bas}/api/kunder/{PROVKUND}/bilder?namn=Min%20Bild.PNG", data=png, method="POST", headers={"X-Hjerdal": "1"})
         with urllib.request.urlopen(r) as svar:
             kolla(json.loads(svar.read())["fil"] == "min-bild.png", "en bild laddas upp med säkert namn")
+
+        print("\n▸ Claude-chatten")
+        status, svar = fraga(bas, "GET", "/api/claude")
+        kolla(status == 200 and "installerad" in json.loads(svar), "läget för Claude Code svarar, även utan Claude Code")
+        status, svar = fraga(bas, "GET", f"/api/kunder/{PROVKUND}/claude")
+        kolla(status == 200 and json.loads(svar)["meddelanden"] == [], "en ny kund har ingen konversation")
+        kolla(fraga(bas, "POST", f"/api/kunder/{PROVKUND}/claude", {"text": "hej"}, rubriker={})[0] == 403, "chatten kräver X-Hjerdal")
+        kolla(fraga(bas, "DELETE", f"/api/kunder/{PROVKUND}/claude")[0] == 200, "en ny konversation kan börjas")
 
         print("\n▸ Förhandsvisning av exempelkunden")
         status, svar = fraga(bas, "POST", "/api/kunder/bistro-nordvik/bygg")
@@ -117,11 +129,18 @@ def main() -> int:
         kolla({"spara_kundfil", "bygg_forhandsvisning", "skapa_forslag"} <= set(verktyg), "MCP har verktygen för att bygga")
         svar = rpc(3, "tools/call", {"name": "las_kundfil", "arguments": {"kund": "bistro-nordvik"}})["result"]
         kolla(not svar["isError"] and json.loads(svar["content"][0]["text"])["kundfil"]["namn"] == "Bistro Nordvik", "MCP läser en kundfil")
+        svar = rpc(4, "tools/call", {"name": "andra_falt", "arguments": {"kund": PROVKUND, "falt": {"kontakt.telefon": "+46 40 12 34 56", "kok.0": "Pizza"}}})["result"]
+        kolla(not svar["isError"] and "kontakt.telefon" not in svar["content"][0]["text"], "MCP ändrar enstaka fält")
+        data = json.loads(fraga(bas, "GET", f"/api/kunder/{PROVKUND}")[1])["data"]
+        kolla(data["kontakt"]["telefon"] == "+46 40 12 34 56" and data["kok"] == ["Pizza"], "ändringen finns i kundfilen")
+        svar = rpc(5, "tools/call", {"name": "andra_falt", "arguments": {"kund": PROVKUND, "falt": {"kontakt.telefon": "040-12"}}})["result"]
+        kolla("kontakt.telefon" in svar["content"][0]["text"], "MCP säger till när ett fält har fel format")
         mcp.stdin.close()
         mcp.wait(timeout=10)
     finally:
         shutil.rmtree(FABRIK / "kunder" / PROVKUND, ignore_errors=True)
         shutil.rmtree(FABRIK / "ut" / "designer" / PROVKUND, ignore_errors=True)
+        shutil.rmtree(FABRIK / "ut" / "claude" / PROVKUND, ignore_errors=True)
         server.terminate()
         server.wait(timeout=10)
     print(f"\n{'✗ ' + str(len(fel)) + ' fel' if fel else '✓ Designer och MCP fungerar'}")

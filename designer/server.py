@@ -9,6 +9,7 @@ Allt arbete görs av fabrik.py: Designer läser och skriver kundfilen, bygger
 förhandsvisningar och förslag och sparar kunden i GitHub med git.
 
 Samma API används av webbläsaren och av Claude via MCP (designer/mcp.py).
+Chatten med Claude i formuläret kör säljarens egen Claude Code (designer/claude.py).
 Allt under /api/ som ändrar något kräver rubriken X-Hjerdal, så att en annan
 webbplats inte kan skicka förfrågningar hit.
 """
@@ -20,6 +21,7 @@ import json
 import mimetypes
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -33,6 +35,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
 import fabrik
+from designer import claude
 
 APP = "HJERDAL Designer"
 WEBB = Path(__file__).resolve().parent / "webb"
@@ -85,11 +88,59 @@ def las(kund: str) -> dict:
 
 
 def problem(data: dict) -> list[tuple[str, str]]:
-    """Det fabriken ser direkt i kundfilen. Resten kommer när sajten byggs."""
+    """Det som syns direkt i kundfilen: samma regler som formuläret kontrollerar, så att
+    Claude får veta direkt att till exempel ett telefonnummer har fel form. Det bara
+    bygget ser (bilder som saknas, kontrasten) kommer när sajten byggs."""
+    fel = schemafel(fabrik.SCHEMA["schema"], data)
     try:
         fabrik.granska_kund(data)
     except fabrik.FabrikFel as e:
-        return e.falt
+        fel += [f for f in e.falt if f[0] not in {v for v, _ in fel}]
+    return fel
+
+
+def schemafel(s: dict, v, vag: str = "", kravd: bool = True) -> list[tuple[str, str]]:
+    """Kundfilen mot schemat, som allaFel i webb/formular.js. Fälten skrivs som meny.sektioner.0.namn."""
+    if v is None or v == "":
+        return [(vag or "(hela filen)", "måste fyllas i")] if kravd else []
+    em = s.get("errorMessage") or {}
+    if "enum" in s and v not in s["enum"]:
+        return [(vag, "välj bland " + ", ".join(map(str, s["enum"])))]
+    typ = s.get("type")
+    under = lambda k: f"{vag}.{k}" if vag else str(k)  # noqa: E731
+    if typ == "string":
+        if not isinstance(v, str):
+            return [(vag, "ska vara text")]
+        if s.get("minLength") and len(v) < s["minLength"]:
+            return [(vag, em.get("minLength") or ("måste fyllas i" if s["minLength"] == 1 else f"ska vara minst {s['minLength']} tecken, nu {len(v)}"))]
+        if s.get("maxLength") and len(v) > s["maxLength"]:
+            return [(vag, em.get("maxLength") or f"får vara högst {s['maxLength']} tecken, nu {len(v)}")]
+        with contextlib.suppress(re.error):
+            if s.get("pattern") and not re.search(s["pattern"], v):
+                return [(vag, em.get("pattern") or "har fel form")]
+        if s.get("format") == "email" and not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", v):
+            return [(vag, em.get("format") or "skrivs som namn@exempel.se")]
+        if s.get("format") == "uri" and not re.fullmatch(r"https?://[^\s/]+\.\S+", v):
+            return [(vag, em.get("format") or "måste börja med https://")]
+    elif typ in ("number", "integer"):
+        if isinstance(v, bool) or not isinstance(v, (int, float)):
+            return [(vag, "ska vara ett tal")]
+        if "minimum" in s and v < s["minimum"]:
+            return [(vag, f"får inte vara mindre än {s['minimum']}")]
+    elif typ == "array":
+        if not isinstance(v, list):
+            return [(vag, "ska vara en lista")]
+        if s.get("minItems") and len(v) < s["minItems"]:
+            return [(vag, "behöver minst en" if s["minItems"] == 1 else f"behöver minst {s['minItems']}")]
+        delar = s.get("items")
+        return [f for i, x in enumerate(v)
+                for f in schemafel((delar[i] if i < len(delar) else {}) if isinstance(delar, list) else delar or {}, x, under(i))]
+    elif typ == "object":
+        if not isinstance(v, dict):
+            return [(vag, "ska vara en grupp")]
+        kravs = s.get("required") or []
+        return [f for k, p in (s.get("properties") or {}).items()
+                for f in schemafel(p, v.get(k), under(k), k in kravs and "default" not in p)]
     return []
 
 
@@ -375,6 +426,14 @@ class Hanterare(BaseHTTPRequestHandler):
             port = self.server.server_address[1]
             oppna_fonster(f"http://127.0.0.1:{port}/" + (f"#/kund/{fabrik.kundmapp(kund).name}" if kund else ""))
             return self.json({"oppnad": True})
+        if (metod, d) == ("GET", ["claude"]):
+            return self.json(claude.status(farsk="farsk" in q))
+        if (metod, d) == ("POST", ["claude", "installera"]):
+            claude.oppna_terminal("curl -fsSL https://claude.ai/install.sh | bash && ~/.local/bin/claude auth login")
+            return self.json({"oppnad": True})
+        if (metod, d) == ("POST", ["claude", "logga-in"]):
+            claude.oppna_terminal(f"{shlex.quote(claude.hitta() or 'claude')} auth login")
+            return self.json({"oppnad": True})
         if (metod, d) == ("POST", ["avsluta"]):
             self.json({"meddelande": "Designer är avslutad."})
             threading.Thread(target=self.server.shutdown, daemon=True).start()
@@ -400,6 +459,8 @@ class Hanterare(BaseHTTPRequestHandler):
                 if langd > MAX_BILD:
                     raise ApiFel(413, f"Bilden är större än {MAX_BILD // 1024 // 1024} MB.")
                 return self.json(spara_bild(kund, q.get("namn", ["bild.jpg"])[0], self.rfile.read(langd)), 201)
+            if rest[:1] == ["claude"]:
+                return self.chatt(metod, kund, rest[1:], q)
             if (metod, rest) == ("POST", ["hamta-bild"]):
                 b = kropp()
                 return self.json(hamta_bild(kund, b.get("url", ""), b.get("namn")), 201)
@@ -410,6 +471,28 @@ class Hanterare(BaseHTTPRequestHandler):
                 if metod == "DELETE" and fil.exists():
                     fil.unlink()
                     return self.json({"borttagen": rest[1]})
+        raise ApiFel(404, "Finns inte.")
+
+    def chatt(self, metod: str, kund: str, rest: list[str], q: dict) -> None:
+        if (metod, rest) == ("GET", []):
+            return self.json({**claude.historik(kund), "arbetar": kund in claude.pagar})
+        if (metod, rest) == ("POST", []):
+            b = self.las_kropp()
+            text = str(b.get("text") or "").strip()
+            if not text:
+                raise ApiFel(400, "Skriv något till Claude.")
+            namn = las(kund)["data"].get("namn", kund)
+            return self.strom(claude.chatta(kund, namn, text, [str(x) for x in b.get("bilagor") or []]))
+        if (metod, rest) == ("DELETE", []):
+            claude.ny_chatt(kund)
+            return self.json({"ny": True})
+        if (metod, rest) == ("POST", ["stoppa"]):
+            return self.json({"stoppad": claude.stoppa(kund)})
+        if (metod, rest) == ("POST", ["bilagor"]):
+            langd = int(self.headers.get("Content-Length") or 0)
+            if langd > claude.MAX_BILAGA:
+                raise ApiFel(413, f"Bilagan är större än {claude.MAX_BILAGA // 1024 // 1024} MB.")
+            return self.json({"fil": claude.spara_bilaga(kund, q.get("namn", ["bilaga.jpg"])[0], self.rfile.read(langd))}, 201)
         raise ApiFel(404, "Finns inte.")
 
     def las_kropp(self) -> dict:
@@ -461,6 +544,26 @@ class Hanterare(BaseHTTPRequestHandler):
             self.send_header("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'")
         self.end_headers()
         self.wfile.write(innehall)
+
+    def strom(self, handelser) -> None:
+        """Skickar händelserna en rad JSON i taget medan de kommer, för chatten med Claude."""
+        global senast_hord
+        self.send_response(200)
+        self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Connection", "close")
+        self.end_headers()
+        self.close_connection = True
+        try:
+            for h in handelser:
+                self.wfile.write((json.dumps(h, ensure_ascii=False) + "\n").encode("utf-8"))
+                self.wfile.flush()
+                senast_hord = time.monotonic()
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        finally:
+            # Stänger generatorn, som då avbryter Claude om säljaren stängde fönstret mitt i.
+            handelser.close()
 
     def omdirigera(self, till: str) -> None:
         self.send_response(301)
@@ -522,7 +625,7 @@ def starta_om(server: ThreadingHTTPServer) -> None:
 def vakt(server: ThreadingHTTPServer) -> None:
     while True:
         time.sleep(30)
-        if time.monotonic() - senast_hord > VILA and not bygglas.locked():
+        if time.monotonic() - senast_hord > VILA and not bygglas.locked() and not claude.pagar:
             server.shutdown()
             return
 

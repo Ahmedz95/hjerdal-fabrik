@@ -29,8 +29,8 @@ STATUSFIL = FABRIK / "ut" / ".designer.json"
 PROTOKOLL = ("2025-06-18", "2025-03-26", "2024-11-05")
 
 INSTRUKTIONER = """HJERDAL Designer bygger restaurangsajter från en kundfil (kund.json) med HJERDAL:s sajtfabrik.
-Arbetsgång: läs kundfilens_falt en gång, skapa_kund eller las_kundfil, spara_kundfil med hela kundfilen,
-bygg_forhandsvisning och rätta det bygget säger, skapa_forslag för att visa kunden flera stilar,
+Arbetsgång: läs kundfilens_falt en gång, skapa_kund eller las_kundfil, fyll i med andra_falt (eller
+spara_kundfil med hela kundfilen), bygg_forhandsvisning och rätta det bygget säger, skapa_forslag för att visa kunden flera stilar,
 och spara_till_github först när säljaren säger att kunden är klar.
 Skriv på svenska och följ fältens hjälptexter (beskrivningen för Google är 50–160 tecken, tider skrivs 11:00).
 Hitta aldrig på fakta om restaurangen: öppettider, priser, adress, telefon och rätter kommer från säljaren,
@@ -71,6 +71,18 @@ VERKTYG = [
         }, "required": ["kund", "kundfil"]},
     },
     {
+        "name": "andra_falt",
+        "description": "Ändrar enskilda fält i kundfilen och låter resten vara, så att säljarens egna ändringar i "
+                       "formuläret finns kvar. Fälten anges som sökvägar med punkt och siffror för listor, till exempel "
+                       "{\"kontakt.telefon\": \"+46 40 12 34 56\", \"oppettider\": [...], \"meny.sektioner.0.ratter.2.pris\": 145}. "
+                       "Ett index lika med listans längd lägger till sist, null tar bort fältet eller raden. "
+                       "Svarar med det som behöver fyllas i eller rättas.",
+        "inputSchema": {"type": "object", "properties": {
+            "kund": {"type": "string"},
+            "falt": {"type": "object", "description": "Sökväg till fältet och dess nya värde"},
+        }, "required": ["kund", "falt"]},
+    },
+    {
         "name": "bygg_forhandsvisning",
         "description": "Bygger kundens sajt och kontrollerar den, ungefär 15 sekunder. Svarar med en länk till "
                        "förhandsvisningen, eller med felen per fält om kundfilen behöver rättas.",
@@ -109,7 +121,9 @@ VERKTYG = [
 
 
 class Fel(Exception):
-    pass
+    def __init__(self, text: str, status: int = 0) -> None:
+        super().__init__(text)
+        self.status = status
 
 
 # --- Designer -----------------------------------------------------------------------
@@ -147,11 +161,54 @@ def api(metod: str, vag: str, data: dict | None = None):
         try:
             fel = json.loads(e.read())
         except ValueError:
-            raise Fel(f"Designer svarade {e.code}.") from e
+            raise Fel(f"Designer svarade {e.code}.", e.code) from e
         text = fel.get("fel", f"Designer svarade {e.code}.")
         if fel.get("falt"):
             text = text.splitlines()[0].rstrip(":") + ". Fält att rätta:\n" + "\n".join(f"- {f}: {m}" for f, m in fel["falt"])
-        raise Fel(text) from e
+        raise Fel(text, e.code) from e
+
+
+def satt(data: dict, vag: str, varde) -> None:
+    """Sätter ett fält som "meny.sektioner.0.ratter.2.pris". Saknade grupper och listor skapas."""
+    delar = [int(d) if d.isdigit() else d for d in vag.split(".") if d != ""]
+    if not delar:
+        raise Fel("Ett fält saknar sökväg.")
+    o = data
+    for i, d in enumerate(delar[:-1]):
+        nasta = [] if isinstance(delar[i + 1], int) else {}
+        if isinstance(o, list) and isinstance(d, int) and d <= len(o):
+            if d == len(o):
+                o.append(nasta)
+            elif not isinstance(o[d], (dict, list)):
+                o[d] = nasta
+        elif isinstance(o, dict) and isinstance(d, str):
+            if not isinstance(o.get(d), (dict, list)):
+                o[d] = nasta
+        else:
+            raise Fel(f"{vag}: {'.'.join(map(str, delar[:i + 1]))} finns inte.")
+        o = o[d]
+    sista = delar[-1]
+    if isinstance(o, list) and isinstance(sista, int) and sista <= len(o):
+        if varde is None:
+            if sista < len(o):
+                o.pop(sista)
+        elif sista == len(o):
+            o.append(varde)
+        else:
+            o[sista] = varde
+    elif isinstance(o, dict) and isinstance(sista, str):
+        if varde is None:
+            o.pop(sista, None)
+        else:
+            o[sista] = varde
+    else:
+        raise Fel(f"{vag}: {'.'.join(map(str, delar))} finns inte.")
+
+
+def problemtext(problem: list) -> str:
+    if problem:
+        return "Sparad, men det här behöver fyllas i eller rättas:\n" + "\n".join(f"- {f}: {m}" for f, m in problem)
+    return "Sparad. Bygg förhandsvisningen för att kontrollera resten."
 
 
 def kor(namn: str, arg: dict) -> str:
@@ -173,10 +230,22 @@ def kor(namn: str, arg: dict) -> str:
         return json.dumps({"kund": svar["kund"], "kundfil": svar["data"],
                            "nasta": "Fyll i kundfilen och spara den med spara_kundfil."}, ensure_ascii=False)
     if namn == "spara_kundfil":
-        svar = api("PUT", f"kunder/{kund}", {"data": arg.get("kundfil")})
-        if svar["problem"]:
-            return "Sparad, men det här behöver fyllas i eller rättas:\n" + "\n".join(f"- {f}: {m}" for f, m in svar["problem"])
-        return "Sparad. Bygg förhandsvisningen för att kontrollera resten."
+        return problemtext(api("PUT", f"kunder/{kund}", {"data": arg.get("kundfil")})["problem"])
+    if namn == "andra_falt":
+        falt = arg.get("falt")
+        if not isinstance(falt, dict) or not falt:
+            raise Fel("Ange minst ett fält att ändra.")
+        for forsok in range(3):
+            nu = api("GET", f"kunder/{kund}")
+            data = nu["data"]
+            for vag, varde in falt.items():
+                satt(data, vag, varde)
+            try:
+                # Med andrad stoppar Designer sparningen om säljaren hann ändra i formuläret; då läses filen om.
+                return problemtext(api("PUT", f"kunder/{kund}", {"data": data, "andrad": nu["andrad"]})["problem"])
+            except Fel as e:
+                if e.status != 409 or forsok == 2:
+                    raise
     if namn == "bygg_forhandsvisning":
         svar = api("POST", f"kunder/{kund}/bygg")
         rader = [f"Byggd och kontrollerad: {svar['sidor']} sidor. Förhandsvisning: {adress()}{svar['url']}"]
