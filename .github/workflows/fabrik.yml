@@ -13,9 +13,20 @@ jobs:
           node-version: 22
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          # 3.9 är den som följer med macOS, så Designer provkörs med den.
+          python-version: |
+            3.9
+            3.12
+      - name: Kundfilens schema är uppdaterat
+        working-directory: karna
+        run: |
+          npm ci --no-audit --no-fund --loglevel=error
+          npm run schema
+          git diff --exit-code fabrik-schema.json || { echo "::error::fabrik-schema.json är inte uppdaterad. Kör npm run schema i karna/ och checka in filen."; exit 1; }
       - name: Bygg och kontrollera Bistro Nordvik
         run: python3 fabrik.py bygg bistro-nordvik
+      - name: HJERDAL Designer och MCP
+        run: python3.9 designer/prov.py
       - name: Bygg en variant i varje stil
         run: python3 fabrik.py varianter bistro-nordvik
       - name: Lighthouse (mobil)

@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro check && astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "schema": "tsx scripts/schema.ts"
   },
   "engines": {
     "node": ">=20.3"
@@ -24,11 +25,14 @@
     "@fontsource-variable/source-serif-4": "^5.3.1",
     "@fontsource/azeret-mono": "^5.2.0",
     "astro": "^5.13.0",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
     "@types/qrcode": "^1.5.5",
-    "typescript": "^5.9.0"
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.0",
+    "zod-to-json-schema": "^3.25.2"
   }
 }

@@ -1,21 +1,10 @@
-// Färgteman: tre ljusa och tre mörka. Temat styr bara färgerna; typsnitt och
-// former kommer från stilen (src/stilar/). I stilen hjerdal har temat också
-// ett eget rubriktypsnitt. Accenten kan bytas per kund; bygget stoppar om
+// Temats färger som CSS-variabler, och kontrastkontrollen. Temana finns i
+// src/lib/designval.ts. Accenten kan bytas per kund; bygget stoppar om
 // texten på knapparna då blir svår att läsa.
 import type { Kund } from './kund';
+import { temaInfo } from './designval';
 
-type Farger = { bg: string; surface: string; ink: string; muted: string; line: string; accent: string };
-type Tema = Farger & { rubrik: 'sans' | 'serif'; namn: string };
-
-export const temaLista: Record<Kund['design']['tema'], Tema> = {
-  // HJERDAL:s egna färger: Snö, Is, Granit och Skiffer.
-  fjall: { namn: 'Fjäll', bg: '#F5F6F4', surface: '#E8EBE9', ink: '#101315', muted: '#596066', line: '#D5DAD8', accent: '#101315', rubrik: 'sans' },
-  linne: { namn: 'Linne', bg: '#F3EFE7', surface: '#E9E2D4', ink: '#221E18', muted: '#62594C', line: '#D8CFBE', accent: '#6B4226', rubrik: 'serif' },
-  ek: { namn: 'Ek', bg: '#1B1814', surface: '#25211B', ink: '#F2EDE3', muted: '#B3A999', line: '#3A332A', accent: '#D9BC8C', rubrik: 'serif' },
-  skiffer: { namn: 'Skiffer', bg: '#111417', surface: '#1A1E22', ink: '#EEF1F2', muted: '#A9B0B5', line: '#2B3136', accent: '#B9D3D9', rubrik: 'sans' },
-  salvia: { namn: 'Salvia', bg: '#EEF1EA', surface: '#E1E7DB', ink: '#1C261F', muted: '#4F5D52', line: '#CCD5C6', accent: '#2F4A37', rubrik: 'serif' },
-  hav: { namn: 'Hav', bg: '#0E1822', surface: '#15222E', ink: '#EEF3F6', muted: '#A4B3BF', line: '#23384A', accent: '#F0B65A', rubrik: 'sans' },
-};
+export const temaLista = temaInfo;
 
 const lum = (hex: string) => {
   const [r, g, b] = [1, 3, 5].map((i) => {

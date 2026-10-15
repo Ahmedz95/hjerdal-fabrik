@@ -78,14 +78,6 @@
       }
     ]
   },
-  "design": {
-    "tema": "fjall",
-    "hero": "text",
-    "meny": "lista"
-  },
-  "funktioner": {
-    "omOss": true,
-    "skarm": true,
-    "qr": true
-  }
+  "design": { "tema": "fjall", "hero": "text", "meny": "lista" },
+  "funktioner": { "omOss": true, "skarm": true, "qr": true }
 }
