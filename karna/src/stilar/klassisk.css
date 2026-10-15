@@ -1,0 +1,45 @@
+/* Stilen klassisk: för vita dukar, vinbarer och bistroer med lång historia.
+   Cormorant Garamond i rubrikerna, Source Serif i brödtexten, centrerad
+   startsida, raka hörn, kursiva etiketter och punktlinjer fram till priset. */
+@import '@fontsource-variable/cormorant-garamond/wght.css';
+@import '@fontsource-variable/cormorant-garamond/wght-italic.css';
+@import '@fontsource-variable/source-serif-4/wght.css';
+
+[data-stil="klassisk"] {
+  --f-display: "Cormorant Garamond Variable", "Cormorant Garamond", Garamond, Georgia, serif;
+  --f-body: "Source Serif 4 Variable", "Source Serif 4", Georgia, "Times New Roman", serif;
+  --display-weight: 500; --display-track: -0.012em;
+  --f-pris: var(--f-body); --pris-track: 0;
+  --lbl: italic 400 20px/1.3 var(--f-display); --lbl-track: .01em; --lbl-case: none;
+  --btn: 600 12.5px/1 var(--f-body); --btn-track: .16em; --btn-case: uppercase;
+  --logo: 500 27px/1 var(--f-display); --logo-track: .01em; --logo-case: none;
+  --ratt: 600 17px/1.35 var(--f-body);
+  --r-btn: 0; --r-tagg: 0; --r-kort: 0; --r-bild: 0;
+}
+[data-stil="klassisk"] body { line-height: 1.65; }
+[data-stil="klassisk"] .h1 { line-height: 1; font-size: clamp(2.9rem, 7.6vw, 6.3rem); }
+[data-stil="klassisk"] .btn-line { box-shadow: inset 0 0 0 1px var(--ink); }
+
+/* Startsidan och rubrikerna centreras, som en tryckt meny. */
+[data-stil="klassisk"][data-hero="text"] .hero,
+[data-stil="klassisk"][data-hero="bild"] .hero { text-align: center; }
+[data-stil="klassisk"][data-hero="text"] .hero :is(.h1, .lede),
+[data-stil="klassisk"][data-hero="bild"] .hero :is(.h1, .lede) { margin-inline: auto; }
+[data-stil="klassisk"][data-hero="text"] .hero .actions,
+[data-stil="klassisk"][data-hero="bild"] .hero .actions { justify-content: center; }
+[data-stil="klassisk"] .sec-head { grid-template-columns: none; justify-items: center; text-align: center; }
+[data-stil="klassisk"] .sec-head :is(.h2, .p) { margin-inline: auto; }
+[data-stil="klassisk"] .fakta { text-align: center; }
+[data-stil="klassisk"] .band { text-align: center; }
+[data-stil="klassisk"] .band .h2 { margin-inline: auto; }
+[data-stil="klassisk"] .band .actions { justify-content: center; }
+
+/* Menyn: inga linjer mellan rätterna, en punktlinje fram till priset. */
+[data-stil="klassisk"] .ratter { border-top: 0; }
+[data-stil="klassisk"] .ratt { column-gap: 10px; padding-block: 12px; border-bottom: 0; }
+[data-stil="klassisk"] .ratt-namn { display: flex; align-items: baseline; gap: 10px; }
+[data-stil="klassisk"] .ratt-namn::after { content: ""; flex: 1 1 24px; min-width: 24px; border-bottom: 1px dotted var(--muted); }
+[data-stil="klassisk"] .ratt-text { font-style: italic; }
+[data-stil="klassisk"] .tagg { box-shadow: none; padding: 0; letter-spacing: .12em; }
+[data-stil="klassisk"] .tagg + .tagg::before { content: "· "; }
+[data-stil="klassisk"] .sektion-head .h3 { font-size: clamp(1.8rem, 3vw, 2.5rem); }

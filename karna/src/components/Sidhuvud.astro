@@ -1,0 +1,26 @@
+---
+import { Image } from 'astro:assets';
+import { kund, sidor, url, telLank } from '../lib/kund';
+import { logo } from '../lib/bilder';
+
+interface Props { sokvag: string }
+const { sokvag } = Astro.props;
+const l = logo();
+---
+<header class="top">
+  <div class="wrap">
+    <a class:list={['logo', { 'logo-har-bild': l }]} href={url('/')} aria-label={`${kund.namn}, till startsidan`}>
+      {l && 'svg' in l ? <Fragment set:html={l.svg} /> : l ? <Image class="logo-bild" src={l.src} alt={kund.namn} height={88} loading="eager" /> : kund.namn}
+    </a>
+    <nav class="nav" aria-label="Huvudmeny">
+      {sidor.map((s) => (
+        <a href={url(s.href)} aria-current={sokvag === s.href ? 'page' : undefined}>{s.label}</a>
+      ))}
+    </nav>
+    {kund.boka ? (
+      <a class="btn btn-accent" href={kund.boka.url}>{kund.boka.text}</a>
+    ) : (
+      <a class="btn btn-accent" href={telLank(kund.kontakt.telefon)}>Ring oss</a>
+    )}
+  </div>
+</header>

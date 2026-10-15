@@ -1,0 +1,21 @@
+---
+import { kund } from '../lib/kund';
+import { dagText, tidText, datumText, kommande } from '../lib/format';
+
+const avvikelser = kommande(kund.avvikelser);
+---
+<dl class="tider">
+  {kund.oppettider.map((o) => (
+    <div><dt>{dagText(o.dagar)}</dt><dd class="tab">{tidText(o.tider)}</dd></div>
+  ))}
+</dl>
+{avvikelser.length > 0 && (
+  <div class="avvikelser">
+    <p class="lbl">Avvikande öppettider</p>
+    <ul class="lista">
+      {avvikelser.map((a) => (
+        <li>{a.text}, {datumText(a.datum)}: <span class="tab">{a.stangt ? 'Stängt' : tidText(a.tider)}</span></li>
+      ))}
+    </ul>
+  </div>
+)}

@@ -1,0 +1,67 @@
+---
+// Ramen för alla sidor: tema, metadata, sidhuvud och sidfot. Ingen JavaScript.
+import '../styles/bas.css';
+// Stilens typsnitt och former, src/stilar/<stil>.css. Sökvägen sätts i
+// astro.config.mjs efter kundfilen, så att bara den valda stilens typsnitt följer med.
+import '@stil';
+import Sidhuvud from '../components/Sidhuvud.astro';
+import Sidfot from '../components/Sidfot.astro';
+import { kund, url } from '../lib/kund';
+import { temaVariabler } from '../lib/tema';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Sidans sökväg, till exempel "/meny/". */
+  sokvag: string;
+  ld?: object[];
+  noindex?: boolean;
+  /** Utan sidhuvud och sidfot, för menyskärmen och QR-skylten. */
+  naken?: boolean;
+  ogBild?: string;
+}
+
+const { title, description, sokvag, ld = [], noindex = false, naken = false, ogBild } = Astro.props;
+const tema = temaVariabler(kund.design);
+const canonical = new URL(sokvag, Astro.site).href;
+// Förhandsvisningar av varianter ska inte hamna på Google.
+const dold = noindex || import.meta.env.PUBLIC_FORHANDSVISNING === '1';
+---
+<!doctype html>
+<html lang="sv" data-stil={kund.design.stil} data-tema={kund.design.tema} data-hero={kund.bilder.hero ? kund.design.hero : 'text'} data-meny={kund.design.meny}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {dold && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content={tema.bg} />
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <link rel="sitemap" href={url('/sitemap-index.xml')} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="sv_SE" />
+    <meta property="og:site_name" content={kund.namn} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogBild && <meta property="og:image" content={ogBild} />}
+    <style is:inline set:html={tema.css}></style>
+    {ld.map((l) => <script type="application/ld+json" set:html={JSON.stringify(l)} />)}
+    <slot name="head" />
+  </head>
+  <body>
+    {naken ? (
+      <slot />
+    ) : (
+      <>
+        <a class="skip" href="#innehall">Till innehållet</a>
+        <Sidhuvud {sokvag} />
+        <main id="innehall">
+          <slot />
+        </main>
+        <Sidfot />
+      </>
+    )}
+  </body>
+</html>

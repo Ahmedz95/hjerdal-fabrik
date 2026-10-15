@@ -1,0 +1,10 @@
+# Byggda kundsajter och förhandsvisningar
+ut/
+lhci/
+.lighthouseci/
+node_modules/
+karna/dist/
+karna/.astro/
+.wrangler/
+__pycache__/
+.DS_Store

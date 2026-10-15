@@ -1,0 +1,91 @@
+{
+  "namn": "Bistro Nordvik",
+  "doman": "nordvik.demo.hjerdal.se",
+  "beskrivning": "Bistro Nordvik i Helsingborg: lunch på vardagar, kvällsmeny med fisk från Öresund och fika hela dagen. Se menyn, öppettiderna och boka bord.",
+  "rubrik": "Husmanskost med havet utanför fönstret.",
+  "ingress": "Lunch på vardagar, fisk från Öresund på kvällen och nybakat till kaffet. Allt lagas från grunden i vårt kök vid hamnen.",
+  "kok": ["Svensk", "Husmanskost", "Fisk och skaldjur"],
+  "prisniva": "$$",
+  "kontakt": {
+    "telefon": "+46 70 174 06 42",
+    "epost": "hej@nordvik.demo.hjerdal.se",
+    "adress": { "gata": "Nordviksgatan 4", "postnummer": "252 21", "ort": "Helsingborg" },
+    "karta": "https://www.google.com/maps/search/?api=1&query=Nordviksgatan+4+Helsingborg"
+  },
+  "boka": { "url": "https://nordvik.demo.hjerdal.se/kontakt/", "text": "Boka bord" },
+  "sociala": { "instagram": "https://www.instagram.com/" },
+  "oppettider": [
+    { "dagar": ["man", "tis", "ons", "tor", "fre"], "tider": [["11:00", "14:00"], ["17:00", "22:00"]] },
+    { "dagar": ["lor"], "tider": [["12:00", "23:00"]] },
+    { "dagar": ["son"], "tider": [] }
+  ],
+  "avvikelser": [
+    { "datum": "2026-12-24", "text": "Julafton", "stangt": true },
+    { "datum": "2026-12-31", "text": "Nyårsafton", "stangt": false, "tider": [["17:00", "01:00"]] }
+  ],
+  "om": {
+    "rubrik": "Ett litet kök vid hamnen.",
+    "stycken": [
+      "Bistro Nordvik öppnade 2019 i ett gammalt packhus vid hamnen. Vi lagar svensk vardagsmat som den smakar bäst: från grunden, med råvaror från gårdar och fiskare i närheten.",
+      "Lunchen byts varje vecka och kvällsmenyn följer säsongen. Har du allergier eller frågor om en rätt, fråga oss gärna. Vi vet vad som finns i varje tallrik."
+    ]
+  },
+  "meny": {
+    "text": "Menyn följer säsongen och vad fiskarna får upp. Priserna gäller i restaurangen.",
+    "sektioner": [
+      {
+        "namn": "Lunch",
+        "text": "Vardagar. Sallad, bröd, smör och kaffe ingår.",
+        "dagar": ["man", "tis", "ons", "tor", "fre"],
+        "fran": "11:00",
+        "till": "14:00",
+        "ratter": [
+          { "namn": "Stekt torsk med brynt smör", "text": "Pepparrot, räkor och kokt potatis", "pris": 185, "allergener": ["fisk", "kräftdjur", "mjölk"] },
+          { "namn": "Rårakor med fläsk och lingon", "text": "Krispiga rårakor och rimmat sidfläsk", "pris": 165, "allergener": ["mjölk"] },
+          { "namn": "Svamprisotto", "text": "Skogssvamp, lagrad ost och citron", "pris": 155, "taggar": ["vegetarisk", "glutenfri"], "allergener": ["mjölk"] }
+        ]
+      },
+      {
+        "namn": "Kväll",
+        "text": "Från 17.00. Fråga om dagens fångst.",
+        "fran": "17:00",
+        "till": "22:00",
+        "ratter": [
+          { "namn": "Toast Skagen", "text": "Handskalade räkor, löjrom och dill", "pris": 175, "allergener": ["kräftdjur", "fisk", "ägg", "gluten"] },
+          { "namn": "Helstekt rödspätta", "text": "Brynt smör, kapris, persilja och potatis", "pris": 295, "taggar": ["glutenfri"], "allergener": ["fisk", "mjölk"] },
+          { "namn": "Kalvfärsbiff à la Lindström", "text": "Rödbetor, kapris, gräddsås och pressgurka", "pris": 245, "allergener": ["mjölk", "ägg"] },
+          { "namn": "Rostad blomkål", "text": "Brynt smör på hasselnöt, linser och örter", "pris": 215, "taggar": ["vegetarisk"], "allergener": ["nötter", "mjölk"] },
+          { "namn": "Dagens fångst", "text": "Det fiskarna fick upp i morse", "prisText": "Dagspris", "taggar": ["ny"], "allergener": ["fisk"] }
+        ]
+      },
+      {
+        "namn": "Fika",
+        "text": "Bakat i morse. Hela dagen.",
+        "ratter": [
+          { "namn": "Kardemummabulle", "text": "Bakad på surdeg", "pris": 38, "allergener": ["gluten", "mjölk", "ägg"] },
+          { "namn": "Kladdkaka med grädde", "text": "Vispad grädde och bär", "pris": 55, "taggar": ["glutenfri"], "allergener": ["mjölk", "ägg"] },
+          { "namn": "Havrebollar", "text": "Kakao, dadlar och kokos", "pris": 32, "taggar": ["vegansk"], "slut": true }
+        ]
+      },
+      {
+        "namn": "Att dricka",
+        "ratter": [
+          { "namn": "Bryggkaffe", "text": "Påtår ingår", "pris": 35 },
+          { "namn": "Husets lemonad", "text": "Rabarber och fläder", "pris": 45, "taggar": ["vegansk"] },
+          { "namn": "Lager från Helsingborg", "text": "40 cl", "pris": 82 },
+          { "namn": "Glas vitt vin", "text": "Riesling, Mosel", "pris": 125 }
+        ]
+      }
+    ]
+  },
+  "design": {
+    "tema": "fjall",
+    "hero": "text",
+    "meny": "lista"
+  },
+  "funktioner": {
+    "omOss": true,
+    "skarm": true,
+    "qr": true
+  }
+}

@@ -1,0 +1,28 @@
+/* Stilen kvarter: för pizzerior, burgarställen, streetfood och kvarterskrogar.
+   Smala versala rubriker i Oswald, Archivo i brödtexten, tydliga block,
+   kraftiga linjer och små hörn. */
+@import '@fontsource-variable/oswald';
+@import '@fontsource-variable/archivo/wght.css';
+
+[data-stil="kvarter"] {
+  --f-display: "Oswald Variable", "Oswald", "Arial Narrow", Impact, sans-serif;
+  --f-body: "Archivo Variable", "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display-weight: 600; --display-track: -0.005em; --display-case: uppercase;
+  --f-pris: var(--f-display); --pris-track: .01em;
+  --lbl: 700 13px/1.3 var(--f-body); --lbl-track: .08em; --lbl-case: uppercase; --lbl-color: var(--ink);
+  --btn: 700 14px/1 var(--f-body); --btn-track: .06em; --btn-case: uppercase;
+  --logo: 600 25px/1 var(--f-display); --logo-track: .02em; --logo-case: uppercase;
+  --ratt: 600 20px/1.2 var(--f-display); --ratt-case: uppercase;
+  --r-btn: 6px; --r-tagg: 4px; --r-kort: 6px; --r-bild: 6px;
+}
+/* Versala Å, Ä och Ö når högre än versalhöjden och behöver luft mot raden ovanför. */
+[data-stil="kvarter"] .h1 { max-width: 13ch; line-height: 1.22; font-size: clamp(3.1rem, 9.6vw, 7.6rem); }
+[data-stil="kvarter"] :is(.h2, .h3) { line-height: 1.2; }
+[data-stil="kvarter"] .lbl::before { content: ""; display: inline-block; width: .72em; height: .72em; margin-right: .6em; background: var(--accent); vertical-align: -.04em; }
+[data-stil="kvarter"] .btn-line { box-shadow: inset 0 0 0 2px var(--ink); }
+[data-stil="kvarter"] :is(.sec, .fot) { border-top: 2px solid var(--ink); }
+[data-stil="kvarter"] :is(.sec-tat, .sec-surface) { border-top: 0; }
+[data-stil="kvarter"] .ratter { border-top: 2px solid var(--ink); }
+[data-stil="kvarter"] .ratt-pris { font-size: 19px; font-weight: 500; }
+[data-stil="kvarter"] .tagg { box-shadow: none; background: var(--surface); color: var(--ink); font-weight: 700; letter-spacing: .06em; }
+[data-stil="kvarter"] .meny-nav a { font-weight: 700; text-transform: uppercase; letter-spacing: .04em; font-size: 13px; }

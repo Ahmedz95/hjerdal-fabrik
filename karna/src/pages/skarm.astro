@@ -1,0 +1,71 @@
+---
+// Menyskärmen i lokalen. Hämtar samma meny som hemsidan och laddar om sig
+// själv var femte minut, så en ändrad meny syns efter nästa publicering.
+// Sektioner med dagar och tider visas bara då, till exempel lunch 11–14.
+import Bas from '../layouts/Bas.astro';
+import { kund, taggar } from '../lib/kund';
+import { pris, spann } from '../lib/format';
+---
+<Bas title={`Menyskärm | ${kund.namn}`} description={`Menyskärmen i lokalen hos ${kund.namn}.`} sokvag="/skarm/" noindex naken>
+  <meta slot="head" http-equiv="refresh" content="300" />
+  <div class="skarm">
+    <header class="skarm-top">
+      <h1 class="logo">{kund.namn}</h1>
+      <p class="num skarm-klocka" id="klocka"></p>
+    </header>
+    <div class="skarm-grid">
+      {kund.meny.sektioner.map((s) => (
+        <section class="skarm-sek" data-dagar={s.dagar?.join(',')} data-fran={s.fran} data-till={s.till}>
+          <h2 class="h3">{s.namn}{s.fran && s.till && <span class="num skarm-tid"> {spann([s.fran, s.till])}</span>}</h2>
+          <ul>
+            {s.ratter.map((r) => (
+              <li class:list={{ slut: r.slut }}>
+                <span>{r.namn}{r.taggar.includes('vegansk') || r.taggar.includes('vegetarisk') ? <span class="skarm-tagg"> {taggar[r.taggar.includes('vegansk') ? 'vegansk' : 'vegetarisk']}</span> : null}</span>
+                <span class="num">{r.slut ? 'Slut' : r.pris !== undefined ? pris(r.pris) : r.prisText}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </div>
+  <script is:inline>
+    (() => {
+      const dagar = ['son', 'man', 'tis', 'ons', 'tor', 'fre', 'lor'];
+      const min = (t) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
+      const sek = [...document.querySelectorAll('.skarm-sek')];
+      const visa = () => {
+        const nu = new Date();
+        const m = nu.getHours() * 60 + nu.getMinutes();
+        const idag = dagar[nu.getDay()];
+        const passar = (el) => {
+          const d = el.dataset.dagar;
+          if (d && !d.split(',').includes(idag)) return false;
+          const { fran, till } = el.dataset;
+          if (!fran || !till) return true;
+          const [a, b] = [min(fran), min(till)];
+          return a <= b ? m >= a && m < b : m >= a || m < b;
+        };
+        const synliga = sek.filter(passar);
+        // Passar inget, till exempel före öppning, visas hela menyn.
+        sek.forEach((el) => (el.hidden = synliga.length > 0 && !synliga.includes(el)));
+        document.getElementById('klocka').textContent = nu.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+      };
+      visa();
+      setInterval(visa, 30000);
+    })();
+  </script>
+  <style>
+    .skarm { min-height: 100vh; padding: 3.2vw 4vw; display: flex; flex-direction: column; gap: 3vw; }
+    .skarm-top { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: 1.4vw; }
+    .skarm .logo { margin: 0; font-size: max(16px, 1.1vw); font-weight: 500; }
+    .skarm-klocka { font-size: max(18px, 1.4vw); color: var(--muted); }
+    .skarm-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 34vw), 1fr)); gap: 3vw 5vw; align-content: start; }
+    .skarm .h3 { font-size: max(28px, 2.6vw); margin-bottom: 1.4vw; }
+    .skarm-tid { font-size: .5em; color: var(--muted); letter-spacing: 0; margin-left: .6em; }
+    .skarm ul { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+    .skarm li { display: flex; justify-content: space-between; gap: 2vw; padding-block: .9vw; border-bottom: 1px solid var(--line); font-size: max(18px, 1.55vw); }
+    .skarm li.slut { color: var(--muted); text-decoration: line-through; }
+    .skarm-tagg { font-size: .6em; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  </style>
+</Bas>

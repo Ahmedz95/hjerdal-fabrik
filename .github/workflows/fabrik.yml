@@ -1,0 +1,30 @@
+name: Fabrik
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  exempelkund:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Bygg och kontrollera Bistro Nordvik
+        run: python3 fabrik.py bygg bistro-nordvik
+      - name: Bygg en variant i varje stil
+        run: python3 fabrik.py varianter bistro-nordvik
+      - name: Lighthouse (mobil)
+        run: npx --yes @lhci/cli@0.14 autorun
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fabrik
+          path: |
+            ut/bistro-nordvik/dist
+            ut/bistro-nordvik-varianter
+            lhci

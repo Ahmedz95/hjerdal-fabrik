@@ -1,0 +1,37 @@
+---
+// Menyn. Samma sida är QR-menyn vid borden, så den ska fungera bra i mobilen.
+import Bas from '../layouts/Bas.astro';
+import MenySektion from '../components/MenySektion.astro';
+import { kund } from '../lib/kund';
+import { menyLd } from '../lib/ld';
+
+const slug = (s: string) =>
+  s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const sektioner = kund.meny.sektioner.map((s) => ({ s, id: slug(s.namn) || 'sektion' }));
+const forsta = kund.meny.sektioner.slice(0, 3).map((s) => s.namn.toLowerCase()).join(', ');
+const description = `${kund.meny.rubrik} hos ${kund.namn} i ${kund.kontakt.adress.ort}: ${forsta}. Priser, allergener och vegetariska rätter.`;
+---
+<Bas title={`${kund.meny.rubrik} | ${kund.namn}`} description={description.slice(0, 160)} sokvag="/meny/" ld={[menyLd()]}>
+  <section class="hero">
+    <div class="wrap">
+      <p class="lbl">{kund.namn}</p>
+      <h1 class="h1">{kund.meny.rubrik}</h1>
+      {kund.meny.text && <p class="lede">{kund.meny.text}</p>}
+    </div>
+  </section>
+  {sektioner.length > 1 && (
+    <nav class="meny-nav" aria-label="Delar av menyn">
+      <div class="wrap">
+        <ul>{sektioner.map(({ s, id }) => <li><a href={`#${id}`}>{s.namn}</a></li>)}</ul>
+      </div>
+    </nav>
+  )}
+  <div class="sec sec-tat">
+    <div class="wrap">
+      <div class="sektioner">
+        {sektioner.map(({ s, id }) => <MenySektion sektion={s} {id} />)}
+      </div>
+      <p class="meny-fot">{kund.meny.allergiText}</p>
+    </div>
+  </div>
+</Bas>

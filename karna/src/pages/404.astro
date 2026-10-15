@@ -1,0 +1,17 @@
+---
+import Bas from '../layouts/Bas.astro';
+import { kund, url } from '../lib/kund';
+---
+<Bas title={`Sidan finns inte | ${kund.namn}`} description={`Sidan finns inte hos ${kund.namn}. Gå till menyn eller startsidan.`} sokvag="/404/" noindex>
+  <section class="hero">
+    <div class="wrap">
+      <p class="lbl">404</p>
+      <h1 class="h1">Sidan finns inte.</h1>
+      <p class="lede">Den kan ha flyttats. Menyn och öppettiderna hittar du här.</p>
+      <div class="actions">
+        <a class="btn btn-accent" href={url('/meny/')}>Se menyn</a>
+        <a class="tl" href={url('/')}>Till startsidan</a>
+      </div>
+    </div>
+  </section>
+</Bas>

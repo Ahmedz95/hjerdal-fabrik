@@ -1,0 +1,37 @@
+---
+// En sektion i menyn: rubrik, när den serveras och rätterna.
+import { taggar, type Sektion } from '../lib/kund';
+import { dagText, spann, pris } from '../lib/format';
+
+interface Props { sektion: Sektion; id: string; rubrikNiva?: 2 | 3 }
+const { sektion: s, id, rubrikNiva = 2 } = Astro.props;
+const Rubrik = rubrikNiva === 3 ? 'h3' : 'h2';
+const dagarna = s.dagar ? dagText(s.dagar) : '';
+const klockan = s.fran && s.till ? spann([s.fran, s.till]) : '';
+---
+<section class="sektion" id={id} aria-labelledby={`${id}-h`}>
+  <div class="sektion-head">
+    <Rubrik class="h3" id={`${id}-h`}>{s.namn}</Rubrik>
+    {(dagarna || klockan) && <p class="tid">{dagarna} <span class="tab">{klockan}</span></p>}
+    {s.text && <p class="p">{s.text}</p>}
+  </div>
+  <ul class="ratter">
+    {s.ratter.map((r) => (
+      <li class:list={['ratt', { slut: r.slut }]}>
+        <span class="ratt-namn">{r.namn}</span>
+        <span class="ratt-pris num">
+          {r.pris !== undefined ? pris(r.pris) : r.prisText}
+          {r.slut && <span class="sr"> (slut för idag)</span>}
+        </span>
+        {r.text && <span class="ratt-text">{r.text}</span>}
+        {(r.taggar.length > 0 || r.slut) && (
+          <ul class="taggar" aria-label="Märkning">
+            {r.slut && <li class="tagg">Slut för idag</li>}
+            {r.taggar.map((t) => <li class="tagg">{taggar[t]}</li>)}
+          </ul>
+        )}
+        {r.allergener.length > 0 && <span class="allergener">Innehåller {r.allergener.join(', ')}</span>}
+      </li>
+    ))}
+  </ul>
+</section>

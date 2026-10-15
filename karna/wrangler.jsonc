@@ -1,0 +1,12 @@
+// Kundens sajt på Cloudflare Workers, bara statiska filer. fabrik.py sätter
+// namnet per kund (hjerdal-<kund>). Domänen kopplas som Custom Domain i
+// Cloudflare, och adressen utan www (eller med) leds om med en Redirect Rule.
+{
+  "name": "hjerdal-kund",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+    "html_handling": "force-trailing-slash"
+  }
+}

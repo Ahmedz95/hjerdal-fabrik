@@ -1,0 +1,33 @@
+---
+import { Picture } from 'astro:assets';
+import Bas from '../layouts/Bas.astro';
+import { kund, url } from '../lib/kund';
+import { bild } from '../lib/bilder';
+
+// fabrik.py tar bort sidan när kunden inte har någon om-text.
+const om = kund.om!;
+const bilden = bild('om');
+const description = om.stycken[0].length > 155 ? `${om.stycken[0].slice(0, 155).replace(/\s+\S*$/, '')}…` : om.stycken[0];
+---
+<Bas title={`Om oss | ${kund.namn}`} {description} sokvag="/om-oss/">
+  <section class="hero">
+    <div class="wrap">
+      <p class="lbl">Om {kund.namn}</p>
+      <h1 class="h1">{om.rubrik}</h1>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="wrap split">
+      <div>
+        {bilden && <div class="om-bild"><Picture src={bilden.src} alt={bilden.alt} widths={[480, 760, 1100]} sizes="(min-width: 900px) 45vw, 100vw" formats={['avif', 'webp']} /></div>}
+      </div>
+      <div>
+        {om.stycken.map((p) => <p class="p">{p}</p>)}
+        <div class="actions">
+          <a class="btn btn-accent" href={url('/meny/')}>Se menyn</a>
+          <a class="tl" href={url('/kontakt/')}>Hitta hit</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Bas>

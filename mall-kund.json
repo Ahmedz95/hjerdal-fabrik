@@ -1,0 +1,41 @@
+{
+  "namn": "FYLL I restaurangens namn",
+  "doman": "FYLL I domän utan https, till exempel bistronordvik.se",
+  "beskrivning": "FYLL I en mening på 50–160 tecken som visas i Googles sökresultat: vad, var och varför.",
+  "rubrik": "FYLL I rubriken på startsidan, gärna en kort mening.",
+  "ingress": "FYLL I två meningar under rubriken.",
+  "kok": ["FYLL I till exempel Svensk"],
+  "prisniva": "$$",
+  "kontakt": {
+    "telefon": "FYLL I +46 ...",
+    "epost": "FYLL I",
+    "adress": { "gata": "FYLL I", "postnummer": "FYLL I", "ort": "FYLL I" },
+    "karta": "FYLL I länk till Google Maps"
+  },
+  "boka": { "url": "FYLL I länk till bokningssystemet, eller ta bort boka", "text": "Boka bord" },
+  "sociala": {},
+  "oppettider": [
+    { "dagar": ["man", "tis", "ons", "tor", "fre"], "tider": [["11:00", "14:00"]] },
+    { "dagar": ["lor", "son"], "tider": [] }
+  ],
+  "avvikelser": [],
+  "om": {
+    "rubrik": "FYLL I rubrik om restaurangen, eller ta bort om",
+    "stycken": ["FYLL I ett eller flera stycken."]
+  },
+  "meny": {
+    "text": "FYLL I en mening om menyn, eller ta bort text",
+    "sektioner": [
+      {
+        "namn": "Lunch",
+        "fran": "11:00",
+        "till": "14:00",
+        "ratter": [
+          { "namn": "FYLL I", "text": "FYLL I", "pris": 0, "taggar": [], "allergener": [] }
+        ]
+      }
+    ]
+  },
+  "design": { "stil": "hjerdal", "tema": "fjall", "hero": "text", "meny": "lista" },
+  "funktioner": { "omOss": true, "skarm": false, "qr": true }
+}

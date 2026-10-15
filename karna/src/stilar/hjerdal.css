@@ -1,0 +1,7 @@
+/* Stilen hjerdal: HJERDAL:s eget formspråk (design/tokens.md i repot
+   hjerdal-se). Lätta stora rubriker i Albert Sans, eller Fraunces i de teman
+   som har serif, spärrade versala etiketter, runda knappar och priser i mono.
+   Alla värden är standardvärdena i bas.css; här laddas bara typsnitten. */
+@import '@fontsource-variable/albert-sans';
+@import '@fontsource-variable/fraunces';
+@import '@fontsource/azeret-mono/400.css';

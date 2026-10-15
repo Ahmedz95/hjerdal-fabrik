@@ -1,0 +1,32 @@
+---
+// QR-skylten till borden. Skriv ut i A5 eller A6; koden leder till menysidan.
+import QRCode from 'qrcode';
+import Bas from '../layouts/Bas.astro';
+import { kund } from '../lib/kund';
+
+const menyUrl = `https://${kund.doman}/meny/`;
+const qr = await QRCode.toString(menyUrl, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#000000ff', light: '#00000000' } });
+---
+<Bas title={`QR-meny | ${kund.namn}`} description={`QR-skylt till borden hos ${kund.namn}.`} sokvag="/qr/" noindex naken>
+  <main class="qr">
+    <p class="logo">{kund.namn}</p>
+    <h1 class="h2">Menyn finns i mobilen.</h1>
+    <div class="qr-kod" set:html={qr} role="img" aria-label={`QR-kod till ${menyUrl}`}></div>
+    <p class="lbl">Skanna med kameran</p>
+    <p class="num qr-url">{kund.doman}/meny</p>
+  </main>
+  <style>
+    .qr { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 22px; padding: 48px 24px; text-align: center; }
+    .qr .h2 { max-width: 14ch; }
+    .qr-kod { width: min(62vw, 300px); padding: 18px; background: #fff; border-radius: 4px; }
+    .qr-kod :global(svg) { display: block; width: 100%; height: auto; }
+    .qr .lbl { margin: 0; }
+    .qr-url { color: var(--muted); }
+    @media print {
+      @page { size: A5; margin: 14mm; }
+      :global(html), :global(body) { background: #fff !important; color: #000 !important; }
+      .qr { min-height: auto; }
+      .qr-url, .qr .lbl { color: #333 !important; }
+    }
+  </style>
+</Bas>
