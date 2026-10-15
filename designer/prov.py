@@ -24,6 +24,7 @@ from pathlib import Path
 
 FABRIK = Path(__file__).resolve().parent.parent
 PROVKUND = "prov-designer"
+TOMMA_DAGAR = "prov-tomma-dagar"
 fel: list[str] = []
 
 
@@ -126,6 +127,13 @@ def main() -> int:
         nordvik = next(k for k in json.loads(svar) if k["kund"] == "bistro-nordvik")
         kolla(nordvik.get("forhandsvisning") == "/visa/bistro-nordvik/" and nordvik.get("status") in ("klar", "sparad", "publicerad"),
               f"startsidan visar miniatyren och läget ({nordvik.get('status')})")
+        # Klickar säljaren bort alla dagar på en menysektion blir det en tom lista, som betyder alla dagar.
+        kopia = json.loads((FABRIK / "kunder" / "bistro-nordvik" / "kund.json").read_text(encoding="utf-8"))
+        kopia["meny"]["sektioner"][0]["dagar"] = []
+        (FABRIK / "kunder" / TOMMA_DAGAR).mkdir(exist_ok=True)
+        (FABRIK / "kunder" / TOMMA_DAGAR / "kund.json").write_text(json.dumps(kopia, ensure_ascii=False), encoding="utf-8")
+        status, svar = fraga(bas, "POST", f"/api/kunder/{TOMMA_DAGAR}/bygg")
+        kolla(status == 200 and not json.loads(svar).get("fel"), "en menysektion utan valda dagar går att bygga")
 
         print("\n▸ Bilder görs lagom stora")
         provbilder(bas)
@@ -161,8 +169,9 @@ def main() -> int:
         print("\n▸ Exportera och arkivera")
         provarkiv(bas)
     finally:
-        shutil.rmtree(FABRIK / "kunder" / PROVKUND, ignore_errors=True)
-        shutil.rmtree(FABRIK / "ut" / "designer" / PROVKUND, ignore_errors=True)
+        for kund in (PROVKUND, TOMMA_DAGAR):
+            shutil.rmtree(FABRIK / "kunder" / kund, ignore_errors=True)
+            shutil.rmtree(FABRIK / "ut" / "designer" / kund, ignore_errors=True)
         shutil.rmtree(FABRIK / "ut" / "claude" / PROVKUND, ignore_errors=True)
         shutil.rmtree(FABRIK / "ut" / "prov-bilder", ignore_errors=True)
         for kopia in (FABRIK / "ut" / "arkiv").glob(f"{PROVKUND}-*.html"):
