@@ -27,7 +27,7 @@ xcode-select -p >/dev/null 2>&1 || {
 PY="$(command -v python3)"
 "$PY" -c 'import sys; sys.exit(sys.version_info < (3, 9))' || stopp "Python 3.9 eller senare behövs. Installera med: brew install python"
 command -v node >/dev/null || stopp "Node saknas. Installera Homebrew från https://brew.sh och kör sedan: brew install node"
-node -e 'process.exit(Number(process.versions.node.split(".")[0]) < 20)' || stopp "Node 20 eller senare behövs. Uppdatera med: brew upgrade node"
+node -e 'process.exit(Number(process.versions.node.split(".")[0]) < 20 ? 1 : 0)' || stopp "Node 20 eller senare behövs. Uppdatera med: brew upgrade node"
 info "Python $("$PY" -c 'import platform; print(platform.python_version())'), Node $(node --version), $(git --version)"
 
 # --- Git ------------------------------------------------------------------------
