@@ -21,6 +21,7 @@ const app = {
   timer: null,
   upptagen: false,
   visning: null, // förhandsvisningen eller förslagen i helskärm
+  start: null, // kunderna på startsidan och hur de ritas om
 };
 const rot = document.getElementById('app');
 // replaceChildren skriver ut null och false som text, så de filtreras bort först.
@@ -57,6 +58,7 @@ function meddela(text, typ = '') {
 }
 
 const datum = (s) => new Date(s * 1000).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const storlek = (b) => (b >= 1e6 ? `${(b / 1048576).toLocaleString('sv-SE', { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(b / 1024))} kB`);
 
 // --- Chatten ----------------------------------------------------------------------
 
@@ -66,6 +68,17 @@ const chatt = skapaChatt({
   kund: () => app.kund,
   nyttData: () => { if (!app.osparat && !app.sparning) laddaOm(true); },
   visaBygge: (url) => visa({ lage: 'visa', url, enhet: 'mobil' }),
+  // "Meny › Sektion 1 › Rätt 2 › Pris", eller kort bara "Rätt 2 › Pris".
+  faltNamn: (vag, kort) => {
+    const namn = vagNamn(app.schemafil.schema, vag);
+    return kort ? namn.split(' › ').slice(-2).join(' › ') : namn;
+  },
+  visaFalt,
+  async angra(id) {
+    await sparaNu();
+    await api('POST', `kunder/${app.kund}/claude/angra`, { id });
+    await laddaOm(true);
+  },
 });
 document.addEventListener('hjerdal-visa', (e) => {
   const m = e.detail.match(/^\/(visa|forslag)\/([a-z0-9-]+)\//);
@@ -111,6 +124,7 @@ async function visaStart() {
   app.kund = null;
   document.title = 'HJERDAL Designer';
   document.body.className = '';
+  chatt.laddaKund();
   const kunder = await api('GET', 'kunder');
   const tema = Object.fromEntries(app.schemafil.teman.map((t) => [t.id, t]));
   const stil = app.schemafil.namn.stil;
@@ -119,20 +133,15 @@ async function visaStart() {
   const sok = h('input', { type: 'search', placeholder: 'Sök kund', 'aria-label': 'Sök kund', autocomplete: 'off' });
   const ritaLista = () => {
     const q = sok.value.trim().toLowerCase();
-    const urval = kunder.filter((k) => !q || `${k.namn} ${k.kund}`.toLowerCase().includes(q)).sort((a, b) => b.andrad - a.andrad);
+    const urval = app.start.kunder.filter((k) => !q || `${k.namn} ${k.kund}`.toLowerCase().includes(q)).sort((a, b) => b.andrad - a.andrad);
     fyll(lista,
       !q && h('li', {}, h('button', { class: 'kundkort ny', onclick: () => dialog.showModal() },
         h('span', { class: 'plus' }, ikon('plus', 28)), h('span', { class: 'kund-namn' }, 'Ny kund'), h('span', { class: 'kund-design' }, 'Börja med ett namn'))),
-      urval.map((k) => {
-        const t = tema[k.design?.tema] ?? tema.fjall;
-        return h('li', {}, h('a', { class: 'kundkort', href: `#/kund/${k.kund}`, style: { background: t.bg, color: t.ink, '--accent': t.accent } },
-          h('span', { class: 'kund-prick' }),
-          h('span', { class: 'kund-namn' }, k.namn),
-          h('span', { class: 'kund-design' }, k.fel ?? `${stil[k.design.stil] ?? k.design.stil} · ${t.namn}`),
-          h('span', { class: 'kund-andrad' }, `Ändrad ${datum(k.andrad)}`)));
-      }),
+      urval.map((k) => kundkort(k, tema[k.design?.tema] ?? tema.fjall, stil)),
       q && !urval.length && h('li', { class: 'inga' }, `Ingen kund heter något med ”${sok.value}”.`));
+    skalaMiniatyrer(lista);
   };
+  app.start = { kunder, ritaLista };
   sok.addEventListener('input', ritaLista);
   ritaLista();
   fyll(rot,
@@ -153,6 +162,44 @@ async function visaStart() {
       h('span', {}, `Kärnan ${app.info.karna}${app.info.gren ? ` · ${app.info.gren}` : ''}`),
       h('button', { class: 'lank', onclick: uppdatera }, 'Hämta senaste fabriken'),
       h('button', { class: 'lank', onclick: avsluta }, 'Avsluta Designer')));
+}
+
+const STATUS = {
+  utkast: (k) => (k.kvar ? `Utkast · ${k.kvar} kvar` : 'Utkast'),
+  klar: () => 'Klar att spara',
+  sparad: () => 'Sparad i GitHub',
+  publicerad: () => 'Publicerad',
+};
+const STATUSHJALP = {
+  utkast: 'Fält kvar att fylla i innan sajten kan byggas',
+  klar: 'Allt är ifyllt. Spara till GitHub när kunden har sagt ja.',
+  sparad: 'Sparad i GitHub men inte publicerad från den här datorn',
+  publicerad: 'Publicerad med fabrik.py publicera och inte ändrad sedan dess',
+};
+
+/** Kunden på startsidan: den senaste förhandsvisningen i liten skala, eller temat om sajten inte är byggd. */
+function kundkort(k, t, stil) {
+  const bild = h('span', { class: 'kund-bild', style: { background: t.bg, color: t.ink, '--accent': t.accent } },
+    k.forhandsvisning
+      ? h('iframe', { src: `${k.forhandsvisning}?v=${Math.round(k.byggd)}`, title: '', tabindex: '-1', 'aria-hidden': 'true', loading: 'lazy', sandbox: 'allow-same-origin' })
+      : h('span', { class: 'kund-tema' }, h('span', { class: 'kund-prick' }), h('b', {}, 'Aa'), h('small', {}, 'Inte förhandsvisad än')),
+    k.arbetar && h('span', { class: 'kund-claude' }, ikon('claude', 14), 'Claude arbetar…'));
+  return h('li', {}, h('a', { class: 'kundkort', href: `#/kund/${k.kund}` },
+    bild,
+    h('span', { class: 'kund-info' },
+      h('span', { class: 'kund-namn' }, k.namn),
+      k.status && h('span', { class: 'kund-status', 'data-status': k.status, title: STATUSHJALP[k.status] }, STATUS[k.status](k)),
+      h('span', { class: 'kund-design' }, k.fel ?? `${stil[k.design.stil] ?? k.design.stil} · ${t.namn}`),
+      h('span', { class: 'kund-andrad' }, `Ändrad ${datum(k.andrad)}`))));
+}
+
+/** Sajterna på startsidan ritas i datorbredd och skalas ner till kortet. */
+function skalaMiniatyrer(lista) {
+  skalaMiniatyrer.obs?.disconnect();
+  skalaMiniatyrer.obs = new ResizeObserver((poster) => {
+    for (const p of poster) p.target.style.setProperty('--s', (p.contentRect.width / 1280).toFixed(4));
+  });
+  lista.querySelectorAll('.kund-bild').forEach((el) => skalaMiniatyrer.obs.observe(el));
 }
 
 function nyKundDialog() {
@@ -235,18 +282,57 @@ const ctx = {
     visaFel(false);
   },
   ritaOm: (fokus) => ritaOm(fokus),
-  async laddaUpp(fil) {
-    try {
-      const svar = await api('POST', `kunder/${app.kund}/bilder?namn=${encodeURIComponent(fil.name)}`, fil);
-      app.bilder = await api('GET', `kunder/${app.kund}/bilder`);
-      meddela(`${svar.fil} är uppladdad`);
-      return svar.fil;
-    } catch (err) {
-      meddela(err.message, 'fel');
-      return undefined;
-    }
-  },
+  laddaUpp: (fil, typer) => laddaUppBild(fil, typer),
 };
+
+/**
+ * Laddar upp en bild till kundens bilder. Servern gör den lagom stor, vrider den rätt och
+ * tar bort metadata som platsen där den togs. typer är formaten bildfältet tar emot.
+ */
+async function laddaUppBild(fil, typer, tyst = false) {
+  try {
+    const format = typer?.filter((t) => t !== 'svg').join(',');
+    const svar = await api('POST', `kunder/${app.kund}/bilder?namn=${encodeURIComponent(fil.name || 'bild.jpg')}${format ? `&typer=${format}` : ''}`, fil);
+    app.bilder = await api('GET', `kunder/${app.kund}/bilder`);
+    if (!tyst) meddela(svar.fore > svar.storlek * 1.2 ? `${svar.fil} är uppladdad, ${storlek(svar.fore)} blev ${storlek(svar.storlek)}` : `${svar.fil} är uppladdad`);
+    return svar;
+  } catch (err) {
+    meddela(`${fil.name}: ${err.message}`, 'fel');
+    return undefined;
+  }
+}
+
+// En bild som släpps utanför en bildväljare hamnar bland kundens bilder, i stället för att
+// webbläsaren lämnar Designer och visar bilden.
+const BILD = /\.(jpe?g|png|webp|heic|heif|svg)$/i;
+addEventListener('dragover', (e) => {
+  if (!e.dataTransfer?.types.includes('Files')) return;
+  const hanterad = e.defaultPrevented; // en bildväljare eller chatten tar emot den själv
+  e.preventDefault();
+  const iFormularet = Boolean(app.kund && e.target.closest?.('#yta'));
+  e.dataTransfer.dropEffect = iFormularet || hanterad ? 'copy' : 'none';
+  document.body.classList.toggle('slapp-bild', iFormularet && !hanterad);
+  clearTimeout(app.draTimer);
+  app.draTimer = setTimeout(() => document.body.classList.remove('slapp-bild'), 160);
+});
+addEventListener('drop', async (e) => {
+  document.body.classList.remove('slapp-bild');
+  if (e.defaultPrevented || !e.dataTransfer?.files.length) return;
+  e.preventDefault();
+  if (!app.kund || !e.target.closest?.('#yta')) return;
+  const filer = [...e.dataTransfer.files].filter((f) => BILD.test(f.name) || f.type.startsWith('image/'));
+  if (!filer.length) { meddela('Släpp en bild: jpg, png, webp, heic eller svg.', 'fel'); return; }
+  meddela(filer.length === 1 ? 'Laddar upp bilden…' : `Laddar upp ${filer.length} bilder…`);
+  const svar = [];
+  for (const f of filer) svar.push(await laddaUppBild(f, undefined, true));
+  const klara = svar.filter(Boolean);
+  if (!klara.length) return;
+  ritaOm();
+  const fore = klara.reduce((n, x) => n + x.fore, 0);
+  const efter = klara.reduce((n, x) => n + x.storlek, 0);
+  meddela(`${klara.length === 1 ? `${klara[0].fil} är uppladdad` : `${klara.length} bilder är uppladdade`}${fore > efter * 1.2 ? `, ${storlek(fore)} blev ${storlek(efter)}` : ''}. Välj ${klara.length === 1 ? 'den' : 'dem'} under Bilder och logga.`);
+  rullaTill(document.getElementById('s-bilder'));
+});
 
 function ritaOm(fokus) {
   const yta = document.getElementById('yta');
@@ -460,6 +546,23 @@ function lysUpp(vagar) {
   }
 }
 
+/** Rullar till ett fält och lyser upp det, till exempel från ett fält Claude ändrade. */
+function visaFalt(vag) {
+  let v = vag;
+  let el = null;
+  while (v && !(el = document.querySelector(`[data-vag="${CSS.escape(v)}"]`))) v = v.includes('.') ? v.slice(0, v.lastIndexOf('.')) : '';
+  el ??= document.getElementById(`s-${vag.split('.')[0]}`);
+  if (!el) return;
+  for (let d = el.closest('details'); d; d = d.parentElement.closest('details')) d.open = true;
+  if (innerWidth <= 1100) chatt.stang();
+  rullaTill(el, 'center');
+  const mal = el.closest('.kort') ?? el;
+  mal.classList.remove('nytt');
+  void mal.offsetWidth;
+  mal.classList.add('nytt');
+  el.querySelector('input, textarea, select')?.focus({ preventScroll: true });
+}
+
 // Pulsen håller servern vid liv och märker när någon annan, till exempel Claude i appen, ändrar kundfilen.
 setInterval(async () => {
   try {
@@ -467,6 +570,15 @@ setInterval(async () => {
     if (app.kund && svar.andrad && Math.abs(svar.andrad - app.andrad) > 0.001 && !app.osparat && !app.sparning && !app.upptagen) {
       await laddaOm(true);
       if (!chatt.arbetar) meddela('Kundfilen ändrades utanför formuläret. Ändringarna lyser upp.');
+    }
+    // På startsidan syns det när Claude blir klar med en kund.
+    if (!app.kund && app.start?.kunder.some((k) => k.arbetar)) {
+      const nya = await api('GET', 'kunder');
+      const nyckel = (l) => JSON.stringify(l.map((k) => [k.kund, k.arbetar, k.status, k.kvar, k.byggd]));
+      if (!app.kund && nyckel(nya) !== nyckel(app.start.kunder)) {
+        app.start.kunder = nya;
+        if (document.querySelector('.kundlista')) app.start.ritaLista();
+      }
     }
   } catch { /* servern startar om eller är avslutad */ }
 }, 4000);
@@ -545,6 +657,7 @@ function stangVisning() {
   document.getElementById('visning')?.remove();
   document.body.classList.remove('visar');
   app.visning = null;
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
 }
 
 /**
@@ -567,6 +680,10 @@ function visa(p) {
     h('button', { type: 'button', role: 'radio', 'aria-checked': String(v.enhet === id), title: namn, onclick: () => visa({ enhet: id }) }, ikon(id, 18), h('span', {}, namn))));
   const valdVariant = v.lage === 'forslag' ? v.varianter.find((x) => v.url.includes(`/${x.mapp}/`)) : null;
   const namn = app.schemafil.namn;
+  ruta.classList.toggle('mote', Boolean(v.mote));
+  if (v.mote) return ritaMote(ruta, v, valdVariant);
+  ruta.onmousemove = null;
+  ruta.classList.remove('stilla');
 
   let innehall;
   if (v.lage === 'bygger') {
@@ -585,7 +702,7 @@ function visa(p) {
       v.enhet === 'dator' && h('div', { class: 'webblasare' }, h('i'), h('i'), h('i'), h('span', {}, (app.data?.doman || 'sajten').replace(/^https?:\/\//, ''))),
       v.enhet === 'mobil' && h('div', { class: 'statusrad' }, '9:41'),
       ram);
-    ram.addEventListener('load', () => farga(ram, skarm));
+    ram.addEventListener('load', () => { farga(ram, skarm); lyssnaIRam(ram); });
     const scen = h('div', { class: 'scen' }, skarm);
     innehall = h('div', { class: 'visning-kropp' },
       v.lage === 'forslag' && h('aside', { class: 'varianter' },
@@ -609,10 +726,92 @@ function visa(p) {
       (v.lage === 'visa' || v.lage === 'forslag') && enhetsval,
       h('div', { class: 'visning-knappar' },
         v.lage === 'visa' && h('button', { type: 'button', class: 'knapp mork', onclick: forhandsvisa, title: 'Bygg om med det senaste i formuläret' }, ikon('bygg', 17), h('span', {}, 'Bygg om')),
+        (v.lage === 'visa' || v.lage === 'forslag') && h('button', { type: 'button', class: 'knapp mork', onclick: borjaMote, title: 'Sajten över hela skärmen, utan Designer runt omkring' }, ikon('mote', 17), h('span', {}, 'Visa för kunden')),
         valdVariant && h('button', { type: 'button', class: 'knapp ljus', onclick: () => valjVariant(valdVariant) }, ikon('bock', 17), h('span', {}, 'Välj den här stilen')),
         (v.lage === 'visa' || v.lage === 'forslag') && h('a', { class: 'knapp mork', href: v.url, target: '_blank', rel: 'noopener', title: 'Öppna i webbläsaren' }, ikon('extern', 17), h('span', {}, 'Öppna')),
         stang)),
     innehall);
+}
+
+// --- Kundmötet: förslagen över hela skärmen ----------------------------------------------------
+
+/**
+ * Sajten fyller skärmen utan Designer runt omkring, för att visa kunden. Pilarna
+ * byter stil, Välj den här sparar den och Esc går tillbaka. Raden längst ner
+ * gömmer sig när musen står still.
+ */
+function borjaMote() {
+  document.documentElement.requestFullscreen?.().catch(() => {});
+  visa({ mote: true });
+}
+
+function lamnaMote() {
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  if (app.visning?.mote) visa({ mote: false });
+}
+
+addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && app.visning?.mote) visa({ mote: false });
+});
+
+function ritaMote(ruta, v, vald) {
+  const namn = app.schemafil.namn;
+  const ram = h('iframe', { title: app.data?.namn ?? 'Sajten', src: `${v.url}${v.url.includes('?') ? '&' : '?'}v=${Date.now()}` });
+  const nr = v.varianter?.indexOf(vald) ?? -1;
+  const rad = h('div', { class: 'mote-rad', role: 'toolbar', 'aria-label': 'Kundmötet' },
+    vald
+      ? [h('button', { type: 'button', class: 'mote-pil', 'aria-label': 'Förra stilen (←)', title: 'Förra stilen (←)', onclick: () => bytVariant(-1) }, ikon('tillbaka', 22)),
+        h('div', { class: 'mote-stilar' }, v.varianter.map((x, i) => {
+          const t = app.schemafil.teman.find((y) => y.id === x.tema);
+          return h('button', { type: 'button', 'aria-pressed': String(i === nr), onclick: () => visa({ url: `${v.bas}${x.mapp}/` }) },
+            h('i', { style: { background: t?.bg, '--accent': t?.accent } }), namn.stil[x.stil] ?? x.stil);
+        })),
+        h('button', { type: 'button', class: 'mote-pil', 'aria-label': 'Nästa stil (→)', title: 'Nästa stil (→)', onclick: () => bytVariant(1) }, ikon('hoger', 22)),
+        h('button', { type: 'button', class: 'knapp ljus', onclick: () => valjVariant(vald) }, ikon('bock', 17), h('span', {}, 'Välj den här'))]
+      : h('span', { class: 'mote-namn' }, app.data?.namn ?? ''),
+    h('button', { type: 'button', class: 'mote-stang', 'aria-label': 'Tillbaka till Designer (Esc)', title: 'Tillbaka till Designer (Esc)', onclick: lamnaMote }, ikon('stang', 18)));
+  fyll(ruta, h('div', { class: 'mote-scen' }, ram), rad);
+
+  // Raden och muspekaren gömmer sig efter ett par sekunder utan rörelse, så att bara sajten syns.
+  const visaRad = () => {
+    ruta.classList.remove('stilla');
+    clearTimeout(ritaMote.timer);
+    ritaMote.timer = setTimeout(() => { if (!rad.matches(':hover')) ruta.classList.add('stilla'); }, 2500);
+  };
+  ruta.onmousemove = visaRad;
+  ram.addEventListener('load', () => {
+    lyssnaIRam(ram);
+    try { ram.contentWindow.addEventListener('mousemove', visaRad); } catch { /* annan adress */ }
+  });
+  visaRad();
+  return undefined;
+}
+
+function bytVariant(steg) {
+  const v = app.visning;
+  if (v?.lage !== 'forslag' || !v.varianter?.length) return;
+  const i = v.varianter.findIndex((x) => v.url.includes(`/${x.mapp}/`));
+  const x = v.varianter[(i + steg + v.varianter.length) % v.varianter.length];
+  visa({ url: `${v.bas}${x.mapp}/` });
+}
+
+/** Pilarna och Esc ska fungera även när sajten i ramen har fokus. */
+function lyssnaIRam(ram) {
+  try {
+    ram.contentWindow.addEventListener('keydown', (e) => {
+      if (['ArrowLeft', 'ArrowRight', 'Escape'].includes(e.key)) tangent(e);
+    });
+  } catch { /* en sajt från en annan adress */ }
+}
+
+function tangent(e) {
+  if (!document.getElementById('visning') || document.querySelector('dialog[open]')) return;
+  if (e.key === 'Escape') {
+    if (app.visning?.mote) lamnaMote(); else stangVisning();
+  } else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && app.visning?.lage === 'forslag' && !e.target.closest?.('input, textarea, select')) {
+    e.preventDefault();
+    bytVariant(e.key === 'ArrowLeft' ? -1 : 1);
+  }
 }
 
 /** Ger telefonens statusrad samma färger som sajten, som en riktig telefon. */
@@ -649,6 +848,7 @@ function skala(scen, skarm, bredd, hojd) {
 
 function valjVariant(x) {
   for (const k of ['stil', 'tema', 'hero', 'meny']) satt(app.data, ['design', k], x[k]);
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   sparaSnart();
   stangVisning();
   ritaOm();
@@ -657,17 +857,16 @@ function valjVariant(x) {
   meddela(`${app.schemafil.namn.stil[x.stil]} med ${app.schemafil.namn.tema[x.tema]} är vald.`);
 }
 
-addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && document.getElementById('visning') && !document.querySelector('dialog[open]')) stangVisning();
-});
+addEventListener('keydown', tangent);
 
 function visaHjalp() {
   const steg = [
     ['Skapa kunden', 'Tryck Ny kund och skriv restaurangens namn. Skriv gärna det du vet om restaurangen, så fyller Claude i åt dig.'],
     ['Fyll i formuläret', 'Gå igenom delarna till vänster. En bock betyder att delen är klar, en siffra hur många fält som är kvar. Allt sparas direkt på datorn.'],
-    ['Låt Claude hjälpa till', 'Tryck Claude uppe till höger. Skriv till exempel ”fyll i från deras webbplats” med en länk, eller bifoga en bild på menyn. Fälten Claude fyller i lyser upp.'],
+    ['Låt Claude hjälpa till', 'Tryck Claude uppe till höger och skriv till exempel ”fyll i från deras webbplats” med en länk. Under svaret står fälten Claude ändrade, och Ångra sätter tillbaka dem. Claude arbetar vidare om du byter kund.'],
+    ['Lägg in bilder', 'Dra bilder från Finder till formuläret. De görs lagom stora, vänds rätt och sparas utan platsuppgifter. HEIC från iPhone går bra.'],
     ['Förhandsvisa', 'Tryck Förhandsvisa. Sajten byggs på ungefär 15 sekunder och visas i helskärm. Byt mellan mobil, surfplatta och dator. Esc stänger.'],
-    ['Visa kunden förslag', 'Tryck Förslag för att se kunden i fyra stilar. Tryck Välj den här stilen på den kunden gillar.'],
+    ['Visa kunden förslag', 'Tryck Förslag för fyra stilar och Visa för kunden för helskärm. Pilarna byter stil, Välj den här sparar den kunden gillar.'],
     ['Spara till GitHub', 'När kunden är klar: tryck på de tre prickarna och Spara till GitHub. Då kommer sajten med i fabriken.'],
   ];
   const dialog = h('dialog', { class: 'dialog hjalp-dialog' },

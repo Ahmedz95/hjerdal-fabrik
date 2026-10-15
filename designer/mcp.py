@@ -100,11 +100,12 @@ VERKTYG = [
     {
         "name": "hamta_bild",
         "description": "Hämtar en jpg, png, webp eller svg från en https-länk till kundens bilder, till exempel från "
-                       "restaurangens nuvarande sajt. Ange sedan filnamnet i kundfilen under bilder. Använd bara bilder kunden äger.",
+                       "restaurangens nuvarande sajt. Bilden görs lagom stor och sparas utan metadata. Ange sedan filnamnet i "
+                       "kundfilen under bilder. Använd bara bilder kunden äger.",
         "inputSchema": {"type": "object", "properties": {
             "kund": {"type": "string"},
             "url": {"type": "string", "description": "https-länk till bilden"},
-            "namn": {"type": "string", "description": "Önskat filnamn utan ändelse, till exempel hero"},
+            "namn": {"type": "string", "description": "Önskat filnamn utan ändelse, till exempel hero. Ett namn med logo blir PNG, inte JPEG."},
         }, "required": ["kund", "url"]},
     },
     {
@@ -259,7 +260,8 @@ def kor(namn: str, arg: dict) -> str:
         return "\n".join(rader)
     if namn == "hamta_bild":
         svar = api("POST", f"kunder/{kund}/hamta-bild", {"url": arg.get("url", ""), "namn": arg.get("namn")})
-        return f"Sparad som {svar['fil']} ({svar['storlek'] // 1024} kB). Ange filnamnet i kundfilen under bilder."
+        matt = f"{svar['bredd']}×{svar['hojd']} pixlar, " if svar.get("bredd") else ""
+        return f"Sparad som {svar['fil']} ({matt}{svar['storlek'] // 1024} kB). Ange filnamnet i kundfilen under bilder."
     if namn == "oppna_designer":
         api("POST", "oppna", {"kund": kund or None})
         return "Designer är öppnad."

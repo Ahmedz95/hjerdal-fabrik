@@ -117,7 +117,7 @@ export function allaFel(s, v, vag = [], kravd = true) {
 // --- Formuläret ---------------------------------------------------------------
 
 /**
- * ctx: { schemafil, data, kund, bilder, stangda (Set), andra(vag, v), ritaOm(), laddaUpp(fil) }
+ * ctx: { schemafil, data, kund, bilder, stangda (Set), andra(vag, v), ritaOm(), laddaUpp(fil, typer) }
  * Returnerar sektionerna att visa och navigera mellan.
  */
 export function ritaFormular(ctx) {
@@ -310,9 +310,20 @@ function grupp(s, vag, kravd, ctx, opt = {}) {
   const { namn, hjalp } = etikett(s);
   const valfri = !kravd && s.default === undefined;
   if (valfri && v === undefined) {
-    return h('div', { class: 'valfri-grupp', 'data-vag': vag.join('.') },
+    // En grupp med en bild, som den stora bilden på startsidan, kan också läggas till genom att släppa en bild här.
+    const [bildnyckel, bildschema] = Object.entries(s.properties ?? {}).find(([, p]) => p.type === 'string' && bildtyper(p).length) ?? [];
+    const el = h('div', { class: 'valfri-grupp', 'data-vag': vag.join('.') },
       h('button', { type: 'button', class: 'lagg-till', onclick: () => { ctx.andra(vag, standard(s)); ctx.ritaOm(); } }, `Lägg till ${namn.toLowerCase()}`),
+      bildnyckel && h('span', { class: 'slapp-har' }, 'eller släpp en bild här'),
       !opt.utanRubrik && hjalp && h('p', { class: 'hjalp' }, hjalp));
+    if (bildnyckel) {
+      taEmotBilder(el, bildtyper(bildschema), ctx, (fil) => {
+        ctx.andra(vag, { ...standard(s), [bildnyckel]: fil });
+        const nasta = Object.keys(s.properties).find((k) => k !== bildnyckel);
+        ctx.ritaOm(nasta && `f-${[...vag, nasta].join('-')}`);
+      });
+    }
+    return el;
   }
   const barn = Object.entries(s.properties ?? {}).map(([k, p]) => falt(p, [...vag, k], Boolean(s.required?.includes(k)) && p.default === undefined, ctx));
   if (opt.inneKort) return barn;
@@ -376,23 +387,40 @@ function bildval(s, vag, kravd, ctx) {
   const typer = bildtyper(s);
   const bilder = ctx.bilder.filter((b) => typer.includes(b.fil.split('.').pop().toLowerCase().replace('jpeg', 'jpg')));
   const valj = (fil) => { ctx.andra(vag, fil); ctx.ritaOm(); };
-  const fil = h('input', { type: 'file', accept: typer.map((t) => `.${t}${t === 'jpg' ? ',.jpeg' : ''}`).join(','), hidden: true,
-    onchange: async () => { if (fil.files[0]) valj(await ctx.laddaUpp(fil.files[0])); } });
+  const accept = [...typer.map((t) => `.${t}${t === 'jpg' ? ',.jpeg' : ''}`), '.heic,.heif'].join(',');
+  const fil = h('input', { type: 'file', accept, multiple: true, hidden: true,
+    onchange: () => { ladda([...fil.files]); fil.value = ''; } });
   const ruta = h('div', { class: 'bildval' },
     !kravd && h('button', { type: 'button', class: 'bild ingen', 'aria-pressed': String(!v), onclick: () => valj(undefined) }, h('span', {}, 'Ingen')),
     bilder.map((b) => h('button', { type: 'button', class: 'bild', 'aria-pressed': String(v === b.fil), title: b.fil, onclick: () => valj(b.fil) },
       h('img', { src: ctx.bildUrl(b.fil), alt: '', loading: 'lazy' }), h('span', {}, b.fil))),
     v && !bilder.some((b) => b.fil === v) && h('span', { class: 'saknas' }, `${v} finns inte bland kundens bilder`),
-    h('label', { class: 'bild ladda-upp' }, fil, h('span', { class: 'plus' }, '+'), h('span', {}, `Ladda upp ${typer.join(', ')}`)));
-  ruta.addEventListener('dragover', (e) => { e.preventDefault(); ruta.classList.add('dra'); });
-  ruta.addEventListener('dragleave', () => ruta.classList.remove('dra'));
-  ruta.addEventListener('drop', async (e) => {
-    e.preventDefault();
-    ruta.classList.remove('dra');
-    const f = e.dataTransfer.files[0];
-    if (f) valj(await ctx.laddaUpp(f));
-  });
+    h('label', { class: 'bild ladda-upp', title: `${typer.join(', ')} eller HEIC. Stora bilder görs mindre.` }, fil, h('span', { class: 'plus' }, '+'), h('span', {}, 'Dra hit eller välj')));
+  const ladda = taEmotBilder(ruta, typer, ctx, valj);
   return ruta;
+}
+
+/**
+ * Bilder som släpps på el laddas upp och den första väljs. Servern gör om dem till ett format
+ * fältet tar emot, så ett foto från iPhone (HEIC) går bra även där bara jpg, png eller webp godtas.
+ */
+function taEmotBilder(el, typer, ctx, valj) {
+  const ladda = async (filer) => {
+    let forsta;
+    for (const f of filer) {
+      const svar = await ctx.laddaUpp(f, typer);
+      forsta ??= svar?.fil;
+    }
+    if (forsta) valj(forsta);
+  };
+  el.addEventListener('dragover', (e) => { e.preventDefault(); el.classList.add('dra'); });
+  el.addEventListener('dragleave', (e) => { if (!el.contains(e.relatedTarget)) el.classList.remove('dra'); });
+  el.addEventListener('drop', (e) => {
+    e.preventDefault();
+    el.classList.remove('dra');
+    if (e.dataTransfer.files.length) ladda([...e.dataTransfer.files]);
+  });
+  return ladda;
 }
 
 /** "Meny › Sektioner 1 › Rätter 2 › Pris" för en väg som "meny.sektioner.0.ratter.1.pris". */

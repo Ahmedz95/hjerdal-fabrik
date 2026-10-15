@@ -623,6 +623,9 @@ def publicera(kund: str, forslag: bool) -> None:
         raise FabrikFel("CLOUDFLARE_API_TOKEN saknas. Lägg in en API-token med rätten Workers Scripts: Edit och kör igen.")
     rubrik(f"Publicerar {mapp.name} på Cloudflare")
     kor(["npx", "--yes", "wrangler@4", "deploy"], mapp)
+    if not forslag:
+        # Designers startsida visar kunden som publicerad tills kundfilen ändras igen.
+        (mapp / ".publicerad").write_text(dt.datetime.now().isoformat(timespec="seconds"), encoding="utf-8")
 
 
 def main() -> int:

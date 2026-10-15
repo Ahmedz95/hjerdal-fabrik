@@ -106,20 +106,37 @@ button { cursor: pointer; }
 .sok { display: flex; align-items: center; gap: 8px; width: min(320px, 100%); height: 38px; padding: 0 14px; border: 1px solid var(--linje2); border-radius: 999px; background: var(--vit); color: var(--gra); }
 .sok:focus-within { border-color: var(--ink); }
 .sok input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font-size: 14px; }
-.kundlista { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.kundlista { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
 .kundkort {
-  position: relative; display: flex; flex-direction: column; gap: 6px; width: 100%; min-height: 196px; padding: 22px;
-  border: 0; border-radius: 18px; box-shadow: inset 0 0 0 1px rgb(16 19 21 / 8%);
+  position: relative; display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 300px; overflow: hidden;
+  border: 0; border-radius: 18px; background: var(--vit); color: var(--ink); box-shadow: inset 0 0 0 1px var(--linje);
   text-align: left; text-decoration: none; transition: transform .2s, box-shadow .2s;
 }
-.kundkort:hover { transform: translateY(-3px); box-shadow: inset 0 0 0 1px rgb(16 19 21 / 8%), 0 14px 34px rgb(16 19 21 / 12%); }
-.kund-prick { position: absolute; top: 22px; right: 22px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 1px rgb(127 127 127 / 25%); }
-.kund-namn { max-width: 90%; font-size: 27px; font-weight: 300; letter-spacing: -.03em; line-height: 1.08; }
-.kund-design { font-size: 13px; opacity: .72; }
-.kund-andrad { margin-top: auto; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; opacity: .55; }
-.kundkort.ny { align-items: flex-start; justify-content: flex-end; background: transparent; color: var(--ink); box-shadow: none; border: 1.5px dashed var(--linje2); }
+.kundkort:hover { transform: translateY(-3px); box-shadow: inset 0 0 0 1px var(--linje), 0 14px 34px rgb(16 19 21 / 12%); }
+/* Miniatyren: sajten i 1280 × 800, nerskalad till kortets bredd (--s sätts i app.js). */
+.kund-bild { --s: .22; position: relative; display: block; aspect-ratio: 16 / 10; overflow: hidden; border-bottom: 1px solid var(--linje); }
+.kund-bild iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 800px; border: 0; transform: scale(var(--s)); transform-origin: 0 0; pointer-events: none; }
+.kund-tema { display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; height: 100%; padding: 18px 20px; }
+.kund-tema b { font-size: 44px; font-weight: 300; letter-spacing: -.03em; line-height: 1; }
+.kund-tema small { font-size: 12px; opacity: .6; }
+.kund-prick { position: absolute; top: 18px; right: 18px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 1px rgb(127 127 127 / 25%); }
+.kund-claude {
+  position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 6px; padding: 5px 10px 5px 8px;
+  border-radius: 999px; background: var(--vit); color: var(--claude); font-size: 12px; font-weight: 600; box-shadow: var(--skugga);
+}
+.kund-claude .ikon { animation: snurra 2.4s linear infinite; }
+.kund-info { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; flex: 1; padding: 16px 18px 18px; }
+.kund-namn { max-width: 100%; font-size: 20px; font-weight: 400; letter-spacing: -.02em; line-height: 1.15; }
+.kund-status { padding: 2px 9px; border-radius: 999px; background: var(--yta); color: var(--gra); font-size: 12px; font-weight: 600; }
+.kund-status[data-status="klar"] { background: #EEF4EF; color: var(--ok); }
+.kund-status[data-status="sparad"] { background: #EAF0F6; color: #2C5A85; }
+.kund-status[data-status="publicerad"] { background: var(--ok); color: #fff; }
+.kund-design { color: var(--gra); font-size: 13px; }
+.kund-andrad { margin-top: auto; padding-top: 6px; color: var(--gra2); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+.kundkort.ny { align-items: flex-start; justify-content: flex-end; gap: 6px; padding: 22px; background: transparent; box-shadow: none; border: 1.5px dashed var(--linje2); }
 .kundkort.ny:hover { border-color: var(--ink); background: var(--vit); box-shadow: none; }
 .kundkort.ny .plus { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: auto; border-radius: 50%; background: var(--ink); color: var(--bg); }
+.kundkort.ny .kund-namn { font-size: 27px; font-weight: 300; }
 .kundlista .inga { padding: 24px 0; color: var(--gra); }
 .fot { display: flex; flex-wrap: wrap; gap: 24px; max-width: 1200px; margin: auto; padding: 36px clamp(20px, 4vw, 48px) 56px; color: var(--gra); font-size: 13px; }
 
@@ -132,7 +149,7 @@ button { cursor: pointer; }
 .dialog-knappar { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 .hjalp-dialog { width: min(640px, 94vw); }
 .hjalp-huvud { display: flex; align-items: flex-start; justify-content: space-between; }
-.hjalp-steg { display: grid; gap: 16px; margin: 0 0 20px; padding: 0; list-style: none; }
+.hjalp-steg { display: grid; gap: 13px; margin: 0 0 18px; padding: 0; list-style: none; }
 .hjalp-steg li { display: grid; grid-template-columns: 32px 1fr; gap: 14px; }
 .hjalp-steg p { margin: 2px 0 0; color: var(--gra); }
 .hjalp-steg .steg { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 600; }
@@ -293,6 +310,8 @@ input::placeholder, textarea::placeholder { color: #9AA0A4; }
 
 .bildval { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; padding: 2px; border-radius: 14px; }
 .bildval.dra { outline: 2px dashed var(--ink); outline-offset: 4px; }
+.valfri-grupp.dra { outline: 2px dashed var(--ink); outline-offset: 6px; border-radius: 14px; }
+.slapp-har { margin-left: 10px; color: var(--gra2); font-size: 13px; }
 .bild {
   position: relative; display: grid; place-items: center; aspect-ratio: 4 / 3; overflow: hidden; padding: 0;
   border: 1px solid var(--linje); border-radius: 12px; background: var(--vit) repeating-conic-gradient(#F0F2F0 0 25%, #fff 0 50%) 0 0 / 16px 16px; cursor: pointer;
@@ -355,6 +374,17 @@ body.med-chatt .chatt { display: flex; }
 .verktyg.pagar .verktyg-ikon { border: 2px solid var(--claude-ljus); border-top-color: var(--claude); background: none; animation: snurra .8s linear infinite; }
 .verktyg.misslyckad { color: var(--fel); }
 .verktyg.misslyckad .verktyg-ikon { background: var(--fel-bg); }
+.andringar { margin-top: 10px; padding: 10px 12px 12px; border-radius: 14px; background: var(--claude-ljus); }
+.andringar-topp { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: var(--claude); font-size: 13px; font-weight: 600; }
+.angra { display: flex; align-items: center; gap: 5px; height: 28px; padding: 0 11px 0 9px; border: 1px solid rgb(201 100 66 / 35%); border-radius: 999px; background: var(--vit); color: var(--claude); font-size: 12.5px; font-weight: 600; }
+.angra:hover { border-color: var(--claude); }
+.angra:disabled { opacity: .5; cursor: default; }
+.falt-lista { display: flex; flex-wrap: wrap; gap: 5px; }
+.falt-chip { max-width: 100%; padding: 3px 10px; overflow: hidden; border: 0; border-radius: 999px; background: var(--vit); color: var(--ink); font-size: 12.5px; text-overflow: ellipsis; white-space: nowrap; box-shadow: inset 0 0 0 1px rgb(201 100 66 / 18%); }
+.falt-chip:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--claude); }
+.andringar.angrad { background: var(--bg); }
+.andringar.angrad .andringar-topp { color: var(--gra); }
+.andringar.angrad .falt-chip { color: var(--gra2); text-decoration: line-through; cursor: default; box-shadow: none; }
 .tanker { display: inline-flex; gap: 4px; padding: 6px 0; }
 .tanker i { width: 6px; height: 6px; border-radius: 50%; background: var(--claude); animation: tanker 1.2s ease-in-out infinite; }
 .tanker i:nth-child(2) { animation-delay: .15s; }
@@ -443,6 +473,35 @@ body.visar { overflow: hidden; }
 .visning-fel pre { max-height: 55vh; overflow: auto; padding: 16px; border-radius: 12px; background: #0D0F10; font: 12px/1.5 ui-monospace, "SF Mono", monospace; white-space: pre-wrap; }
 @keyframes snurra { to { transform: rotate(360deg); } }
 
+/* --- Kundmötet: sajten över hela skärmen -------------------------------------------------- */
+.visning.mote { background: #000; }
+.mote-scen { flex: 1; display: flex; min-height: 0; }
+.mote-scen iframe { flex: 1; border: 0; background: #fff; }
+.mote-rad {
+  position: fixed; bottom: 22px; left: 50%; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 6px;
+  border-radius: 999px; background: rgb(21 24 26 / 88%); color: #F4F5F3; box-shadow: 0 16px 50px rgb(0 0 0 / 35%);
+  backdrop-filter: blur(14px); transform: translateX(-50%); transition: opacity .35s, transform .35s;
+}
+.mote-stilar { display: flex; gap: 2px; }
+.mote-stilar button { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px 0 12px; border: 0; border-radius: 999px; background: none; color: #C9CFCC; font-size: 14px; white-space: nowrap; }
+.mote-stilar button:hover { color: #fff; }
+.mote-stilar button[aria-pressed="true"] { background: #fff; color: var(--ink); }
+.mote-stilar i { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 3px var(--accent), 0 0 0 1px rgb(127 127 127 / 40%); }
+.mote-pil, .mote-stang { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: #C9CFCC; }
+.mote-pil:hover, .mote-stang:hover { background: rgb(255 255 255 / 12%); color: #fff; }
+.mote-rad .knapp { height: 40px; margin-left: 4px; }
+.mote-namn { padding: 0 10px 0 14px; font-size: 14px; }
+.visning.mote.stilla { cursor: none; }
+.visning.mote.stilla .mote-rad { opacity: 0; transform: translate(-50%, 12px); }
+
+/* --- Bilder som släpps i formuläret ---------------------------------------------------------- */
+body.slapp-bild .formular-yta { position: relative; }
+body.slapp-bild .formular-yta::after {
+  content: "Släpp bilderna för att lägga dem bland kundens bilder"; position: fixed; inset: auto auto 32px 50%; z-index: 20;
+  padding: 14px 22px; border-radius: 999px; background: var(--ink); color: var(--bg); font-size: 14px; transform: translateX(-50%); pointer-events: none;
+}
+body.slapp-bild .formular-bredd { outline: 2px dashed var(--ink); outline-offset: 10px; border-radius: 20px; }
+
 /* --- Meddelanden ---------------------------------------------------------------------- */
 .meddelande {
   position: fixed; bottom: 24px; left: 50%; z-index: 60; display: flex; align-items: center; gap: 10px; max-width: min(560px, 92vw); padding: 12px 20px 12px 16px;
@@ -468,6 +527,7 @@ body.visar { overflow: hidden; }
   .knappar .knapp { width: 38px; padding: 0; }
   .sektion { padding: 20px 18px 6px; }
   .varianter { display: none; }
+  .mote-stilar button { padding: 0 10px; font-size: 0; gap: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
