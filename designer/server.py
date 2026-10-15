@@ -36,7 +36,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
 import fabrik
-from designer import claude
+from designer import bild, claude
 
 APP = "HJERDAL Designer"
 WEBB = Path(__file__).resolve().parent / "webb"
@@ -47,7 +47,7 @@ STATUSFIL = fabrik.UT / ".designer.json"
 # Servern stänger sig själv när ingen webbläsare eller Claude har hörts av på en halvtimme.
 VILA = 30 * 60
 BILDNAMN = re.compile(r"[A-Za-z0-9_][\w.-]*\.(jpe?g|png|webp|svg)", re.I)
-MAX_BILD = 20 * 1024 * 1024
+MAX_BILD = 40 * 1024 * 1024
 
 
 def kodens_version() -> str:
@@ -76,16 +76,43 @@ def andrad(kund: str) -> float:
 
 
 def lista_kunder() -> list[dict]:
+    """Kunderna på startsidan, med den senaste förhandsvisningen och hur långt sajten har kommit."""
+    andrade = osparade_kunder()
     kunder = []
     for mapp in sorted(p for p in fabrik.KUNDER.iterdir() if (p / "kund.json").exists()):
-        rad = {"kund": mapp.name, "andrad": andrad(mapp.name)}
+        rad = {"kund": mapp.name, "andrad": andrad(mapp.name), "arbetar": claude.arbetar(mapp.name)}
         try:
             data = json.loads((mapp / "kund.json").read_text(encoding="utf-8"))
-            rad.update(namn=data.get("namn", mapp.name), design=fabrik.design_med_standard(data))
+            rad.update(namn=data.get("namn", mapp.name), design=fabrik.design_med_standard(data),
+                       **kundstatus(mapp.name, data, andrade))
         except (json.JSONDecodeError, AttributeError):
-            rad.update(namn=mapp.name, fel="Kundfilen går inte att läsa")
+            rad.update(namn=mapp.name, fel="Kundfilen går inte att läsa", status="utkast")
+        sida = DESIGNER_UT / mapp.name / "dist" / "index.html"
+        if sida.exists():
+            rad.update(forhandsvisning=f"/visa/{mapp.name}/", byggd=sida.stat().st_mtime)
         kunder.append(rad)
     return kunder
+
+
+def osparade_kunder() -> set[str] | None:
+    """Kunderna med ändringar som inte är sparade i GitHub. None om fabriken inte är en git-mapp."""
+    res = git("status", "--porcelain", "--untracked-files=all", "--", "kunder", kolla=False)
+    if res.returncode != 0:
+        return None
+    return {rad[3:].strip('"').split("/")[1] for rad in res.stdout.splitlines() if rad[3:].strip('"').count("/") >= 2}
+
+
+def kundstatus(kund: str, data: dict, osparade: set[str] | None) -> dict:
+    """Utkast tills inget saknas, sedan klar, sparad i GitHub och publicerad."""
+    kvar = len(problem(data))
+    if kvar:
+        return {"status": "utkast", "kvar": kvar}
+    publicerad = fabrik.UT / kund / ".publicerad"
+    if publicerad.exists() and publicerad.stat().st_mtime >= andrad(kund):
+        return {"status": "publicerad"}
+    if osparade is not None and kund not in osparade:
+        return {"status": "sparad"}
+    return {"status": "klar"}
 
 
 def las(kund: str) -> dict:
@@ -226,7 +253,7 @@ def bildnamn(kund: str, onskat: str) -> Path:
     stam = re.sub(r"[^\w-]+", "-", stam.lower()).strip("-") or "bild"
     ext = ext.lower().replace("jpeg", "jpg")
     if not BILDNAMN.fullmatch(f"{stam}.{ext}"):
-        raise ApiFel(400, "Bilden ska vara en jpg, png, webp eller svg.")
+        raise ApiFel(400, "Bilden ska vara en jpg, png, webp, heic eller svg.")
     mapp = bildmapp(kund)
     mapp.mkdir(parents=True, exist_ok=True)
     fil, nr = mapp / f"{stam}.{ext}", 2
@@ -235,16 +262,28 @@ def bildnamn(kund: str, onskat: str) -> Path:
     return fil
 
 
-def spara_bild(kund: str, onskat: str, innehall: bytes) -> dict:
+def spara_bild(kund: str, onskat: str, innehall: bytes, tillatna: tuple[str, ...] = bild.FORMAT) -> dict:
+    """Sparar en bild i kundens mapp, gjord lagom stor och utan metadata (designer/bild.py).
+    tillatna är formaten bildfältet tar emot, så att en logga aldrig blir JPEG."""
     if not innehall:
         raise ApiFel(400, "Bilden är tom.")
     if len(innehall) > MAX_BILD:
         raise ApiFel(413, f"Bilden är större än {MAX_BILD // 1024 // 1024} MB.")
-    fil = bildnamn(kund, onskat)
-    if fil.suffix == ".svg" and re.search(rb"<script|\son\w+\s*=|javascript:", innehall, re.I):
+    stam, _, ext = Path(onskat).name.rpartition(".")
+    ext = ext.lower()
+    if ext not in bild.RASTER | {"svg"}:
+        raise ApiFel(400, "Bilden ska vara en jpg, png, webp, heic eller svg.")
+    if ext == "svg" and re.search(rb"<script|\son\w+\s*=|javascript:", innehall, re.I):
         raise ApiFel(400, "SVG-filen innehåller skript. Spara om loggan utan dem.")
+    fore = len(innehall)
+    bildmapp(kund)  # finns kunden, innan bilden görs om
+    try:
+        innehall, ext, matt = bild.komprimera(innehall, ext, bild.FOTO, tillatna)
+    except bild.BildFel as e:
+        raise ApiFel(400, str(e)) from e
+    fil = bildnamn(kund, f"{stam or 'bild'}.{ext}")
     fil.write_bytes(innehall)
-    return {"fil": fil.name, "storlek": len(innehall)}
+    return {"fil": fil.name, "storlek": len(innehall), "fore": fore, **matt}
 
 
 def hamta_bild(kund: str, url: str, namn: str | None = None) -> dict:
@@ -262,7 +301,9 @@ def hamta_bild(kund: str, url: str, namn: str | None = None) -> dict:
     if not ext:
         raise ApiFel(400, f"Länken är ingen jpg, png, webp eller svg utan {typ}.")
     stam = Path(namn or Path(urlparse(url).path).name or "bild").stem
-    return spara_bild(kund, f"{stam}.{ext}", innehall)
+    # En logga ska förbli PNG eller WebP, eftersom loggans fält inte tar emot JPEG.
+    tillatna = ("png", "webp") if re.search(r"logo|logga", stam, re.I) else bild.FORMAT
+    return spara_bild(kund, f"{stam}.{ext}", innehall, tillatna)
 
 
 # --- Bygget -------------------------------------------------------------------
@@ -470,7 +511,8 @@ class Hanterare(BaseHTTPRequestHandler):
                 langd = int(self.headers.get("Content-Length") or 0)
                 if langd > MAX_BILD:
                     raise ApiFel(413, f"Bilden är större än {MAX_BILD // 1024 // 1024} MB.")
-                return self.json(spara_bild(kund, q.get("namn", ["bild.jpg"])[0], self.rfile.read(langd)), 201)
+                tillatna = tuple(q.get("typer", [",".join(bild.FORMAT)])[0].split(","))
+                return self.json(spara_bild(kund, q.get("namn", ["bild.jpg"])[0], self.rfile.read(langd), tillatna), 201)
             if rest[:1] == ["claude"]:
                 return self.chatt(metod, kund, rest[1:], q)
             if (metod, rest) == ("POST", ["hamta-bild"]):
@@ -487,14 +529,29 @@ class Hanterare(BaseHTTPRequestHandler):
 
     def chatt(self, metod: str, kund: str, rest: list[str], q: dict) -> None:
         if (metod, rest) == ("GET", []):
-            return self.json({**claude.historik(kund), "arbetar": kund in claude.pagar})
+            return self.json(claude.lage(kund))
         if (metod, rest) == ("POST", []):
             b = self.las_kropp()
             text = str(b.get("text") or "").strip()
             if not text:
                 raise ApiFel(400, "Skriv något till Claude.")
             namn = las(kund)["data"].get("namn", kund)
-            return self.strom(claude.chatta(kund, namn, text, [str(x) for x in b.get("bilagor") or []]))
+            try:
+                claude.starta(kund, namn, text, [str(x) for x in b.get("bilagor") or []])
+            except fabrik.FabrikFel as e:
+                raise ApiFel(409, str(e)) from e
+            # Claude arbetar i en egen tråd. Webbläsaren följer bara med och kan gå när som helst.
+            return self.strom(claude.folj(kund))
+        if (metod, rest) == ("GET", ["strom"]):
+            fran = q.get("fran", ["0"])[0]
+            return self.strom(claude.folj(kund, int(fran) if fran.isdigit() else 0))
+        if (metod, rest) == ("POST", ["angra"]):
+            id_ = str(self.las_kropp().get("id") or "")
+            try:
+                data = claude.angra(kund, id_)
+            except fabrik.FabrikFel as e:
+                raise ApiFel(400, str(e)) from e
+            return self.json({**spara(kund, data), "data": data})
         if (metod, rest) == ("DELETE", []):
             claude.ny_chatt(kund)
             return self.json({"ny": True})
@@ -574,7 +631,6 @@ class Hanterare(BaseHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError):
             pass
         finally:
-            # Stänger generatorn, som då avbryter Claude om säljaren stängde fönstret mitt i.
             handelser.close()
 
     def omdirigera(self, till: str) -> None:
@@ -652,7 +708,7 @@ def starta_om(server: ThreadingHTTPServer) -> None:
 def vakt(server: ThreadingHTTPServer) -> None:
     while True:
         time.sleep(30)
-        if time.monotonic() - senast_hord > VILA and not bygglas.locked() and not claude.pagar:
+        if time.monotonic() - senast_hord > VILA and not bygglas.locked() and not claude.nagon_arbetar():
             server.shutdown()
             return
 

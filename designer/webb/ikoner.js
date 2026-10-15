@@ -24,6 +24,10 @@ const RITNINGAR = {
   hamta: '<path d="M12 4v11m-4.5-4.5L12 15l4.5-4.5"/><path d="M5 19.5h14"/>',
   avsluta: '<path d="M12 3.5v8"/><path d="M7 6.3a7.5 7.5 0 1 0 10 0"/>',
   mapp: '<path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/>',
+  angra: '<path d="M9 14.5 4.5 10 9 5.5"/><path d="M4.5 10h10a5 5 0 0 1 0 10H11"/>',
+  bild: '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4 18 5.5-5.5 4 4 2.5-2.5 4.5 4.5"/>',
+  hoger: '<path d="m9.5 6 6 6-6 6"/>',
+  mote: '<rect x="3" y="4.5" width="18" height="12.5" rx="2"/><path d="m10.5 8.2 4 2.55-4 2.55Z"/><path d="M8.5 20.5h7"/>',
 };
 
 /** En ikon som SVG. Claude-ikonen är en egen, fylld stjärna. */

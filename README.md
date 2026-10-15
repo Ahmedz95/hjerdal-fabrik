@@ -119,19 +119,27 @@ Claude Code för chatten och kopplar Claude-appen om den finns. Kör skriptet ig
 om fabriken flyttas eller efter en uppdatering.
 
 **Använda.** Klicka på ikonen. Designer öppnas i ett eget fönster (Chrome i
-appläge om Chrome finns, annars standardwebbläsaren).
+appläge om Chrome finns, annars standardwebbläsaren). Startsidan visar varje kund
+med en miniatyr av den senaste förhandsvisningen och hur långt den har kommit:
+*Utkast* med antalet fält kvar, *Klar att spara*, *Sparad i GitHub* eller
+*Publicerad* (efter `fabrik.py publicera`, tills kundfilen ändras igen).
 
 1. *Ny kund* och restaurangens namn. Kunden sparas i `kunder/<kund>/`. Det
    säljaren skriver i *Vad vet du om restaurangen?* skickas till Claude, som
    fyller i formuläret när kunden öppnas.
 2. Fyll i formuläret. Allt sparas på datorn medan du skriver. Stegen till
    vänster visar vilka delar som är klara och hur många fält som är kvar.
+   Bilder dras in från Finder, på en bildruta eller var som helst i formuläret
+   (se *Bilder i Designer* nedan).
 3. *Claude* uppe till höger öppnar chatten. Se [Claude](#claude).
 4. *Förhandsvisa* bygger sajten och visar den i helskärm som mobil, surfplatta
    eller dator. Esc stänger. Fel visas i en ruta överst och vid fälten, och
    försvinner så fort fältet är rätt.
 5. *Förslag* bygger fyra varianter i olika stilar. *Välj den här stilen* sätter
-   den kunden gillar som kundens design.
+   den kunden gillar som kundens design. *Visa för kunden* visar förslagen över
+   hela skärmen utan Designer runt omkring, för mötet: pilarna byter stil,
+   *Välj den här* sparar den och Esc går tillbaka. Raden längst ner gömmer sig
+   när musen står still.
 6. *Spara till GitHub* under de tre prickarna checkar in kundens mapp och
    skickar den. Bara `kunder/<kund>/` följer med, aldrig något annat.
 
@@ -139,6 +147,16 @@ appläge om Chrome finns, annars standardwebbläsaren).
 stilar, fält och rättningar från GitHub och startar om Designer. Designer stänger sig själv efter en
 halvtimme utan öppet fönster. Publicering görs fortfarande med `fabrik.py
 publicera`.
+
+**Bilder i Designer.** Ett foto från en mobil kan vara 12 MB och 4000 pixlar
+brett. Varje bild som laddas upp, släpps i formuläret, bifogas i chatten eller
+hämtas av Claude görs därför om innan den sparas (`designer/bild.py` med sharp
+från fabrikens beroenden): vriden rätt efter kamerans EXIF, högst 2560 pixlar
+(2000 för bilagor till Claude), JPEG för foton och PNG för det som är
+genomskinligt, och utan metadata, så att platsen där fotot togs aldrig följer
+med. Tar fältet inte emot JPEG, som loggan, behålls bildens eget format. HEIC
+från iPhone görs först om med macOS egna `sips`. SVG lämnas som den är.
+Meddelandet efter uppladdningen säger hur mycket mindre bilden blev.
 
 **Så växer den med fabriken.** Formuläret ritas från kundfilens schema
 (`karna/src/lib/schema.ts`), som `npm run schema` i `karna/` skriver till
@@ -163,7 +181,18 @@ designer/prov.py` provkör API:t och MCP-servern, och CI kör det med Python 3.9
 **Chatten i Designer.** *Claude* uppe till höger öppnar en chatt bredvid
 formuläret. Säljaren skriver det kunden berättat, klistrar in en länk eller
 bifogar en bild på menyn, och Claude fyller i fälten medan säljaren tittar.
-Fälten Claude ändrar lyser upp.
+Fälten Claude ändrar lyser upp. Saknas bilder hämtar Claude restaurangens egna
+foton från dess webbplats, med alt-text.
+
+Under varje svar som ändrade kundfilen står fälten Claude ändrade; ett klick
+visar fältet i formuläret. *Ångra* sätter tillbaka just de fälten som de var före
+svaret, och det säljaren ändrat i andra fält finns kvar. Kundfilen från före
+varje svar sparas i `ut/claude/<kund>/fore/`.
+
+Claude arbetar på servern, inte i fönstret. Byter säljaren kund fortsätter
+Claude, startsidan visar *Claude arbetar…* på kunden, och när säljaren kommer
+tillbaka visas det Claude gjort hittills medan resten strömmar in. *Stoppa*
+avbryter; det Claude hann fylla i finns kvar.
 
 Chatten kör Claude Code på säljarens dator, inloggad med säljarens eget
 Claude-konto (Pro eller Max). Den går på abonnemanget, utan API-nyckel, och
@@ -249,7 +278,9 @@ designer/          HJERDAL Designer
   installera.command installerar programmet på en Mac
   server.py          webbservern och API:t, bara Pythons standardbibliotek
   mcp.py             MCP-servern för Claude
-  claude.py          chatten: kör Claude Code med säljarens konto
+  claude.py          chatten: kör Claude Code med säljarens konto, i bakgrunden, med ångra
+  bild.py            gör uppladdade bilder lagom stora och tar bort metadata
+  komprimera.mjs     själva bildbehandlingen, med sharp
   ikon.png           programikonen, från HJERDALs Instagram-profilbild
   webb/              formuläret och chatten: HTML, CSS och JavaScript utan byggsteg
   prov.py            provkörningen som CI kör

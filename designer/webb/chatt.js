@@ -1,6 +1,11 @@
 // Chatten med Claude bredvid formuläret. Servern kör säljarens egen Claude Code
 // (designer/claude.py), som fyller i kundfilen med Designers verktyg. Formuläret
 // läses om när Claude har sparat, så att säljaren ser fälten fyllas i.
+//
+// Claude arbetar på servern, inte i webbläsaren. Byter säljaren kund följer
+// chatten bara inte längre med; kommer säljaren tillbaka visas det Claude gjort
+// hittills och resten strömmar in. Under varje svar som ändrade kundfilen står
+// fälten Claude ändrade och en knapp som ångrar just dem.
 import { h } from './formular.js';
 import { ikon } from './ikoner.js';
 
@@ -12,14 +17,15 @@ const FORSLAG = [
 ];
 
 /**
- * opt: { api, kund(): id, nyttData(): void, visaBygge(url): void, meddela(text, typ) }
+ * opt: { api, kund(): id, nyttData(): void, visaBygge(url): void, meddela(text, typ),
+ *        faltNamn(vag, kort): text, visaFalt(vag): void, angra(id): Promise }
  */
 export function skapaChatt(opt) {
   const s = { status: null, meddelanden: [], arbetar: false, styr: null, bilagor: [], oppen: false };
 
   const flode = h('div', { class: 'chatt-flode', 'aria-live': 'polite' });
   const text = h('textarea', { rows: 1, placeholder: 'Skriv till Claude…', 'aria-label': 'Meddelande till Claude' });
-  const filval = h('input', { type: 'file', multiple: true, hidden: true, accept: 'image/jpeg,image/png,image/webp,image/gif,application/pdf,text/plain,.md,.csv' });
+  const filval = h('input', { type: 'file', multiple: true, hidden: true, accept: 'image/jpeg,image/png,image/webp,image/gif,.heic,.heif,application/pdf,text/plain,.md,.csv' });
   const bilagerad = h('div', { class: 'chatt-bilagor' });
   const skickaKnapp = h('button', { type: 'submit', class: 'chatt-skicka', 'aria-label': 'Skicka' }, ikon('skicka', 18));
   const stoppKnapp = h('button', { type: 'button', class: 'chatt-skicka stopp', 'aria-label': 'Stoppa Claude', hidden: true, onclick: stoppa }, ikon('stopp', 18));
@@ -60,18 +66,19 @@ export function skapaChatt(opt) {
   // --- Läget: installerad, inloggad, konversationen -------------------------------
 
   async function laddaKund() {
-    // Byter säljaren kund medan Claude arbetar stoppar Claude. Det som redan är ändrat är sparat.
-    if (s.arbetar) s.styr?.abort();
+    // Claude arbetar vidare på servern när säljaren byter kund. Chatten slutar bara följa med.
+    slutaFolja();
     const nr = (s.laddning = (s.laddning ?? 0) + 1);
     s.meddelanden = [];
     s.bilagor = [];
     ritaBilagor();
     if (!opt.kund()) return;
-    let tidigare = [];
+    let lage = {};
     try {
-      tidigare = (await opt.api('GET', `kunder/${opt.kund()}/claude`)).meddelanden ?? [];
+      lage = await opt.api('GET', `kunder/${opt.kund()}/claude`);
     } catch { /* ingen konversation än */ }
     if (nr !== s.laddning) return;
+    const tidigare = lage.meddelanden ?? [];
     if (s.arbetar) {
       // Säljaren hann skriva innan konversationen var laddad: lägg den tidigare konversationen före.
       s.meddelanden.unshift(...tidigare);
@@ -80,6 +87,13 @@ export function skapaChatt(opt) {
     }
     s.meddelanden = tidigare;
     ritaFlode();
+    const p = lage.pagaende;
+    if (p) {
+      // Claude arbetar med kunden sedan förut: visa det som hänt hittills och följ resten.
+      const vy = borjaTur({ roll: 'saljare', text: p.text, bilagor: p.bilagor });
+      for (const hand of p.handelser) vy.hantera(hand, true);
+      folj((signal) => fetch(`/api/kunder/${opt.kund()}/claude/strom?fran=${p.handelser.length}`, { signal }), vy);
+    }
   }
 
   async function kollaStatus(farsk = false) {
@@ -157,8 +171,9 @@ export function skapaChatt(opt) {
     }
     const el = h('div', { class: 'msg claude' });
     if (m.verktyg?.length) el.append(h('div', { class: 'verktyg-lista' }, [...new Set(m.verktyg)].map((v) => verktygRad(v, 'klar'))));
-    el.append(h('div', { class: 'msg-text' }, markdown(m.text)));
+    if (m.text) el.append(h('div', { class: 'msg-text' }, markdown(m.text)));
     if (m.fel) el.append(h('p', { class: 'msg-fel' }, m.fel));
+    if (m.andrat?.length) el.append(andringsrad(m));
     return el;
   }
 
@@ -168,6 +183,50 @@ export function skapaChatt(opt) {
 
   function rullaNer() {
     requestAnimationFrame(() => (flode.scrollTop = flode.scrollHeight));
+  }
+
+  // --- Ändrade fält och ångra -------------------------------------------------------------
+
+  /** Fälten Claude ändrade i en tur, som knappar till fälten, och Ångra. Många fält visas per del av formuläret. */
+  function andringsrad(m) {
+    const rad = h('div', { class: 'andringar' });
+    const rita = () => {
+      const n = m.andrat.length;
+      let falt = m.andrat.map((v) => ({ vag: v, namn: opt.faltNamn(v, true), titel: opt.faltNamn(v) }));
+      if (n > 6) {
+        const delar = new Map();
+        for (const v of m.andrat) {
+          const del = v.split('.')[0];
+          delar.set(del, [...(delar.get(del) ?? []), v]);
+        }
+        falt = [...delar].map(([del, vagar]) => ({ vag: vagar[0], namn: `${opt.faltNamn(del)} · ${vagar.length}`, titel: vagar.map((v) => opt.faltNamn(v)).join('\n') }));
+      }
+      rad.classList.toggle('angrad', Boolean(m.angrad));
+      rad.replaceChildren(
+        h('div', { class: 'andringar-topp' },
+          h('span', {}, `${m.angrad ? 'Ångrade' : 'Ändrade'} ${n === 1 ? 'ett fält' : `${n} fält`}`),
+          !m.angrad && h('button', { type: 'button', class: 'angra', title: 'Sätt tillbaka fälten som de var innan', onclick: (e) => angra(m, e.currentTarget, rita) }, ikon('angra', 14), 'Ångra')),
+        h('div', { class: 'falt-lista' }, falt.map((f) => h('button', { type: 'button', class: 'falt-chip', title: f.titel, disabled: Boolean(m.angrad), onclick: () => opt.visaFalt(f.vag) }, f.namn))));
+    };
+    rita();
+    return rad;
+  }
+
+  async function angra(m, knapp, rita) {
+    if (s.arbetar) {
+      opt.meddela('Vänta tills Claude är klar, eller tryck Stoppa först.', 'fel');
+      return;
+    }
+    knapp.disabled = true;
+    try {
+      await opt.angra(m.id);
+      m.angrad = true;
+      rita();
+      opt.meddela('Claudes ändringar är ångrade.');
+    } catch (err) {
+      knapp.disabled = false;
+      opt.meddela(err.message, 'fel');
+    }
   }
 
   // --- Skicka --------------------------------------------------------------------------
@@ -180,28 +239,85 @@ export function skapaChatt(opt) {
     ritaBilagor();
     text.value = '';
     vaxText();
+    const vy = borjaTur({ roll: 'saljare', text: fraga, bilagor: bifogat });
+    await folj((signal) => fetch(`/api/kunder/${opt.kund()}/claude`, {
+      method: 'POST', signal,
+      headers: { 'X-Hjerdal': '1', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: fraga, bilagor: bifogat }),
+    }), vy);
+  }
+
+  /** Säljarens meddelande och ett svar som fylls i medan Claude arbetar. */
+  function borjaTur(mig) {
     if (!s.meddelanden.length) flode.replaceChildren();
-    const mig = { roll: 'saljare', text: fraga, bilagor: bifogat };
     const svar = { roll: 'claude', text: '', verktyg: [] };
     s.meddelanden.push(mig, svar);
     flode.append(ritaMeddelande(mig));
-    const svarEl = h('div', { class: 'msg claude arbetar' });
-    const lista = h('div', { class: 'verktyg-lista' });
-    const textEl = h('div', { class: 'msg-text' }, h('span', { class: 'tanker' }, h('i'), h('i'), h('i')));
-    svarEl.append(lista, textEl);
-    flode.append(svarEl);
+    const vy = svarsVy(svar);
+    flode.append(vy.el);
     rullaNer();
     arbeta(true);
+    return vy;
+  }
 
+  /** Svaret som ritas medan händelserna kommer. Med igen visas händelser som redan har hänt, utan att formuläret läses om. */
+  function svarsVy(svar) {
+    const el = h('div', { class: 'msg claude arbetar' });
+    const lista = h('div', { class: 'verktyg-lista' });
+    const textEl = h('div', { class: 'msg-text' }, h('span', { class: 'tanker' }, h('i'), h('i'), h('i')));
+    el.append(lista, textEl);
     let senaste = null;
-    const klarVerktyg = () => { if (senaste) { senaste.className = 'verktyg klar'; senaste.firstChild.replaceChildren(ikon('bock', 13)); } };
+    const klarVerktyg = () => {
+      if (senaste) { senaste.className = 'verktyg klar'; senaste.firstChild.replaceChildren(ikon('bock', 13)); }
+      senaste = null;
+    };
+    const hantera = (hand, igen = false) => {
+      if (hand.typ === 'text') {
+        klarVerktyg();
+        svar.text += hand.text;
+        textEl.replaceChildren(markdown(svar.text));
+      } else if (hand.typ === 'verktyg') {
+        klarVerktyg();
+        svar.verktyg.push(hand.text);
+        senaste = verktygRad(hand.text, 'pagar');
+        lista.append(senaste);
+      } else if (hand.typ === 'verktyg-fel') {
+        if (senaste) senaste.className = 'verktyg misslyckad';
+        senaste = null;
+      } else if (hand.typ === 'andrad') {
+        klarVerktyg();
+        if (!igen) opt.nyttData();
+      } else if (hand.typ === 'byggd') {
+        klarVerktyg();
+        el.append(h('button', { type: 'button', class: 'knapp litet', onclick: () => opt.visaBygge(`/visa/${opt.kund()}/`) }, ikon('visa', 15), 'Visa förhandsvisningen'));
+      } else if (hand.typ === 'andringar') {
+        Object.assign(svar, { id: hand.id, andrat: hand.andrat });
+        el.append(andringsrad(svar));
+      } else if (hand.typ === 'stoppad') {
+        el.append(h('p', { class: 'msg-not' }, 'Stoppad. Det Claude hann fylla i finns kvar.'));
+      } else if (hand.typ === 'fel') {
+        svar.fel = hand.text;
+        el.append(h('p', { class: 'msg-fel' }, hand.text));
+        if (!igen && /inte inloggad|installerad/.test(hand.text)) kollaStatus(true);
+      } else {
+        return; // puls och klar
+      }
+      rullaNer();
+    };
+    const avsluta = () => {
+      klarVerktyg();
+      if (!svar.text) textEl.remove();
+      el.classList.remove('arbetar');
+    };
+    return { el, hantera, avsluta };
+  }
+
+  /** Läser händelserna från servern tills turen är klar, eller tills säljaren byter kund. */
+  async function folj(hamta, vy) {
+    const styr = new AbortController();
+    s.styr = styr;
     try {
-      s.styr = new AbortController();
-      const res = await fetch(`/api/kunder/${opt.kund()}/claude`, {
-        method: 'POST', signal: s.styr.signal,
-        headers: { 'X-Hjerdal': '1', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: fraga, bilagor: bifogat }),
-      });
+      const res = await hamta(styr.signal);
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).fel ?? `Fel ${res.status}`);
       const lasare = res.body.getReader();
       const avkoda = new TextDecoder();
@@ -214,55 +330,32 @@ export function skapaChatt(opt) {
         while ((i = buf.indexOf('\n')) >= 0) {
           const rad = buf.slice(0, i);
           buf = buf.slice(i + 1);
-          if (!rad.trim()) continue;
-          const hand = JSON.parse(rad);
-          if (hand.typ === 'text') {
-            klarVerktyg();
-            senaste = null;
-            svar.text += hand.text;
-            textEl.replaceChildren(markdown(svar.text));
-          } else if (hand.typ === 'verktyg') {
-            klarVerktyg();
-            svar.verktyg.push(hand.text);
-            senaste = verktygRad(hand.text, 'pagar');
-            lista.append(senaste);
-          } else if (hand.typ === 'verktyg-fel') {
-            if (senaste) senaste.className = 'verktyg misslyckad';
-            senaste = null;
-          } else if (hand.typ === 'andrad') {
-            klarVerktyg();
-            opt.nyttData();
-          } else if (hand.typ === 'byggd') {
-            klarVerktyg();
-            svarEl.append(h('button', { type: 'button', class: 'knapp litet', onclick: () => opt.visaBygge(`/visa/${opt.kund()}/`) }, ikon('visa', 15), 'Visa förhandsvisningen'));
-          } else if (hand.typ === 'fel') {
-            svar.fel = hand.text;
-            svarEl.append(h('p', { class: 'msg-fel' }, hand.text));
-            if (/inte inloggad|installerad/.test(hand.text)) kollaStatus(true);
-          }
-          rullaNer();
+          if (rad.trim()) vy.hantera(JSON.parse(rad));
         }
       }
-      klarVerktyg();
     } catch (err) {
-      if (err.name === 'AbortError') {
-        svarEl.append(h('p', { class: 'msg-not' }, 'Stoppad.'));
-      } else {
-        svar.fel = err.message;
-        svarEl.append(h('p', { class: 'msg-fel' }, err.message));
-      }
+      if (err.name !== 'AbortError') vy.hantera({ typ: 'fel', text: err.message });
     } finally {
-      if (!svar.text) textEl.remove();
-      svarEl.classList.remove('arbetar');
-      s.styr = null;
-      arbeta(false);
-      rullaNer();
-      text.focus();
+      // Har säljaren bytt kund hör svaret till en kund som inte visas längre.
+      if (s.styr === styr) {
+        s.styr = null;
+        vy.avsluta();
+        arbeta(false);
+        rullaNer();
+        text.focus();
+      }
     }
   }
 
+  function slutaFolja() {
+    const styr = s.styr;
+    s.styr = null;
+    styr?.abort();
+    arbeta(false);
+  }
+
   async function stoppa() {
-    s.styr?.abort();
+    // Servern stoppar Claude och skickar en sista händelse, så att svaret avslutas som vanligt.
     await opt.api('POST', `kunder/${opt.kund()}/claude/stoppa`).catch(() => {});
   }
 
@@ -274,7 +367,7 @@ export function skapaChatt(opt) {
   }
 
   async function nyKonversation() {
-    if (s.arbetar) await stoppa();
+    slutaFolja();
     await opt.api('DELETE', `kunder/${opt.kund()}/claude`).catch(() => {});
     s.meddelanden = [];
     s.bilagor = [];

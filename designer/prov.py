@@ -4,11 +4,13 @@
 
 Startar Designer på en ledig port, går igenom API:t som formuläret och Claude
 använder, bygger exempelkunden och kontrollerar att servern bara svarar den här
-datorn. Skapar en tillfällig kund och tar bort den efteråt.
+datorn. Skapar en tillfällig kund och tar bort den efteråt. Claude Code behövs
+inte: chatten provas utan att Claude svarar, och ångra med en sparad tur.
 """
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import socket
 import subprocess
@@ -102,7 +104,12 @@ def main() -> int:
         status, svar = fraga(bas, "GET", "/api/claude")
         kolla(status == 200 and "installerad" in json.loads(svar), "läget för Claude Code svarar, även utan Claude Code")
         status, svar = fraga(bas, "GET", f"/api/kunder/{PROVKUND}/claude")
-        kolla(status == 200 and json.loads(svar)["meddelanden"] == [], "en ny kund har ingen konversation")
+        lage = json.loads(svar)
+        kolla(status == 200 and lage["meddelanden"] == [] and lage["arbetar"] is False and lage["pagaende"] is None,
+              "en ny kund har ingen konversation och Claude arbetar inte")
+        status, svar = fraga(bas, "GET", f"/api/kunder/{PROVKUND}/claude/strom?fran=0")
+        kolla(status == 200 and json.loads(svar.splitlines()[0])["typ"] == "klar", "att följa en kund utan tur slutar direkt")
+        kolla(fraga(bas, "POST", f"/api/kunder/{PROVKUND}/claude/angra", {"id": "../kund"})[0] == 400, "ångra med ett id som inte finns nekas")
         kolla(fraga(bas, "POST", f"/api/kunder/{PROVKUND}/claude", {"text": "hej"}, rubriker={})[0] == 403, "chatten kräver X-Hjerdal")
         kolla(fraga(bas, "DELETE", f"/api/kunder/{PROVKUND}/claude")[0] == 200, "en ny konversation kan börjas")
 
@@ -112,6 +119,14 @@ def main() -> int:
         kolla(status == 200 and not bygge["fel"], f"bygget är utan fel ({bygge.get('sidor')} sidor)")
         status, svar = fraga(bas, "GET", "/visa/bistro-nordvik/meny/")
         kolla(status == 200 and b'href="/visa/bistro-nordvik/' in svar, "förhandsvisningen har rätt sökvägar")
+
+        status, svar = fraga(bas, "GET", "/api/kunder")
+        nordvik = next(k for k in json.loads(svar) if k["kund"] == "bistro-nordvik")
+        kolla(nordvik.get("forhandsvisning") == "/visa/bistro-nordvik/" and nordvik.get("status") in ("klar", "sparad", "publicerad"),
+              f"startsidan visar miniatyren och läget ({nordvik.get('status')})")
+
+        print("\n▸ Bilder görs lagom stora")
+        provbilder(bas)
 
         print("\n▸ MCP")
         mcp = subprocess.Popen([sys.executable, "fabrik.py", "mcp"], cwd=FABRIK, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, encoding="utf-8")
@@ -137,14 +152,92 @@ def main() -> int:
         kolla("kontakt.telefon" in svar["content"][0]["text"], "MCP säger till när ett fält har fel format")
         mcp.stdin.close()
         mcp.wait(timeout=10)
+
+        print("\n▸ Ångra Claudes ändringar")
+        provangra(bas)
     finally:
         shutil.rmtree(FABRIK / "kunder" / PROVKUND, ignore_errors=True)
         shutil.rmtree(FABRIK / "ut" / "designer" / PROVKUND, ignore_errors=True)
         shutil.rmtree(FABRIK / "ut" / "claude" / PROVKUND, ignore_errors=True)
+        shutil.rmtree(FABRIK / "ut" / "prov-bilder", ignore_errors=True)
         server.terminate()
         server.wait(timeout=10)
     print(f"\n{'✗ ' + str(len(fel)) + ' fel' if fel else '✓ Designer och MCP fungerar'}")
     return 1 if fel else 0
+
+
+def provbilder(bas: str) -> None:
+    """Ett stort foto med plats och vriden kamera, och en logga, laddas upp och görs om med sharp."""
+    from designer import bild  # noqa: PLC0415
+
+    nm = bild.moduler()
+    if not nm:
+        kolla(False, "sharp finns bland fabrikens beroenden efter bygget")
+        return
+    skript = """
+const sharp = require('sharp');
+const [ut] = process.argv.slice(1);
+const w = 3000, hg = 2000, buf = Buffer.alloc(w * hg * 3);
+for (let i = 0; i < buf.length; i++) buf[i] = (i * 7 + ((i * 2654435761) >>> 27)) & 255;
+(async () => {
+  await sharp(buf, { raw: { width: w, height: hg, channels: 3 } }).withMetadata({ orientation: 6 })
+    .withExif({ IFD0: { Make: 'Apple' }, IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '55/1 36/1 0/1' } })
+    .jpeg({ quality: 95 }).toFile(ut + '/foto.jpg');
+  await sharp({ create: { width: 900, height: 300, channels: 3, background: '#1e1b16' } }).png().toFile(ut + '/logga.png');
+})();
+"""
+    tmp = FABRIK / "ut" / "prov-bilder"
+    tmp.mkdir(parents=True, exist_ok=True)
+    try:
+        subprocess.run(["node", "-e", skript, str(tmp)], check=True, env={**os.environ, "NODE_PATH": str(nm)}, timeout=120)
+        foto = (tmp / "foto.jpg").read_bytes()
+        kolla(b"Exif" in foto, "provfotot har EXIF med plats")
+
+        def ladda(namn: str, data: bytes, typer: str = "") -> dict:
+            r = urllib.request.Request(f"{bas}/api/kunder/{PROVKUND}/bilder?namn={namn}{'&typer=' + typer if typer else ''}",
+                                       data=data, method="POST", headers={"X-Hjerdal": "1"})
+            with urllib.request.urlopen(r, timeout=120) as svar:
+                return json.loads(svar.read())
+
+        svar = ladda("IMG_0001.jpg", foto)
+        kolla(svar["storlek"] < svar["fore"] / 2, f"fotot blir mindre ({svar['fore'] // 1024} kB blev {svar['storlek'] // 1024} kB)")
+        kolla((svar["bredd"], svar["hojd"]) == (1707, 2560), f"fotot vänds rätt och blir högst 2560 pixlar ({svar['bredd']}×{svar['hojd']})")
+        sparad = fraga(bas, "GET", f"/api/kunder/{PROVKUND}/bilder/{svar['fil']}")[1]
+        kolla(b"Exif" not in sparad and sparad[:2] == b"\xff\xd8", "fotot sparas som JPEG utan EXIF och plats")
+        svar = ladda("logga.png", (tmp / "logga.png").read_bytes(), "png,webp")
+        kolla(svar["fil"] == "logga.png", "en logga blir aldrig JPEG när fältet inte tar emot det")
+        svar = ladda("skarm.png", (tmp / "logga.png").read_bytes())
+        kolla(svar["fil"] == "skarm.jpg", "en ogenomskinlig PNG blir JPEG där JPEG går bra")
+        status, svar = fraga(bas, "POST", f"/api/kunder/{PROVKUND}/bilder?namn=trasig.jpg", rubriker={"X-Hjerdal": "1", "Content-Type": "image/jpeg"})
+        kolla(status == 400, "en tom bild nekas")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def provangra(bas: str) -> None:
+    """En tur där Claude ändrade telefonnumret ångras, och säljarens ändring efteråt i ett annat fält finns kvar."""
+    from designer.claude import skillnader  # noqa: PLC0415
+
+    kolla(skillnader({"a": 1, "b": [1, 2], "d": {"e": 1}}, {"a": 2, "b": [1, 3], "c": 1, "d": {"e": 1}}) == ["a", "b.1", "c"],
+          "ändrade fält räknas ut per fält")
+    nu = json.loads(fraga(bas, "GET", f"/api/kunder/{PROVKUND}")[1])
+    fore = json.loads(json.dumps(nu["data"]))
+    fore.setdefault("kontakt", {})["telefon"] = "+46 40 11 11 11"
+    mapp = FABRIK / "ut" / "claude" / PROVKUND
+    (mapp / "fore").mkdir(parents=True, exist_ok=True)
+    (mapp / "fore" / "abc123.json").write_text(json.dumps(fore), encoding="utf-8")
+    (mapp / "chatt.json").write_text(json.dumps({"session": None, "meddelanden": [
+        {"roll": "saljare", "text": "Fyll i telefonnumret", "tid": 1},
+        {"roll": "claude", "text": "Klart.", "tid": 2, "id": "abc123", "andrat": ["kontakt.telefon"]}]}), encoding="utf-8")
+    data = {**nu["data"], "namn": "Prov Designer Ändrad"}
+    fraga(bas, "PUT", f"/api/kunder/{PROVKUND}", {"data": data, "andrad": nu["andrad"]})
+    status, svar = fraga(bas, "POST", f"/api/kunder/{PROVKUND}/claude/angra", {"id": "abc123"})
+    efter = json.loads(fraga(bas, "GET", f"/api/kunder/{PROVKUND}")[1])["data"]
+    kolla(status == 200 and efter["kontakt"]["telefon"] == "+46 40 11 11 11", "ångra sätter tillbaka fältet Claude ändrade")
+    kolla(efter["namn"] == "Prov Designer Ändrad", "säljarens ändring i ett annat fält finns kvar")
+    lage = json.loads(fraga(bas, "GET", f"/api/kunder/{PROVKUND}/claude")[1])
+    kolla(lage["meddelanden"][-1].get("angrad") is True, "svaret visas som ångrat")
+    kolla(fraga(bas, "POST", f"/api/kunder/{PROVKUND}/claude/angra", {"id": "abc123"})[0] == 400, "ett svar kan bara ångras en gång")
 
 
 if __name__ == "__main__":
