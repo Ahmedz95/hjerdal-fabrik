@@ -130,8 +130,40 @@ PYTHON
     fi
   fi
 fi
-if command -v claude >/dev/null && ! claude mcp get hjerdal-designer >/dev/null 2>&1; then
-  claude mcp add --scope user hjerdal-designer -- "$PY" "$FABRIK/fabrik.py" mcp >/dev/null && info "Claude Code: kopplad också."
+
+# Chatten i Designer kör Claude Code på den här datorn, inloggad med säljarens eget Claude-konto.
+rubrik "Claude-chatten i Designer"
+info "Chatten använder Claude Code, inloggad med ditt eget Claude-konto (Pro eller Max)."
+info "Den går på ditt abonnemang. Ingen API-nyckel behövs, och Designer rör aldrig inloggningen."
+CLAUDE_BIN="$(command -v claude || true)"
+[[ -z "$CLAUDE_BIN" && -x "$HOME/.local/bin/claude" ]] && CLAUDE_BIN="$HOME/.local/bin/claude"
+if [[ -z "$CLAUDE_BIN" ]]; then
+  if fraga "Installera Claude Code nu?"; then
+    if curl -fsSL https://claude.ai/install.sh | bash; then
+      CLAUDE_BIN="$HOME/.local/bin/claude"
+    else
+      info "Installationen misslyckades. Chatten i Designer visar hur du installerar senare."
+    fi
+  else
+    info "Hoppar över. Chatten i Designer visar hur du installerar senare."
+  fi
+fi
+if [[ -n "$CLAUDE_BIN" && -x "$CLAUDE_BIN" ]]; then
+  inloggad() {
+    "$CLAUDE_BIN" auth status 2>/dev/null | "$PY" -c 'import json, sys
+d = json.load(sys.stdin)
+sys.exit(0 if d.get("loggedIn") and d.get("authMethod") not in ("api_key", "api_key_helper") else 1)' 2>/dev/null
+  }
+  if inloggad; then
+    info "Claude Code: inloggad med ditt Claude-konto."
+  elif fraga "Logga in i Claude Code nu? Välj ditt Claude-konto i webbläsaren, inte en API-nyckel."; then
+    "$CLAUDE_BIN" auth login || true
+    inloggad && info "Claude Code: inloggad." || info "Inte inloggad än. Tryck Claude i Designer när du vill logga in."
+  fi
+  if ! "$CLAUDE_BIN" mcp get hjerdal-designer >/dev/null 2>&1; then
+    "$CLAUDE_BIN" mcp add --scope user hjerdal-designer -- "$PY" "$FABRIK/fabrik.py" mcp >/dev/null 2>&1 \
+      && info "Claude Code i terminalen: HJERDAL Designer finns bland verktygen."
+  fi
 fi
 
 rubrik "HJERDAL Designer är installerad"

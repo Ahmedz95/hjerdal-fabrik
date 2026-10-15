@@ -83,6 +83,11 @@ med `currentColor` får den textfärgen och fungerar på både ljusa och mörka
 teman. Annars anger `logoMork` en ljus version för de mörka temana. SVG-filen
 måste ha `viewBox` och får inte innehålla skript.
 
+En tung SVG, över 20 kB eller med en inbäddad bild (vanligt när loggan sparas
+från Illustrator eller Canva), skulle göra varje sida flera megabyte. Den blir
+i stället en PNG i 176 pixlars höjd vid bygget (`logo.svg.png` bredvid
+originalet) och sedan WebP, som andra bilder.
+
 ## Funktioner
 
 | Fält i `funktioner` | Sida | Standard |
@@ -100,28 +105,38 @@ robots.txt, favikon och strukturerad data för restaurangen och menyn
 
 Ett program för säljare: fyll i det kunden berättar, välj stil och färger, visa
 en förhandsvisning och fyra förslag direkt på mötet och spara kunden i GitHub.
-Ingen Terminal, ingen JSON och inga AI-kostnader. Allt arbete görs av fabriken.
+Ingen Terminal och ingen JSON. Claude kan fylla i formuläret åt säljaren, på
+säljarens eget Claude-abonnemang. Själva bygget görs av fabriken, utan AI.
+
+En kort guide för säljare finns i Designer under de tre prickarna, *Så använder
+du Designer*.
 
 **Installera** på varje Mac en gång: klona det här repot, öppna mappen
 `designer/` i Finder och dubbelklicka på `installera.command`. Skriptet kontrollerar
 Python, Node och git, provbygger exempelkunden, gör programmet *HJERDAL Designer*
-i Program-mappen i hemmappen, lägger det i Dock och kopplar Claude-appen om den
-finns. Kör skriptet igen om fabriken flyttas.
+i Program-mappen i hemmappen, lägger det i Dock, installerar och loggar in
+Claude Code för chatten och kopplar Claude-appen om den finns. Kör skriptet igen
+om fabriken flyttas eller efter en uppdatering.
 
 **Använda.** Klicka på ikonen. Designer öppnas i ett eget fönster (Chrome i
 appläge om Chrome finns, annars standardwebbläsaren).
 
-1. *Ny kund* och restaurangens namn. Kunden sparas i `kunder/<kund>/`.
-2. Fyll i formuläret. Allt sparas på datorn medan du skriver. Fält som krävs och
-   fält med fel markeras, och navigeringen till vänster visar var de finns.
-3. *Förhandsvisa* bygger sajten och visar den som mobil eller dator.
-4. *Skapa förslag* bygger fyra varianter i olika stilar. *Välj* sätter den
-   kunden gillar som kundens design.
-5. *Spara till GitHub* checkar in kundens mapp och skickar den. Bara
-   `kunder/<kund>/` följer med, aldrig något annat.
+1. *Ny kund* och restaurangens namn. Kunden sparas i `kunder/<kund>/`. Det
+   säljaren skriver i *Vad vet du om restaurangen?* skickas till Claude, som
+   fyller i formuläret när kunden öppnas.
+2. Fyll i formuläret. Allt sparas på datorn medan du skriver. Stegen till
+   vänster visar vilka delar som är klara och hur många fält som är kvar.
+3. *Claude* uppe till höger öppnar chatten. Se [Claude](#claude).
+4. *Förhandsvisa* bygger sajten och visar den i helskärm som mobil, surfplatta
+   eller dator. Esc stänger. Fel visas i en ruta överst och vid fälten, och
+   försvinner så fort fältet är rätt.
+5. *Förslag* bygger fyra varianter i olika stilar. *Välj den här stilen* sätter
+   den kunden gillar som kundens design.
+6. *Spara till GitHub* under de tre prickarna checkar in kundens mapp och
+   skickar den. Bara `kunder/<kund>/` följer med, aldrig något annat.
 
-*Hämta senaste fabriken* på startsidan hämtar nya stilar, fält och rättningar
-från GitHub och startar om Designer. Designer stänger sig själv efter en
+*Hämta senaste fabriken* på startsidan och under de tre prickarna hämtar nya
+stilar, fält och rättningar från GitHub och startar om Designer. Designer stänger sig själv efter en
 halvtimme utan öppet fönster. Publicering görs fortfarande med `fabrik.py
 publicera`.
 
@@ -145,7 +160,26 @@ designer/prov.py` provkör API:t och MCP-servern, och CI kör det med Python 3.9
 
 ## Claude
 
-Med Claude-appen kan säljaren be Claude göra jobbet i Designer, till exempel
+**Chatten i Designer.** *Claude* uppe till höger öppnar en chatt bredvid
+formuläret. Säljaren skriver det kunden berättat, klistrar in en länk eller
+bifogar en bild på menyn, och Claude fyller i fälten medan säljaren tittar.
+Fälten Claude ändrar lyser upp.
+
+Chatten kör Claude Code på säljarens dator, inloggad med säljarens eget
+Claude-konto (Pro eller Max). Den går på abonnemanget, utan API-nyckel, och
+Designer läser eller ändrar aldrig inloggningen. Varje säljare behöver ett eget
+Claude-konto. Saknas Claude Code eller inloggningen visar chatten knappar som
+öppnar Terminal för `curl -fsSL https://claude.ai/install.sh | bash` och
+`claude auth login`.
+
+`designer/claude.py` startar `claude -p` med Designers MCP-server och bara
+verktygen Read, WebSearch och WebFetch. Claude kan inte köra kommandon, inte
+spara till GitHub och läser bara filer i kundens chattmapp. Konversationen och
+bilagorna sparas i `ut/claude/<kund>/` och följer aldrig med till GitHub.
+`ANTHROPIC_API_KEY` tas bort ur miljön, så att chatten aldrig går på en
+API-nyckel. `HJERDAL_CLAUDE_MODELL=sonnet` väljer en annan modell.
+
+**Claude-appen.** Med Claude-appen kan säljaren be Claude göra jobbet i Designer, till exempel
 *"gör en sajt till Café Solros, här är menyn och öppettiderna"* eller *"byt till
 mörka färger och skapa förslag"*. Claude fyller i kundfilen, bygger
 förhandsvisningen, rättar det bygget hittar och visar länken. Formuläret i
@@ -177,6 +211,7 @@ I Claude Code: `claude mcp add --scope user hjerdal-designer -- python3 /sökvä
 | --- | --- |
 | `kundfilens_falt` | läsa alla fält, regler, stilar och teman |
 | `lista_kunder`, `las_kundfil`, `skapa_kund`, `spara_kundfil` | läsa, skapa och fylla i kunder |
+| `andra_falt` | ändra enstaka fält, till exempel `kontakt.telefon`, utan att skicka hela kundfilen |
 | `bygg_forhandsvisning`, `skapa_forslag` | bygga, kontrollera och visa förslag |
 | `hamta_bild` | hämta en bild från en https-länk till kundens bilder |
 | `oppna_designer` | öppna Designer-fönstret på kunden |
@@ -184,6 +219,9 @@ I Claude Code: `claude mcp add --scope user hjerdal-designer -- python3 /sökvä
 
 Claude är instruerad att aldrig hitta på öppettider, priser, adresser eller
 rätter. Det som saknas lämnas tomt, så att bygget visar vad som behöver fyllas i.
+`andra_falt` och `spara_kundfil` kontrollerar varje ändring mot schemat och
+svarar med felet direkt, till exempel ett telefonnummer i fel format, så att
+Claude rättar det innan säljaren ser det.
 
 ## Det fabriken kontrollerar
 
@@ -211,7 +249,9 @@ designer/          HJERDAL Designer
   installera.command installerar programmet på en Mac
   server.py          webbservern och API:t, bara Pythons standardbibliotek
   mcp.py             MCP-servern för Claude
-  webb/              formuläret: HTML, CSS och JavaScript utan byggsteg
+  claude.py          chatten: kör Claude Code med säljarens konto
+  ikon.png           programikonen, från HJERDALs Instagram-profilbild
+  webb/              formuläret och chatten: HTML, CSS och JavaScript utan byggsteg
   prov.py            provkörningen som CI kör
 karna/             Astro-sajten alla kunder byggs från
   src/lib/schema.ts  kundfilens fält, regler och etiketter
