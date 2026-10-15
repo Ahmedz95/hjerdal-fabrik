@@ -9,16 +9,17 @@ const filer = import.meta.glob<{ default: ImageMetadata }>('../assets/bilder/*.{
 });
 const svgFiler = import.meta.glob<string>('../assets/bilder/*.{svg,SVG}', { eager: true, query: '?raw', import: 'default' });
 
+// Felen skrivs som kundfilens fel, så att fabrik.py och Designer kan visa dem vid fältet.
 const hitta = <T>(lista: Record<string, T>, fil: string, falt: string) => {
   const hit = Object.entries(lista).find(([sokvag]) => sokvag.endsWith(`/${fil}`));
-  if (!hit) throw new Error(`Bilden ${fil} (bilder.${falt}) finns inte i kundens mapp bilder/.`);
+  if (!hit) throw new Error(`Kundfilen har fel och sajten byggs inte:\n  - bilder.${falt}: ${fil} finns inte i kundens mapp bilder/`);
   return hit[1];
 };
 
 export function bild(vilken: 'hero' | 'om') {
   const val = kund.bilder[vilken];
   if (!val) return undefined;
-  return { src: hitta(filer, val.fil, vilken).default, alt: val.alt };
+  return { src: hitta(filer, val.fil, `${vilken}.fil`).default, alt: val.alt };
 }
 
 /**

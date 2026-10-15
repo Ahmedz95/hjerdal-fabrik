@@ -12,6 +12,8 @@ kontrollerar resultatet. Inga AI-anrop, så en ny sajt kostar inga credits.
     python3 fabrik.py kontroll <kund>
     python3 fabrik.py publicera <kund> [--varianter]
     python3 fabrik.py lista
+    python3 fabrik.py designer
+    python3 fabrik.py mcp
 
 Bara Pythons standardbibliotek (Python 3.9 eller senare). Kräver Node 20
 eller senare för bygget.
@@ -39,22 +41,43 @@ KARNA = FABRIK / "karna"
 KUNDER = FABRIK / "kunder"
 UT = FABRIK / "ut"
 
-STILAR = ("hjerdal", "klassisk", "kvarter", "mjuk")
-TEMAN = ("fjall", "linne", "salvia", "ek", "skiffer", "hav")
-HEROS = ("text", "delad", "bild")
-MENYER = ("lista", "kolumner", "kort")
-DESIGNVAL = {"stil": STILAR, "tema": TEMAN, "hero": HEROS, "meny": MENYER}
+# Stilar, teman och kundfilens fält kommer från kärnan (npm run schema i karna/),
+# så att fabriken, kärnan och HJERDAL Designer alltid känner till samma val.
+SCHEMA = json.loads((KARNA / "fabrik-schema.json").read_text(encoding="utf-8"))
+_design = SCHEMA["schema"]["properties"]["design"]["properties"]
+DESIGNVAL = {falt: tuple(_design[falt]["enum"]) for falt in ("stil", "tema", "hero", "meny")}
+STILAR, TEMAN, HEROS, MENYER = DESIGNVAL.values()
+STIL_NAMN = SCHEMA["namn"]["stil"]
+TEMA_NAMN = SCHEMA["namn"]["tema"]
+HERO_NAMN = SCHEMA["namn"]["hero"]
+MENY_NAMN = SCHEMA["namn"]["meny"]
+TEMA_FARG = {t["id"]: (t["bg"], t["ink"]) for t in SCHEMA["teman"]}
 # Förslagen när varianter körs utan argument: fyra stilar som skiljer sig så mycket som möjligt.
 STANDARDVARIANTER = ("klassisk:linne:delad:lista", "kvarter:skiffer:bild:kort", "mjuk:salvia:delad:kort", "hjerdal:hav:text:kolumner")
 # Sidor som kan stängas av i kundfilen, och vilken flagga som styr dem.
 VALBARA_SIDOR = {"om-oss.astro": "omOss", "skarm.astro": "skarm", "qr.astro": "qr"}
 # Det som aldrig kopieras från kärnan till en kund.
-HOPPA_OVER = {"node_modules", "dist", ".astro", ".wrangler"}
+HOPPA_OVER = {"node_modules", "dist", ".astro", ".wrangler", "scripts", "fabrik-schema.json"}
+# Beroendena installeras en gång per version av package.json och delas av alla kunder.
+BEROENDEN = UT / ".beroenden"
 PLATSHALLARE = "FYLL I"
 
 
 class FabrikFel(Exception):
-    """Ett fel som stoppar fabriken med ett meddelande till den som kör den."""
+    """Ett fel som stoppar fabriken med ett meddelande till den som kör den.
+
+    falt är felen i kundfilen som (fält, meddelande), till exempel
+    ("kontakt.telefon", "skrivs som +46 70 123 45 67"), så att HJERDAL
+    Designer kan visa dem vid rätt fält.
+    """
+
+    def __init__(self, text: str, falt: list[tuple[str, str]] | None = None) -> None:
+        super().__init__(text)
+        self.falt = falt or []
+
+
+def kundfel(falt: list[tuple[str, str]], rubrik: str = "Kundfilen har fel") -> FabrikFel:
+    return FabrikFel(f"{rubrik}:\n" + "\n".join(f"    - {f}: {m}" for f, m in falt), falt)
 
 
 def info(text: str) -> None:
@@ -89,18 +112,21 @@ def las_kund(kund: str) -> dict:
         data = json.loads(fil.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
         raise FabrikFel(f"{fil.name} är inte giltig JSON: rad {e.lineno}, kolumn {e.colno}: {e.msg}") from e
-    saknas = [k for k in ("namn", "doman", "meny", "kontakt", "oppettider") if k not in data]
-    if saknas:
-        raise FabrikFel(f"Kundfilen saknar {', '.join(saknas)}. Resten kontrolleras när sajten byggs.")
-    rester = [v for v in platshallare(data)]
-    if rester:
-        raise FabrikFel("Kundfilen har fält som inte är ifyllda:\n" + "\n".join(f"    - {r}" for r in rester))
-    design = data.get("design", {})
-    fel = [f"design.{k}: '{design[k]}' finns inte, välj {', '.join(val)}"
-           for k, val in DESIGNVAL.items() if k in design and design[k] not in val]
-    if fel:
-        raise FabrikFel("Kundfilen har fel:\n" + "\n".join(f"    - {f}" for f in fel))
+    granska_kund(data)
     return data
+
+
+def granska_kund(data: dict) -> None:
+    """Det som går att se direkt i kundfilen. Resten kontrolleras mot schemat när sajten byggs."""
+    if not isinstance(data, dict):
+        raise kundfel([("(hela filen)", "ska vara ett JSON-objekt")])
+    fel = [(k, "måste fyllas i") for k in SCHEMA["schema"]["required"] if k not in data]
+    fel += [(v, "är inte ifyllt") for v in platshallare(data)]
+    design = data.get("design", {})
+    fel += [(f"design.{k}", f"'{design[k]}' finns inte, välj {', '.join(val)}")
+            for k, val in DESIGNVAL.items() if k in design and design[k] not in val]
+    if fel:
+        raise kundfel(fel)
 
 
 def platshallare(varde, vag: str = "") -> list[str]:
@@ -108,8 +134,41 @@ def platshallare(varde, vag: str = "") -> list[str]:
     if isinstance(varde, dict):
         return [r for k, v in varde.items() for r in platshallare(v, f"{vag}.{k}" if vag else k)]
     if isinstance(varde, list):
-        return [r for i, v in enumerate(varde) for r in platshallare(v, f"{vag}[{i}]")]
+        return [r for i, v in enumerate(varde) for r in platshallare(v, f"{vag}.{i}")]
     return [vag] if isinstance(varde, str) and PLATSHALLARE in varde else []
+
+
+def json_text(data) -> str:
+    """Kundfilen som JSON, skriven som för hand: korta grupper och listor på en rad,
+    listor med grupper (rätter, öppettider) en rad per sak. Så blir ändringarna
+    från Designer små och lätta att läsa i git."""
+
+    def kompakt(v) -> str:
+        if isinstance(v, dict):
+            return "{ " + ", ".join(f"{json.dumps(k, ensure_ascii=False)}: {kompakt(x)}" for k, x in v.items()) + " }" if v else "{}"
+        if isinstance(v, list):
+            return "[" + ", ".join(kompakt(x) for x in v) + "]"
+        return json.dumps(v, ensure_ascii=False)
+
+    def skriv(v, indrag: int, fore: int, i_lista: bool = False) -> str:
+        if not isinstance(v, (dict, list)) or not v:
+            return kompakt(v)
+        # En grupp som har grupper i sig (kontakt med adress, en sektion med rätter) skrivs på flera rader.
+        inuti = v.values() if isinstance(v, dict) else v
+        har_grupper = any(isinstance(x, dict) or (isinstance(x, list) and any(isinstance(y, dict) for y in x)) for x in inuti)
+        text = kompakt(v)
+        # En sak i en lista (en rätt, en öppettid) får vara längre än en vanlig grupp.
+        bredd = 180 if i_lista or isinstance(v, list) else 100
+        if indrag and not har_grupper and indrag + fore + len(text) <= bredd:
+            return text
+        inre = " " * (indrag + 2)
+        if isinstance(v, dict):
+            rader = [f"{inre}{json.dumps(k, ensure_ascii=False)}: {skriv(x, indrag + 2, len(k) + 4)}" for k, x in v.items()]
+            return "{\n" + ",\n".join(rader) + "\n" + " " * indrag + "}"
+        rader = [f"{inre}{skriv(x, indrag + 2, 0, True)}" for x in v]
+        return "[\n" + ",\n".join(rader) + "\n" + " " * indrag + "]"
+
+    return skriv(data, 0, 0) + "\n"
 
 
 def med_design(data: dict, **val: str | None) -> dict:
@@ -132,10 +191,15 @@ def kor(cmd: list[str], cwd: Path, env: dict | None = None, tyst: bool = False) 
                          stdout=subprocess.PIPE if tyst else None, stderr=subprocess.STDOUT if tyst else None)
     if res.returncode != 0:
         # Fel i kundfilen eller temat (src/lib/kund.ts, src/lib/tema.ts) visas utan Astros stackspår.
-        kund_fel = re.search(r"((?:Kundfilen har fel|Temat \S+ har för låg kontrast).*?)(?:\n\s*(?:Location|Stack trace):|\Z)",
+        kund_fel = re.search(r"((Kundfilen har fel|Temat \S+ har för låg kontrast).*?)(?:\n\s*(?:Location|Stack trace):|\Z)",
                              res.stdout or "", re.S)
         if kund_fel:
-            raise FabrikFel(kund_fel.group(1).strip())
+            text = kund_fel.group(1).strip()
+            rader = re.findall(r"^\s*- (.+?): (.+)$", text, re.M)
+            if kund_fel.group(2).startswith("Temat"):
+                # Kontrasten beror på accenten om det är knapptexten som syns dåligt, annars på temat.
+                rader = [("design.accent" if v.startswith("knapptexten") else "design.tema", f"{v}: {k}") for v, k in rader]
+            raise FabrikFel(text, [(f, m.strip()) for f, m in rader])
         if tyst and res.stdout:
             print(res.stdout[-6000:])
         raise FabrikFel(f"Kommandot misslyckades: {' '.join(cmd)}")
@@ -174,7 +238,8 @@ def skriv_kund(ut: Path, kund: str, data: dict) -> None:
         if flagga == "omOss":
             pa = pa and bool(data.get("om"))
         if not pa:
-            (ut / "src/pages" / sida).unlink()
+            # Varianterna skriver kundfilen flera gånger i samma kopia, så sidan kan redan vara borta.
+            (ut / "src/pages" / sida).unlink(missing_ok=True)
 
     wrangler = ut / "wrangler.jsonc"
     wrangler.write_text(wrangler.read_text(encoding="utf-8").replace('"hjerdal-kund"', f'"hjerdal-{kund}"'), encoding="utf-8")
@@ -187,18 +252,49 @@ def skriv_kund(ut: Path, kund: str, data: dict) -> None:
 
 
 def npm_install(ut: Path) -> None:
-    """Installera bara när package.json har ändrats sedan förra bygget."""
-    paket = hashlib.sha256((ut / "package.json").read_bytes()).hexdigest()
-    markor = ut / "node_modules/.fabrik-paket"
-    if markor.exists() and markor.read_text() == paket:
-        info("Beroenden: oförändrade")
-        return
-    info("Beroenden: installerar (npm install)")
-    kor(["npm", "install", "--no-audit", "--no-fund", "--loglevel=error"], ut, tyst=True)
-    markor.write_text(paket)
+    """Beroendena installeras en gång per version av package.json och package-lock.json,
+    i ut/.beroenden/<version>/, och länkas in i varje kunds mapp. En ny kund eller
+    ett förslag behöver därför aldrig installera, bara den första efter en ändring i kärnan."""
+    h = hashlib.sha256()
+    for namn in ("package.json", "package-lock.json"):
+        h.update((ut / namn).read_bytes())
+    version = h.hexdigest()[:16]
+    mal = BEROENDEN / version
+    if (mal / ".fabrik-klar").exists():
+        info("Beroenden: redan installerade")
+    else:
+        info("Beroenden: installerar en gång för alla kunder (npm ci)")
+        # Installera bredvid och byt namn när det är klart, så att ett avbrutet
+        # bygge eller två byggen samtidigt aldrig lämnar en halv installation.
+        tmp = BEROENDEN / f".{version}-{os.getpid()}"
+        shutil.rmtree(tmp, ignore_errors=True)
+        tmp.mkdir(parents=True)
+        for namn in ("package.json", "package-lock.json"):
+            shutil.copy2(ut / namn, tmp / namn)
+        kor(["npm", "ci", "--no-audit", "--no-fund", "--loglevel=error"], tmp, tyst=True)
+        (tmp / ".fabrik-klar").write_text(version)
+        try:
+            tmp.rename(mal)
+        except OSError:
+            shutil.rmtree(tmp, ignore_errors=True)
+        # Äldre versioner används inte längre; en kund som byggs igen länkas till den nya.
+        for gammal in BEROENDEN.iterdir():
+            if gammal.name != version:
+                shutil.rmtree(gammal, ignore_errors=True)
+    lank = ut / "node_modules"
+    if lank.is_symlink():
+        if Path(os.readlink(lank)) == mal / "node_modules":
+            return
+        lank.unlink()
+    elif lank.exists():
+        shutil.rmtree(lank)
+    lank.symlink_to(mal / "node_modules", target_is_directory=True)
 
 
-def bygg(kund: str, ut: Path | None = None, design: dict | None = None, kontrollera: bool = True) -> Path:
+def bygg(kund: str, ut: Path | None = None, design: dict | None = None, kontrollera: bool = True,
+         base: str = "/", forhandsvisning: bool = False) -> Path:
+    """Bygger kundens sajt i ut/<kund>/dist. base är sökvägen sajten ligger under, till
+    exempel /visa/<kund>/ i Designer; en förhandsvisning blir noindex."""
     data = med_design(las_kund(kund), **(design or {}))
     ut = ut or UT / kund
     rubrik(f"Bygger {data['namn']} ({kund}) med kärnan {karnans_version()}")
@@ -208,7 +304,8 @@ def bygg(kund: str, ut: Path | None = None, design: dict | None = None, kontroll
     info(f"Design: stil {d['stil']}, tema {d['tema']}, hero {d['hero']}, meny {d['meny']}")
     npm_install(ut)
     info("Astro: kontrollerar kundfil och typer, bygger sidorna")
-    kor(["npm", "run", "build", "--silent"], ut, tyst=True)
+    env = {"FABRIK_BASE": base, "PUBLIC_FORHANDSVISNING": "1" if forhandsvisning else ""}
+    kor(["npm", "run", "build", "--silent"], ut, env=env, tyst=True)
     info(f"Klart: {kort_vag(ut)}/dist")
     if kontrollera:
         fel = kontroll(kund, ut / "dist", data)
@@ -276,12 +373,26 @@ class Sida(HTMLParser):
 
 
 def kontroll(kund: str, dist: Path | None = None, data: dict | None = None) -> int:
-    """Kontrollerar den byggda sajten. Returnerar antalet fel; varningar stoppar inte."""
+    """Kontrollerar den byggda sajten och skriver ut resultatet. Returnerar antalet fel;
+    varningar stoppar inte."""
     dist = dist or UT / kund / "dist"
     data = data or las_kund(kund)
     rubrik("Kontrollerar sajten")
     if not dist.exists():
         raise FabrikFel(f"Hittar ingen byggd sajt i {dist}. Kör först: fabrik.py bygg {kund}")
+    g = granska(dist, data)
+    info(f"{g['sidor']} sidor kontrollerade, typsnittsfiler totalt {g['typsnitt'] // 1000} kB (laddas bara de som används)")
+    for v in g["varn"]:
+        info(f"Varning: {v}")
+    for f in g["fel"]:
+        info(f"FEL: {f}")
+    if not g["fel"]:
+        info("Inga fel.")
+    return len(g["fel"])
+
+
+def granska(dist: Path, data: dict) -> dict:
+    """Går igenom varje sida i en byggd sajt. Ger fel, varningar, antal sidor och typsnittens storlek."""
     fel: list[str] = []
     varn: list[str] = []
 
@@ -331,14 +442,7 @@ def kontroll(kund: str, dist: Path | None = None, data: dict | None = None) -> i
             varn.append(f"Avvikelsen {a.get('text')} ({a.get('datum')}) har passerat och kan tas bort ur kundfilen")
 
     typsnitt = sum(f.stat().st_size for f in dist.rglob("*.woff2"))
-    info(f"{len(sidor)} sidor kontrollerade, typsnittsfiler totalt {typsnitt // 1000} kB (laddas bara de som används)")
-    for v in varn:
-        info(f"Varning: {v}")
-    for f in fel:
-        info(f"FEL: {f}")
-    if not fel:
-        info("Inga fel.")
-    return len(fel)
+    return {"fel": fel, "varn": varn, "sidor": len(sidor), "typsnitt": typsnitt}
 
 
 # --- Varianter --------------------------------------------------------------
@@ -358,18 +462,20 @@ def tolka_variant(text: str) -> dict:
     return design
 
 
-def varianter(kund: str, lista: list[str]) -> Path:
-    """Bygger samma kund i flera varianter till en förhandsvisning att visa kunden."""
+def varianter(kund: str, lista: list[str], ut: Path | None = None, samling: Path | None = None,
+              prefix: str = "/") -> Path:
+    """Bygger samma kund i flera varianter till en förhandsvisning att visa kunden.
+    prefix är sökvägen förhandsvisningen ligger under, till exempel /forslag/<kund>/ i Designer."""
     data = las_kund(kund)
     valda = [tolka_variant(v) for v in (lista or STANDARDVARIANTER)]
-    ut = UT / kund
-    samling = UT / f"{kund}-varianter"
+    ut = ut or UT / kund
+    samling = samling or UT / f"{kund}-varianter"
     if samling.exists():
         shutil.rmtree(samling)
     samling.mkdir(parents=True)
     kort = []
     # Kundens eget bygge i ut/<kund>/dist flyttas undan och tillbaka, så att det inte skrivs över.
-    undan = UT / f".{kund}-dist"
+    undan = ut.parent / f".{ut.name}-dist"
     if (ut / "dist").exists():
         shutil.rmtree(undan, ignore_errors=True)
         shutil.move(str(ut / "dist"), str(undan))
@@ -389,7 +495,7 @@ def varianter(kund: str, lista: list[str]) -> Path:
             info("Samma som en tidigare variant, hoppar över")
             continue
         skriv_kund(ut, kund, med_design(data, **design))
-        kor(["npx", "astro", "build", "--silent"], ut, env={"FABRIK_BASE": f"/{namn}/", "PUBLIC_FORHANDSVISNING": "1"}, tyst=True)
+        kor(["npx", "astro", "build", "--silent"], ut, env={"FABRIK_BASE": f"{prefix}{namn}/", "PUBLIC_FORHANDSVISNING": "1"}, tyst=True)
         shutil.move(str(ut / "dist"), str(samling / namn))
         kort.append((namn, d))
         info(f"Klar: /{namn}/")
@@ -398,6 +504,7 @@ def varianter(kund: str, lista: list[str]) -> Path:
     if undan.exists():
         shutil.move(str(undan), str(ut / "dist"))
     (samling / "index.html").write_text(varianter_index(data["namn"], kort), encoding="utf-8")
+    (samling / "varianter.json").write_text(json.dumps([{"mapp": m, **d} for m, d in kort], indent=2) + "\n", encoding="utf-8")
     (samling / "robots.txt").write_text("User-agent: *\nDisallow: /\n", encoding="utf-8")
     (samling / "wrangler.jsonc").write_text(json.dumps({
         "name": f"hjerdal-{kund}-forslag",
@@ -408,15 +515,6 @@ def varianter(kund: str, lista: list[str]) -> Path:
     return samling
 
 
-STIL_NAMN = {"hjerdal": "HJERDAL", "klassisk": "Klassisk", "kvarter": "Kvarter", "mjuk": "Mjuk"}
-TEMA_NAMN = {"fjall": "Fjäll", "linne": "Linne", "salvia": "Salvia", "ek": "Ek", "skiffer": "Skiffer", "hav": "Hav"}
-# Bakgrund och text per tema, samma som i karna/src/lib/tema.ts.
-TEMA_FARG = {
-    "fjall": ("#F5F6F4", "#101315"), "linne": ("#F3EFE7", "#221E18"), "salvia": ("#EEF1EA", "#1C261F"),
-    "ek": ("#1B1814", "#F2EDE3"), "skiffer": ("#111417", "#EEF1F2"), "hav": ("#0E1822", "#EEF3F6"),
-}
-
-
 def varianter_index(namn: str, kort: list[tuple[str, dict]]) -> str:
     rader = []
     for mapp, d in kort:
@@ -424,7 +522,7 @@ def varianter_index(namn: str, kort: list[tuple[str, dict]]) -> str:
         rader.append(
             f'<li><a href="./{mapp}/" style="background:{bg};color:{ink}">'
             f'<span class="t">{STIL_NAMN[d["stil"]]}</span>'
-            f'<span class="d">Färger: {TEMA_NAMN[d["tema"]]} · Hero: {d["hero"]} · Meny: {d["meny"]}</span>'
+            f'<span class="d">Färger: {TEMA_NAMN[d["tema"]]} · Startsida: {HERO_NAMN[d["hero"]]} · Meny: {MENY_NAMN[d["meny"]]}</span>'
             f'<span class="n">{html.escape(namn)}</span></a></li>'
         )
     return f"""<!doctype html>
@@ -494,7 +592,7 @@ def ny(kund: str, namn: str | None) -> None:
     if namn:
         mall["namn"] = namn
     (mapp / "bilder").mkdir(parents=True)
-    (mapp / "kund.json").write_text(json.dumps(mall, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (mapp / "kund.json").write_text(json_text(mall), encoding="utf-8")
     rubrik(f"Skapade {kort_vag(mapp)}/")
     info("Fyll i kund.json (alla fält med FYLL I) och lägg bilderna i bilder/.")
     info(f"Bygg sedan med: python3 fabrik.py bygg {kund}")
@@ -552,6 +650,10 @@ def main() -> int:
     s.add_argument("kund")
     s.add_argument("--varianter", action="store_true", help="publicera förhandsvisningen i stället")
     sub.add_parser("lista", help="visa alla kunder")
+    s = sub.add_parser("designer", help="öppna HJERDAL Designer, formuläret för säljare")
+    s.add_argument("--port", type=int, default=4848, help="standard 4848, nästa lediga om den är upptagen")
+    s.add_argument("--ingen-webblasare", action="store_true", help="starta bara servern")
+    sub.add_parser("mcp", help="MCP-server så att Claude-appen kan arbeta i Designer")
     a = p.parse_args()
 
     try:
@@ -575,6 +677,14 @@ def main() -> int:
             publicera(a.kund, a.varianter)
         elif a.kommando == "lista":
             lista()
+        elif a.kommando == "designer":
+            # Designer importerar fabriken som modulen fabrik; det här är samma modul.
+            sys.modules.setdefault("fabrik", sys.modules[__name__])
+            from designer import server
+            server.starta(a.port, oppna=not a.ingen_webblasare)
+        elif a.kommando == "mcp":
+            from designer import mcp
+            mcp.main()
     except FabrikFel as e:
         print(f"\n✗ {e}", file=sys.stderr)
         return 1

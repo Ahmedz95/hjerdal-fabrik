@@ -1,0 +1,842 @@
+{
+  "karna": "0.1.0",
+  "stilar": [
+    {
+      "id": "hjerdal",
+      "namn": "HJERDAL",
+      "passar": "Det mesta",
+      "beskrivning": "Vårt eget formspråk: lätta stora rubriker, spärrade versala etiketter, runda knappar och priser i mono."
+    },
+    {
+      "id": "klassisk",
+      "namn": "Klassisk",
+      "passar": "Vita dukar, vinbarer, gamla bistroer",
+      "beskrivning": "Serif i rubriker och text, centrerad startsida, raka hörn, kursiva etiketter och punktlinjer fram till priset."
+    },
+    {
+      "id": "kvarter",
+      "namn": "Kvarter",
+      "passar": "Pizzerior, burgare, streetfood",
+      "beskrivning": "Smala versala rubriker, kraftiga linjer, små hörn och tydliga block."
+    },
+    {
+      "id": "mjuk",
+      "namn": "Mjuk",
+      "passar": "Kaféer, bagerier, brunch",
+      "beskrivning": "Vänliga rubriker, rundade kort och bilder och etiketter som små brickor."
+    }
+  ],
+  "teman": [
+    {
+      "id": "fjall",
+      "namn": "Fjäll",
+      "bg": "#F5F6F4",
+      "surface": "#E8EBE9",
+      "ink": "#101315",
+      "muted": "#596066",
+      "line": "#D5DAD8",
+      "accent": "#101315",
+      "rubrik": "sans",
+      "mork": false
+    },
+    {
+      "id": "linne",
+      "namn": "Linne",
+      "bg": "#F3EFE7",
+      "surface": "#E9E2D4",
+      "ink": "#221E18",
+      "muted": "#62594C",
+      "line": "#D8CFBE",
+      "accent": "#6B4226",
+      "rubrik": "serif",
+      "mork": false
+    },
+    {
+      "id": "salvia",
+      "namn": "Salvia",
+      "bg": "#EEF1EA",
+      "surface": "#E1E7DB",
+      "ink": "#1C261F",
+      "muted": "#4F5D52",
+      "line": "#CCD5C6",
+      "accent": "#2F4A37",
+      "rubrik": "serif",
+      "mork": false
+    },
+    {
+      "id": "ek",
+      "namn": "Ek",
+      "bg": "#1B1814",
+      "surface": "#25211B",
+      "ink": "#F2EDE3",
+      "muted": "#B3A999",
+      "line": "#3A332A",
+      "accent": "#D9BC8C",
+      "rubrik": "serif",
+      "mork": true
+    },
+    {
+      "id": "skiffer",
+      "namn": "Skiffer",
+      "bg": "#111417",
+      "surface": "#1A1E22",
+      "ink": "#EEF1F2",
+      "muted": "#A9B0B5",
+      "line": "#2B3136",
+      "accent": "#B9D3D9",
+      "rubrik": "sans",
+      "mork": true
+    },
+    {
+      "id": "hav",
+      "namn": "Hav",
+      "bg": "#0E1822",
+      "surface": "#15222E",
+      "ink": "#EEF3F6",
+      "muted": "#A4B3BF",
+      "line": "#23384A",
+      "accent": "#F0B65A",
+      "rubrik": "sans",
+      "mork": true
+    }
+  ],
+  "heros": [
+    {
+      "id": "text",
+      "namn": "Stor rubrik",
+      "beskrivning": "Rubriken och ingressen i stort format, utan bild."
+    },
+    {
+      "id": "delad",
+      "namn": "Text och bild",
+      "beskrivning": "Texten på ena sidan och den stora bilden på den andra."
+    },
+    {
+      "id": "bild",
+      "namn": "Helbild",
+      "beskrivning": "Den stora bilden över hela bredden med texten ovanpå."
+    }
+  ],
+  "menyer": [
+    {
+      "id": "lista",
+      "namn": "Lista",
+      "beskrivning": "Sektionens rubrik till vänster och rätterna till höger."
+    },
+    {
+      "id": "kolumner",
+      "namn": "Två kolumner",
+      "beskrivning": "Två sektioner bredvid varandra."
+    },
+    {
+      "id": "kort",
+      "namn": "Kort",
+      "beskrivning": "Varje rätt som ett eget kort."
+    }
+  ],
+  "namn": {
+    "dag": {
+      "man": "Mån",
+      "tis": "Tis",
+      "ons": "Ons",
+      "tor": "Tor",
+      "fre": "Fre",
+      "lor": "Lör",
+      "son": "Sön"
+    },
+    "tagg": {
+      "vegansk": "Vegansk",
+      "vegetarisk": "Vegetarisk",
+      "glutenfri": "Glutenfri",
+      "laktosfri": "Laktosfri",
+      "stark": "Stark",
+      "ny": "Nytt"
+    },
+    "stil": {
+      "hjerdal": "HJERDAL",
+      "klassisk": "Klassisk",
+      "kvarter": "Kvarter",
+      "mjuk": "Mjuk"
+    },
+    "tema": {
+      "fjall": "Fjäll",
+      "linne": "Linne",
+      "salvia": "Salvia",
+      "ek": "Ek",
+      "skiffer": "Skiffer",
+      "hav": "Hav"
+    },
+    "hero": {
+      "text": "Stor rubrik",
+      "delad": "Text och bild",
+      "bild": "Helbild"
+    },
+    "meny": {
+      "lista": "Lista",
+      "kolumner": "Två kolumner",
+      "kort": "Kort"
+    },
+    "rubrik": {
+      "sans": "Sans",
+      "serif": "Serif"
+    }
+  },
+  "schema": {
+    "type": "object",
+    "properties": {
+      "namn": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Restaurangens namn"
+      },
+      "doman": {
+        "type": "string",
+        "pattern": "^[a-z0-9.-]+\\.[a-z]{2,}$",
+        "errorMessage": {
+          "pattern": "skrivs utan https://, till exempel bistronordvik.se"
+        },
+        "description": "Domän|Utan https://, till exempel bistronordvik.se."
+      },
+      "beskrivning": {
+        "type": "string",
+        "minLength": 50,
+        "maxLength": 160,
+        "description": "Beskrivning för Google|En mening på 50–160 tecken: vad, var och varför.|flerrad"
+      },
+      "rubrik": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Rubrik på startsidan|Gärna en kort mening."
+      },
+      "ingress": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Ingress|Två meningar under rubriken.|flerrad"
+      },
+      "kok": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": [],
+        "description": "Kök|Till exempel Svensk eller Italiensk. Den första visas på startsidan."
+      },
+      "prisniva": {
+        "type": "string",
+        "enum": [
+          "$",
+          "$$",
+          "$$$",
+          "$$$$"
+        ],
+        "description": "Prisnivå"
+      },
+      "kontakt": {
+        "type": "object",
+        "properties": {
+          "telefon": {
+            "type": "string",
+            "pattern": "^\\+?[\\d ]{7,}$",
+            "errorMessage": {
+              "pattern": "skrivs som +46 70 123 45 67"
+            },
+            "description": "Telefon"
+          },
+          "epost": {
+            "type": "string",
+            "format": "email",
+            "description": "E-post"
+          },
+          "adress": {
+            "type": "object",
+            "properties": {
+              "gata": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Gata"
+              },
+              "postnummer": {
+                "type": "string",
+                "pattern": "^\\d{3} ?\\d{2}$",
+                "errorMessage": {
+                  "pattern": "skrivs som 252 21"
+                },
+                "description": "Postnummer"
+              },
+              "ort": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Ort"
+              }
+            },
+            "required": [
+              "gata",
+              "postnummer",
+              "ort"
+            ],
+            "additionalProperties": false,
+            "description": "Adress"
+          },
+          "karta": {
+            "type": "string",
+            "format": "uri",
+            "errorMessage": {
+              "format": "måste börja med https://"
+            },
+            "description": "Länk till kartan|Från Google Maps, Dela och Kopiera länk."
+          },
+          "geo": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "lat",
+              "lng"
+            ],
+            "additionalProperties": false,
+            "description": "Koordinater|Valfritt, för Google."
+          }
+        },
+        "required": [
+          "telefon",
+          "adress"
+        ],
+        "additionalProperties": false,
+        "description": "Kontakt"
+      },
+      "boka": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "errorMessage": {
+              "format": "måste börja med https://"
+            },
+            "description": "Länk till bokningen|Till exempel från Bokabord eller Waiteraid."
+          },
+          "text": {
+            "type": "string",
+            "default": "Boka bord",
+            "description": "Text på knappen"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "description": "Bordsbokning|Utan bokning blir knappen Ring oss."
+      },
+      "sociala": {
+        "type": "object",
+        "properties": {
+          "instagram": {
+            "type": "string",
+            "format": "uri",
+            "errorMessage": {
+              "format": "måste börja med https://"
+            },
+            "description": "Instagram"
+          },
+          "facebook": {
+            "type": "string",
+            "format": "uri",
+            "errorMessage": {
+              "format": "måste börja med https://"
+            },
+            "description": "Facebook"
+          },
+          "tiktok": {
+            "type": "string",
+            "format": "uri",
+            "errorMessage": {
+              "format": "måste börja med https://"
+            },
+            "description": "TikTok"
+          }
+        },
+        "additionalProperties": false,
+        "default": {},
+        "description": "Sociala medier"
+      },
+      "oppettider": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "dagar": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "man",
+                  "tis",
+                  "ons",
+                  "tor",
+                  "fre",
+                  "lor",
+                  "son"
+                ]
+              },
+              "minItems": 1,
+              "description": "Dagar"
+            },
+            "tider": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": [
+                  {
+                    "type": "string",
+                    "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                    "errorMessage": {
+                      "pattern": "skrivs som 11:00"
+                    }
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                    "errorMessage": {
+                      "pattern": "skrivs som 11:00"
+                    }
+                  }
+                ]
+              },
+              "default": [],
+              "description": "Tider|Inga tider betyder stängt."
+            }
+          },
+          "required": [
+            "dagar"
+          ],
+          "additionalProperties": false,
+          "description": "Öppettider"
+        },
+        "minItems": 1,
+        "description": "Öppettider"
+      },
+      "avvikelser": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "datum": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "errorMessage": {
+                "pattern": "skrivs som 2026-12-24"
+              },
+              "description": "Datum"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Vad|Till exempel Julafton."
+            },
+            "stangt": {
+              "type": "boolean",
+              "default": true,
+              "description": "Stängt hela dagen"
+            },
+            "tider": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": [
+                  {
+                    "type": "string",
+                    "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                    "errorMessage": {
+                      "pattern": "skrivs som 11:00"
+                    }
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                    "errorMessage": {
+                      "pattern": "skrivs som 11:00"
+                    }
+                  }
+                ]
+              },
+              "default": [],
+              "description": "Tider|Om det inte är stängt."
+            }
+          },
+          "required": [
+            "datum",
+            "text"
+          ],
+          "additionalProperties": false,
+          "description": "Avvikelse"
+        },
+        "default": [],
+        "description": "Avvikande öppettider|Helgdagar och semester. Visas tills datumet har passerat."
+      },
+      "om": {
+        "type": "object",
+        "properties": {
+          "rubrik": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Rubrik"
+          },
+          "stycken": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "description": "Text|Ett eller flera stycken.|flerrad"
+          }
+        },
+        "required": [
+          "rubrik",
+          "stycken"
+        ],
+        "additionalProperties": false,
+        "description": "Om oss"
+      },
+      "meny": {
+        "type": "object",
+        "properties": {
+          "rubrik": {
+            "type": "string",
+            "default": "Meny",
+            "description": "Rubrik"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text under rubriken||flerrad"
+          },
+          "allergiText": {
+            "type": "string",
+            "default": "Fråga oss om allergener. Vi vet vad som finns i varje rätt.",
+            "description": "Text om allergener||flerrad"
+          },
+          "sektioner": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "namn": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Namn|Till exempel Lunch, Kväll eller Att dricka."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Text under rubriken||flerrad"
+                },
+                "dagar": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "man",
+                      "tis",
+                      "ons",
+                      "tor",
+                      "fre",
+                      "lor",
+                      "son"
+                    ]
+                  },
+                  "description": "Dagar|Menyskärmen visar sektionen bara de här dagarna."
+                },
+                "fran": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                  "errorMessage": {
+                    "pattern": "skrivs som 11:00"
+                  },
+                  "description": "Från|Menyskärmen visar sektionen från den här tiden."
+                },
+                "till": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                  "errorMessage": {
+                    "pattern": "skrivs som 11:00"
+                  },
+                  "description": "Till"
+                },
+                "ratter": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "namn": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Namn"
+                      },
+                      "text": {
+                        "type": "string",
+                        "description": "Beskrivning|Till exempel tillbehören.|flerrad"
+                      },
+                      "pris": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Pris|I kronor, utan \"kr\"."
+                      },
+                      "prisText": {
+                        "type": "string",
+                        "description": "Pris som text|När priset inte är ett tal, till exempel Dagspris."
+                      },
+                      "taggar": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "vegansk",
+                            "vegetarisk",
+                            "glutenfri",
+                            "laktosfri",
+                            "stark",
+                            "ny"
+                          ]
+                        },
+                        "default": [],
+                        "description": "Märkning"
+                      },
+                      "allergener": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "default": [],
+                        "description": "Allergener|Till exempel gluten, mjölk, nötter."
+                      },
+                      "slut": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Slut för idag|Rätten står kvar men är överstruken."
+                      }
+                    },
+                    "required": [
+                      "namn"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Rätt"
+                  },
+                  "minItems": 1,
+                  "description": "Rätter"
+                }
+              },
+              "required": [
+                "namn",
+                "ratter"
+              ],
+              "additionalProperties": false,
+              "description": "Sektion"
+            },
+            "minItems": 1,
+            "description": "Sektioner"
+          }
+        },
+        "required": [
+          "sektioner"
+        ],
+        "additionalProperties": false,
+        "description": "Meny"
+      },
+      "bilder": {
+        "type": "object",
+        "properties": {
+          "hero": {
+            "type": "object",
+            "properties": {
+              "fil": {
+                "type": "string",
+                "pattern": "^[\\w.-]+\\.(jpe?g|png|webp)$",
+                "errorMessage": {
+                  "pattern": "ska vara en jpg, png eller webp i kundens mapp bilder/"
+                },
+                "description": "Bild"
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 5,
+                "errorMessage": {
+                  "minLength": "beskriv bilden i minst fem tecken"
+                },
+                "description": "Beskrivning av bilden|För den som inte ser bilden, till exempel \"Matsalen en kväll med tända ljus\"."
+              }
+            },
+            "required": [
+              "fil",
+              "alt"
+            ],
+            "additionalProperties": false,
+            "description": "Stor bild på startsidan|Används när hero är delad eller bild."
+          },
+          "om": {
+            "type": "object",
+            "properties": {
+              "fil": {
+                "type": "string",
+                "pattern": "^[\\w.-]+\\.(jpe?g|png|webp)$",
+                "errorMessage": {
+                  "pattern": "ska vara en jpg, png eller webp i kundens mapp bilder/"
+                },
+                "description": "Bild"
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 5,
+                "errorMessage": {
+                  "minLength": "beskriv bilden i minst fem tecken"
+                },
+                "description": "Beskrivning av bilden|För den som inte ser bilden, till exempel \"Matsalen en kväll med tända ljus\"."
+              }
+            },
+            "required": [
+              "fil",
+              "alt"
+            ],
+            "additionalProperties": false,
+            "description": "Bild till Om oss"
+          },
+          "logo": {
+            "type": "string",
+            "pattern": "^[\\w.-]+\\.(svg|png|webp)$",
+            "errorMessage": {
+              "pattern": "ska vara en svg, png eller webp i kundens mapp bilder/"
+            },
+            "description": "Logga|SVG, PNG eller WebP. En SVG med currentColor fungerar på alla teman."
+          },
+          "logoMork": {
+            "type": "string",
+            "pattern": "^[\\w.-]+\\.(svg|png|webp)$",
+            "errorMessage": {
+              "pattern": "ska vara en svg, png eller webp i kundens mapp bilder/"
+            },
+            "description": "Ljus logga|För de mörka temana, om loggan inte använder currentColor."
+          }
+        },
+        "additionalProperties": false,
+        "default": {},
+        "description": "Bilder och logga"
+      },
+      "design": {
+        "type": "object",
+        "properties": {
+          "stil": {
+            "type": "string",
+            "enum": [
+              "hjerdal",
+              "klassisk",
+              "kvarter",
+              "mjuk"
+            ],
+            "default": "hjerdal",
+            "description": "Stil|Typsnitt och former."
+          },
+          "tema": {
+            "type": "string",
+            "enum": [
+              "fjall",
+              "linne",
+              "salvia",
+              "ek",
+              "skiffer",
+              "hav"
+            ],
+            "default": "fjall",
+            "description": "Färger"
+          },
+          "rubrik": {
+            "type": "string",
+            "enum": [
+              "sans",
+              "serif"
+            ],
+            "description": "Rubriktypsnitt|Bara i stilen HJERDAL. Utan val används temats."
+          },
+          "accent": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "errorMessage": {
+              "pattern": "skrivs som #1E1B16"
+            },
+            "description": "Egen accentfärg|Färgen på knapparna. Bygget stoppar om texten på dem blir svår att läsa."
+          },
+          "hero": {
+            "type": "string",
+            "enum": [
+              "text",
+              "delad",
+              "bild"
+            ],
+            "default": "text",
+            "description": "Startsidans överdel|Delad och bild kräver en stor bild."
+          },
+          "meny": {
+            "type": "string",
+            "enum": [
+              "lista",
+              "kolumner",
+              "kort"
+            ],
+            "default": "lista",
+            "description": "Menyns layout"
+          }
+        },
+        "additionalProperties": false,
+        "default": {},
+        "description": "Design"
+      },
+      "funktioner": {
+        "type": "object",
+        "properties": {
+          "omOss": {
+            "type": "boolean",
+            "default": true,
+            "description": "Sidan Om oss|Kräver att Om oss är ifyllt."
+          },
+          "skarm": {
+            "type": "boolean",
+            "default": false,
+            "description": "Menyskärm|En sida för en skärm i lokalen som visar rätt meny vid rätt tid."
+          },
+          "qr": {
+            "type": "boolean",
+            "default": false,
+            "description": "QR-skylt|En skylt att skriva ut till borden."
+          },
+          "hjerdalLank": {
+            "type": "boolean",
+            "default": true,
+            "description": "\"Webbplats av HJERDAL\" i sidfoten"
+          }
+        },
+        "additionalProperties": false,
+        "default": {},
+        "description": "Funktioner"
+      }
+    },
+    "required": [
+      "namn",
+      "doman",
+      "beskrivning",
+      "rubrik",
+      "ingress",
+      "kontakt",
+      "oppettider",
+      "meny"
+    ],
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-07/schema#"
+  }
+}
