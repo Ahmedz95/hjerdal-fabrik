@@ -6,7 +6,8 @@ import { dagText, spann, pris } from '../lib/format';
 interface Props { sektion: Sektion; id: string; rubrikNiva?: 2 | 3 }
 const { sektion: s, id, rubrikNiva = 2 } = Astro.props;
 const Rubrik = rubrikNiva === 3 ? 'h3' : 'h2';
-const dagarna = s.dagar ? dagText(s.dagar) : '';
+// Inga valda dagar, som när alla har klickats bort i Designer, betyder alla dagar.
+const dagarna = s.dagar?.length ? dagText(s.dagar) : '';
 const klockan = s.fran && s.till ? spann([s.fran, s.till]) : '';
 ---
 <section class="sektion" id={id} aria-labelledby={`${id}-h`}>

@@ -9,8 +9,9 @@ export const schemaDag: Record<Dag, string> = {
 
 const stor = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** "Mån–fre", "Lör", "Mån, ons och fre". Dagar i följd skrivs som ett spann. */
+/** "Mån–fre", "Lör", "Mån, ons och fre". Dagar i följd skrivs som ett spann. Inga dagar ger "". */
 export function dagText(valda: readonly Dag[]): string {
+  if (!valda.length) return '';
   const idx = [...new Set(valda)].map((d) => dagar.indexOf(d)).sort((a, b) => a - b);
   const grupper: number[][] = [];
   for (const i of idx) {
