@@ -46,7 +46,7 @@ VERKTYG = [
     },
     {
         "name": "lista_kunder",
-        "description": "Kunderna i fabriken med namn, stil och färgtema.",
+        "description": "Kunderna i fabriken med namn, stil och färgtema. Arkiverade kunder är inte med.",
         "inputSchema": {"type": "object", "properties": {}},
     },
     {
@@ -220,7 +220,7 @@ def kor(namn: str, arg: dict) -> str:
               "heros": s["heros"], "menyer": s["menyer"], "namn_pa_val": s["namn"], "schema": s["schema"]}
         return json.dumps(ut, ensure_ascii=False)
     if namn == "lista_kunder":
-        return json.dumps([{k: x.get(k) for k in ("kund", "namn", "design", "fel") if x.get(k)} for x in api("GET", "kunder")],
+        return json.dumps([{k: x.get(k) for k in ("kund", "namn", "design", "fel") if x.get(k)} for x in api("GET", "kunder") if not x.get("arkiv")],
                           ensure_ascii=False)
     if namn == "las_kundfil":
         svar = api("GET", f"kunder/{kund}")

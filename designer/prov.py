@@ -5,10 +5,12 @@
 Startar Designer på en ledig port, går igenom API:t som formuläret och Claude
 använder, bygger exempelkunden och kontrollerar att servern bara svarar den här
 datorn. Skapar en tillfällig kund och tar bort den efteråt. Claude Code behövs
-inte: chatten provas utan att Claude svarar, och ångra med en sparad tur.
+inte: chatten provas utan att Claude svarar, och ångra med en sparad tur. Den
+tillfälliga kunden finns aldrig i GitHub, så arkivet provas utan git.
 """
 from __future__ import annotations
 
+import datetime as dt
 import json
 import os
 import shutil
@@ -155,11 +157,16 @@ def main() -> int:
 
         print("\n▸ Ångra Claudes ändringar")
         provangra(bas)
+
+        print("\n▸ Exportera och arkivera")
+        provarkiv(bas)
     finally:
         shutil.rmtree(FABRIK / "kunder" / PROVKUND, ignore_errors=True)
         shutil.rmtree(FABRIK / "ut" / "designer" / PROVKUND, ignore_errors=True)
         shutil.rmtree(FABRIK / "ut" / "claude" / PROVKUND, ignore_errors=True)
         shutil.rmtree(FABRIK / "ut" / "prov-bilder", ignore_errors=True)
+        for kopia in (FABRIK / "ut" / "arkiv").glob(f"{PROVKUND}-*.html"):
+            kopia.unlink()
         server.terminate()
         server.wait(timeout=10)
     print(f"\n{'✗ ' + str(len(fel)) + ' fel' if fel else '✓ Designer och MCP fungerar'}")
@@ -238,6 +245,45 @@ def provangra(bas: str) -> None:
     lage = json.loads(fraga(bas, "GET", f"/api/kunder/{PROVKUND}/claude")[1])
     kolla(lage["meddelanden"][-1].get("angrad") is True, "svaret visas som ångrat")
     kolla(fraga(bas, "POST", f"/api/kunder/{PROVKUND}/claude/angra", {"id": "abc123"})[0] == 400, "ett svar kan bara ångras en gång")
+
+
+def provarkiv(bas: str) -> None:
+    """Underlaget till kunden, arkivet och att en kund tas bort efter 30 dagar."""
+    status, svar = fraga(bas, "GET", "/api/kunder/bistro-nordvik/export")
+    text = svar.decode()
+    kolla(status == 200 and "Stekt torsk med brynt smör" in text and "Mån–Fre" in text and "Det här behöver vi" not in text,
+          "underlaget har menyn och öppettiderna")
+    nu = json.loads(fraga(bas, "GET", f"/api/kunder/{PROVKUND}")[1])
+    fraga(bas, "PUT", f"/api/kunder/{PROVKUND}", {"data": {**nu["data"], "namn": "Prov <b>Designer</b>"}, "andrad": nu["andrad"]})
+    r = urllib.request.Request(f"{bas}/api/kunder/{PROVKUND}/export")
+    with urllib.request.urlopen(r) as s:
+        text, rubriker = s.read().decode(), s.headers
+    kolla(f'filename="{PROVKUND}-underlag.html"' in rubriker.get("Content-Disposition", "") and "default-src 'none'" in rubriker.get("Content-Security-Policy", ""),
+          "underlaget laddas ner som en fil som inte kan köra skript")
+    kolla("Prov &lt;b&gt;Designer&lt;/b&gt;" in text and "<b>Designer</b>" not in text, "texter från kundfilen escapas")
+    kolla("Det här behöver vi från er" in text and "Kontakt › Telefon" not in text and "Domän" in text, "underlaget säger vad som saknas")
+
+    status, svar = fraga(bas, "POST", f"/api/kunder/{PROVKUND}/arkivera")
+    arkiv = json.loads(svar).get("arkiv") or {}
+    kolla(status == 200 and arkiv.get("tas_bort") == (dt.date.today() + dt.timedelta(days=30)).isoformat(), "en arkiverad kund tas bort om 30 dagar")
+    rad = next((k for k in json.loads(fraga(bas, "GET", "/api/kunder")[1]) if k["kund"] == PROVKUND), {})
+    kolla(rad.get("arkiv", {}).get("dagar_kvar") == 30, "startsidan vet att kunden är arkiverad")
+    kolla(json.loads(fraga(bas, "GET", f"/api/kunder/{PROVKUND}")[1]).get("arkiv") is not None, "kunden går att öppna i arkivet")
+    status, svar = fraga(bas, "POST", f"/api/kunder/{PROVKUND}/aterstall")
+    kolla(status == 200 and json.loads(svar)["arkiv"] is None and not (FABRIK / "kunder" / PROVKUND / "arkiv.json").exists(),
+          "en arkiverad kund kan tas tillbaka")
+
+    gammal = (dt.datetime.now() - dt.timedelta(days=31)).isoformat(timespec="seconds")
+    (FABRIK / "kunder" / PROVKUND / "arkiv.json").write_text(json.dumps({"arkiverad": gammal, "av": "Prov"}), encoding="utf-8")
+    fraga(bas, "GET", "/api/kunder")
+    for _ in range(40):
+        if not (FABRIK / "kunder" / PROVKUND).exists():
+            break
+        time.sleep(0.25)
+    kolla(not (FABRIK / "kunder" / PROVKUND).exists() and not (FABRIK / "ut" / "claude" / PROVKUND).exists(),
+          "en kund som har legat i arkivet i 30 dagar tas bort med sin konversation")
+    kolla(any((FABRIK / "ut" / "arkiv").glob(f"{PROVKUND}-*.html")), "underlaget sparas i ut/arkiv/ innan kunden tas bort")
+    kolla(all(k["kund"] != PROVKUND for k in json.loads(fraga(bas, "GET", "/api/kunder")[1])), "kunden syns inte längre")
 
 
 if __name__ == "__main__":

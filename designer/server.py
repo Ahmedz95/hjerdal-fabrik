@@ -12,10 +12,15 @@ Samma API används av webbläsaren och av Claude via MCP (designer/mcp.py).
 Chatten med Claude i formuläret kör säljarens egen Claude Code (designer/claude.py).
 Allt under /api/ som ändrar något kräver rubriken X-Hjerdal, så att en annan
 webbplats inte kan skicka förfrågningar hit.
+
+En kund som inte är aktuell längre arkiveras: den försvinner från startsidan och
+tas bort ur fabriken efter 30 dagar. Före det kan kundens underlag exporteras som
+en HTML-fil som kunden öppnar i webbläsaren (designer/export.py).
 """
 from __future__ import annotations
 
 import contextlib
+import datetime as dt
 import hashlib
 import io
 import json
@@ -36,7 +41,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
 import fabrik
-from designer import bild, claude
+from designer import bild, claude, export
 
 APP = "HJERDAL Designer"
 WEBB = Path(__file__).resolve().parent / "webb"
@@ -48,6 +53,12 @@ STATUSFIL = fabrik.UT / ".designer.json"
 VILA = 30 * 60
 BILDNAMN = re.compile(r"[A-Za-z0-9_][\w.-]*\.(jpe?g|png|webp|svg)", re.I)
 MAX_BILD = 40 * 1024 * 1024
+# En arkiverad kund tas bort så här många dagar efter att den arkiverades. Kundens
+# underlag sparas först i ut/arkiv/, och i GitHub finns kunden kvar i historiken.
+ARKIVDAGAR = 30
+ARKIVFIL = "arkiv.json"
+ARKIVKOPIOR = fabrik.UT / "arkiv"
+MANADER = ["januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december"]
 
 
 def kodens_version() -> str:
@@ -61,6 +72,7 @@ def kodens_version() -> str:
 KOD = kodens_version()
 
 bygglas = threading.Lock()
+rensning = threading.Lock()
 senast_hord = time.monotonic()
 
 
@@ -80,7 +92,7 @@ def lista_kunder() -> list[dict]:
     andrade = osparade_kunder()
     kunder = []
     for mapp in sorted(p for p in fabrik.KUNDER.iterdir() if (p / "kund.json").exists()):
-        rad = {"kund": mapp.name, "andrad": andrad(mapp.name), "arbetar": claude.arbetar(mapp.name)}
+        rad = {"kund": mapp.name, "andrad": andrad(mapp.name), "arbetar": claude.arbetar(mapp.name), "arkiv": arkivinfo(mapp.name)}
         try:
             data = json.loads((mapp / "kund.json").read_text(encoding="utf-8"))
             rad.update(namn=data.get("namn", mapp.name), design=fabrik.design_med_standard(data),
@@ -91,6 +103,8 @@ def lista_kunder() -> list[dict]:
         if sida.exists():
             rad.update(forhandsvisning=f"/visa/{mapp.name}/", byggd=sida.stat().st_mtime)
         kunder.append(rad)
+    if any(k["arkiv"] and k["arkiv"]["dagar_kvar"] == 0 for k in kunder) and not rensning.locked():
+        threading.Thread(target=rensa_arkiv, daemon=True).start()
     return kunder
 
 
@@ -123,7 +137,7 @@ def las(kund: str) -> dict:
         data = json.loads(fil.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
         raise ApiFel(400, f"kund.json är inte giltig JSON: rad {e.lineno}, kolumn {e.colno}: {e.msg}") from e
-    return {"kund": kund, "data": data, "andrad": andrad(kund)}
+    return {"kund": kund, "data": data, "andrad": andrad(kund), "arkiv": arkivinfo(kund)}
 
 
 def problem(data: dict) -> list[tuple[str, str]]:
@@ -231,6 +245,113 @@ def slug(namn: str) -> str:
     if not text:
         raise ApiFel(400, "Namnet behöver minst en bokstav eller siffra.", [("namn", "behöver en bokstav")])
     return text
+
+
+# --- Arkivet ------------------------------------------------------------------
+
+def arkivinfo(kund: str) -> dict | None:
+    """När kunden arkiverades och när den tas bort. None för en aktiv kund."""
+    fil = fabrik.kundmapp(kund) / ARKIVFIL
+    if not fil.exists():
+        return None
+    try:
+        rad = json.loads(fil.read_text(encoding="utf-8"))
+        nar = dt.datetime.fromisoformat(rad["arkiverad"])
+    except (json.JSONDecodeError, KeyError, TypeError, ValueError):
+        rad, nar = {}, dt.datetime.fromtimestamp(fil.stat().st_mtime)
+    bort = nar.date() + dt.timedelta(days=ARKIVDAGAR)
+    return {"arkiverad": nar.isoformat(timespec="seconds"), "av": rad.get("av") or "",
+            "tas_bort": bort.isoformat(), "dagar_kvar": max(0, (bort - dt.date.today()).days)}
+
+
+def datumtext(iso: str) -> str:
+    """2026-11-14 blir 14 november."""
+    d = dt.date.fromisoformat(iso[:10])
+    return f"{d.day} {MANADER[d.month - 1]}" + (f" {d.year}" if d.year != dt.date.today().year else "")
+
+
+def i_github(kund: str) -> bool:
+    """Har kunden sparats i GitHub någon gång? En kund som bara finns på datorn arkiveras bara här."""
+    res = git("ls-files", "--", f"kunder/{kund}", kolla=False)
+    return res.returncode == 0 and bool(res.stdout.strip())
+
+
+def dela(kund: str, meddelande: str) -> str:
+    """Skickar en ändring i arkivet till GitHub, så att kollegorna ser samma sak. Svarar med en mening om hur det gick."""
+    if not i_github(kund):
+        return ""
+    try:
+        skicka(kund, meddelande)
+    except ApiFel as e:
+        return f" Den är inte ändrad i GitHub än: {e}"
+    return " Ändringen är sparad i GitHub."
+
+
+def arkivera(kund: str) -> dict:
+    namn = las(kund)["data"].get("namn") or kund
+    if claude.arbetar(kund):
+        raise ApiFel(409, "Claude arbetar med kunden. Vänta tills Claude är klar, eller stoppa Claude först.")
+    fil = fabrik.kundmapp(kund) / ARKIVFIL
+    if not fil.exists():
+        av = git("config", "user.name", kolla=False).stdout.strip()
+        fil.write_text(fabrik.json_text({"arkiverad": dt.datetime.now().isoformat(timespec="seconds"), "av": av}), encoding="utf-8")
+    arkiv = arkivinfo(kund)
+    github = dela(kund, f"{namn}: arkiverad i {APP}")
+    return {"arkiv": arkiv, "meddelande": f"{namn} är arkiverad och tas bort {datumtext(arkiv['tas_bort'])}.{github}"}
+
+
+def aterstall(kund: str) -> dict:
+    namn = las(kund)["data"].get("namn") or kund
+    (fabrik.kundmapp(kund) / ARKIVFIL).unlink(missing_ok=True)
+    github = dela(kund, f"{namn}: tillbaka från arkivet i {APP}")
+    return {"arkiv": None, "meddelande": f"{namn} är tillbaka bland kunderna.{github}"}
+
+
+def rensa_arkiv() -> list[str]:
+    """Tar bort kunderna som har legat i arkivet i 30 dagar. Körs när Designer startar och när startsidan visas."""
+    if not rensning.acquire(blocking=False):
+        return []
+    borttagna = []
+    try:
+        for mapp in sorted(p for p in fabrik.KUNDER.iterdir() if (p / ARKIVFIL).exists()):
+            arkiv = arkivinfo(mapp.name)
+            if arkiv and arkiv["dagar_kvar"] == 0 and not claude.arbetar(mapp.name):
+                try:
+                    ta_bort(mapp.name)
+                    borttagna.append(mapp.name)
+                except Exception as e:  # noqa: BLE001  en kund som inte går att ta bort får inte stoppa de andra
+                    print(f"Kunde inte ta bort {mapp.name} ur arkivet: {e}", file=sys.stderr)
+    finally:
+        rensning.release()
+    return borttagna
+
+
+def ta_bort(kund: str) -> None:
+    """Sparar kundens underlag i ut/arkiv/ och tar sedan bort kunden, dess byggen och konversationen med Claude."""
+    mapp = fabrik.kundmapp(kund)
+    try:
+        data = json.loads((mapp / "kund.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        data = {}
+    if data:
+        ARKIVKOPIOR.mkdir(parents=True, exist_ok=True)
+        (ARKIVKOPIOR / f"{kund}-{dt.date.today().isoformat()}.html").write_text(
+            export.html(kund, data, problem(data)), encoding="utf-8")
+    sparad = i_github(kund)
+    shutil.rmtree(mapp)
+    for rest in (DESIGNER_UT / kund, DESIGNER_UT / f"{kund}-forslag", claude.MAPP / kund,
+                 fabrik.UT / kund, fabrik.UT / f"{kund}-varianter"):
+        shutil.rmtree(rest, ignore_errors=True)
+    if sparad:
+        try:
+            skicka(kund, f"{data.get('namn') or kund}: borttagen ur arkivet efter {ARKIVDAGAR} dagar")
+        except ApiFel as e:
+            print(f"{kund} är borttagen på den här datorn men inte i GitHub: {e}", file=sys.stderr)
+
+
+def exportera(kund: str) -> bytes:
+    d = las(kund)
+    return export.html(kund, d["data"], problem(d["data"])).encode("utf-8")
 
 
 # --- Bilder -------------------------------------------------------------------
@@ -354,6 +475,15 @@ def git(*args: str, kolla: bool = True) -> subprocess.CompletedProcess:
 def spara_github(kund: str) -> dict:
     """Checkar in kundens mapp och skickar den till GitHub. Bara kunder/<kund>/, inget annat."""
     data = las(kund)["data"]
+    vag = f"kunder/{kund}"
+    andringar = skicka(kund, f"{data.get('namn', kund)}: sparad i {APP}")
+    rad = git("log", "-1", "--format=%h %s", "--", vag).stdout.strip()
+    return {"andringar": andringar, "senaste": rad,
+            "meddelande": "Sparad i GitHub." if andringar else "Inget nytt att spara, GitHub har redan den här versionen."}
+
+
+def skicka(kund: str, meddelande: str) -> bool:
+    """Checkar in kunder/<kund>/, också när mappen är borttagen, och skickar till GitHub. True om något nytt checkades in."""
     if not git("config", "user.email", kolla=False).stdout.strip():
         raise ApiFel(400, "Git vet inte vem du är. Kör designer/installera.command igen, "
                           "eller i Terminal: git config --global user.name \"Ditt Namn\" och "
@@ -364,19 +494,17 @@ def spara_github(kund: str) -> dict:
         if git("diff", "--cached", "--quiet", "--", vag, kolla=False).returncode == 0:
             andringar = False
         else:
-            git("commit", "-m", f"{data.get('namn', kund)}: sparad i {APP}", "--", vag)
+            git("commit", "-m", meddelande, "--", vag)
             andringar = True
         # Hämta det andra har sparat och lägg den här ändringen överst, sedan skicka.
         if git("pull", "--rebase", "--autostash", kolla=False).returncode != 0:
             git("rebase", "--abort", kolla=False)
             raise ApiFel(409, "Någon annan har sparat en ändring som krockar med din. Din ändring finns kvar "
                               "på datorn men är inte skickad. Be någon som kan git om hjälp.")
-        skicka = git("push", kolla=False)
-        if skicka.returncode != 0:
-            raise ApiFel(500, "Kunde inte skicka till GitHub: " + (skicka.stderr or skicka.stdout).strip())
-    rad = git("log", "-1", "--format=%h %s", "--", vag).stdout.strip()
-    return {"andringar": andringar, "senaste": rad,
-            "meddelande": "Sparad i GitHub." if andringar else "Inget nytt att spara, GitHub har redan den här versionen."}
+        res = git("push", kolla=False)
+        if res.returncode != 0:
+            raise ApiFel(500, "Kunde inte skicka till GitHub: " + (res.stderr or res.stdout).strip())
+    return andringar
 
 
 def uppdatera() -> dict:
@@ -505,6 +633,12 @@ class Hanterare(BaseHTTPRequestHandler):
                 return self.json(forslag(kund, kropp().get("varianter")))
             if (metod, rest) == ("POST", ["spara"]):
                 return self.json(spara_github(kund))
+            if (metod, rest) == ("POST", ["arkivera"]):
+                return self.json(arkivera(kund))
+            if (metod, rest) == ("POST", ["aterstall"]):
+                return self.json(aterstall(kund))
+            if (metod, rest) == ("GET", ["export"]):
+                return self.ladda_ner(exportera(kund), export.filnamn(kund), "visa" in q)
             if (metod, rest) == ("GET", ["bilder"]):
                 return self.json(bilder(kund))
             if (metod, rest) == ("POST", ["bilder"]):
@@ -639,6 +773,18 @@ class Hanterare(BaseHTTPRequestHandler):
         self.send_header("Content-Length", "0")
         self.end_headers()
 
+    def ladda_ner(self, innehall: bytes, namn: str, visa: bool = False) -> None:
+        """Kundens underlag som en fil att spara, eller att visa direkt i fönstret med visa."""
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(innehall)))
+        self.send_header("Content-Disposition", f'{"inline" if visa else "attachment"}; filename="{namn}"')
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Content-Security-Policy", "default-src 'none'; img-src data:; style-src 'unsafe-inline'")
+        self.end_headers()
+        self.wfile.write(innehall)
+
     def json(self, data, status: int = 200) -> None:
         innehall = json.dumps(data, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
@@ -736,6 +882,7 @@ def starta(port: int = 4848, oppna: bool = True) -> None:
     fabrik.rubrik(f"{APP} kör på {adress}")
     fabrik.info("Avsluta med Ctrl+C, eller låt den stänga sig själv efter en halvtimme utan fönster.")
     threading.Thread(target=vakt, args=(server,), daemon=True).start()
+    threading.Thread(target=rensa_arkiv, daemon=True).start()
     if oppna:
         threading.Timer(0.3, oppna_fonster, args=(adress,)).start()
     try:

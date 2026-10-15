@@ -143,6 +143,22 @@ med en miniatyr av den senaste förhandsvisningen och hur långt den har kommit:
 6. *Spara till GitHub* under de tre prickarna checkar in kundens mapp och
    skickar den. Bara `kunder/<kund>/` följer med, aldrig något annat.
 
+**Exportera och arkivera.** *Exportera för kunden*, under de tre prickarna på
+kundens kort eller i kunden, sparar `<kund>-underlag.html` i Hämtade filer: allt
+som står om restaurangen, med kontakt, öppettider, menyn, texterna, bilderna,
+utseendet och en lista över det som saknas. Kunden öppnar filen i webbläsaren,
+den går att mejla och skriva ut, och bilderna ligger inne i filen.
+
+*Arkivera* flyttar en kund som inte är aktuell från startsidan till *Arkiv*
+längst ner. Där syns när den arkiverades och när den tas bort, och *Ta tillbaka*
+gör den aktiv igen. Arkivet är filen `kunder/<kund>/arkiv.json`, så en kund som
+har sparats i GitHub arkiveras och tas tillbaka i GitHub direkt och syns likadant
+hos kollegorna. 30 dagar efter att kunden arkiverades tar Designer bort den, när
+Designer startar eller startsidan visas: underlaget sparas först i `ut/arkiv/`,
+sedan tas kundens mapp, byggen och konversation med Claude bort, och borttagningen
+skickas till GitHub, där kunden finns kvar i historiken. En publicerad sajt
+ligger kvar på Cloudflare.
+
 *Hämta senaste fabriken* på startsidan och under de tre prickarna hämtar nya
 stilar, fält och rättningar från GitHub och startar om Designer. Designer stänger sig själv efter en
 halvtimme utan öppet fönster. Publicering görs fortfarande med `fabrik.py
@@ -169,7 +185,9 @@ vad det tar emot: ett mönster som godtar `11:00` blir en klocka, ett som godtar
 uppdaterad.
 
 **Tekniskt.** `designer/server.py` är en webbserver på `127.0.0.1` med bara
-Pythons standardbibliotek. Formuläret i `designer/webb/` är vanlig JavaScript
+Pythons standardbibliotek. På en Mac med Apple-chip startar fabriken om sig själv
+som arm64 om den har startats under Rosetta, eftersom git inte fungerar där på
+nyare macOS (`unable to load libxcrun`). Formuläret i `designer/webb/` är vanlig JavaScript
 utan byggsteg, så samma formulär kan flyttas in i portalen på hjerdal.se senare.
 Förhandsvisningarna byggs i `ut/designer/`, skilt från `ut/<kund>/` som
 publiceras. Servern svarar bara förfrågningar till sig själv: allt som ändrar
@@ -279,6 +297,7 @@ designer/          HJERDAL Designer
   server.py          webbservern och API:t, bara Pythons standardbibliotek
   mcp.py             MCP-servern för Claude
   claude.py          chatten: kör Claude Code med säljarens konto, i bakgrunden, med ångra
+  export.py          kundens underlag som en HTML-fil att skicka till kunden
   bild.py            gör uppladdade bilder lagom stora och tar bort metadata
   komprimera.mjs     själva bildbehandlingen, med sharp
   ikon.png           programikonen, från HJERDALs Instagram-profilbild
@@ -293,7 +312,7 @@ karna/             Astro-sajten alla kunder byggs från
   src/styles/bas.css grunden som alla stilar bygger på
   src/lib/ld.ts      strukturerad data
   src/data/kund.json exempelkunden, så att kärnan går att köra med npm run dev
-kunder/<kund>/     kund.json och bilder/, en mapp per kund
+kunder/<kund>/     kund.json och bilder/, en mapp per kund, och arkiv.json om den är arkiverad
 ut/                byggda sajter, förhandsvisningar och delade beroenden (checkas inte in)
 ```
 

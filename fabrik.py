@@ -606,7 +606,8 @@ def lista() -> None:
             d = data.get("design", {})
             byggd = UT / mapp.name / "fabrik.json"
             nar = json.loads(byggd.read_text())["byggd"][:10] if byggd.exists() else "inte byggd"
-            info(f"{mapp.name:<24} {data.get('namn', '?'):<28} {d.get('stil', 'hjerdal'):<9} {d.get('tema', 'fjall'):<8} {nar}")
+            arkiv = "  arkiverad" if (mapp / "arkiv.json").exists() else ""
+            info(f"{mapp.name:<24} {data.get('namn', '?'):<28} {d.get('stil', 'hjerdal'):<9} {d.get('tema', 'fjall'):<8} {nar}{arkiv}")
         except (json.JSONDecodeError, KeyError):
             info(f"{mapp.name:<24} (kundfilen går inte att läsa)")
 
@@ -628,7 +629,35 @@ def publicera(kund: str, forslag: bool) -> None:
         (mapp / ".publicerad").write_text(dt.datetime.now().isoformat(timespec="seconds"), encoding="utf-8")
 
 
+def inte_rosetta() -> None:
+    """På en Mac med Apple-chip ska fabriken köra som arm64, aldrig som Intel under Rosetta.
+
+    Apples utvecklarverktyg finns bara för arm64 på nyare macOS, så git slutar fungera
+    i en process som körs under Rosetta ("unable to load libxcrun"). Det kan hända när
+    Designer startas från Dock, eftersom programmet är ett skript. Då startas samma
+    kommando om som arm64, med samma Python om den kan det, annars med Apples egen.
+    """
+    if sys.platform != "darwin" or os.environ.get("HJERDAL_ARM64"):
+        return
+    import ctypes  # noqa: PLC0415
+
+    varde, storlek = ctypes.c_int(0), ctypes.c_size_t(ctypes.sizeof(ctypes.c_int))
+    try:
+        libc = ctypes.CDLL("/usr/lib/libc.dylib")
+        if libc.sysctlbyname(b"sysctl.proc_translated", ctypes.byref(varde), ctypes.byref(storlek), None, 0) != 0 or varde.value != 1:
+            return
+    except OSError:
+        return
+    os.environ["HJERDAL_ARM64"] = "1"
+    for py in (sys.executable, "/usr/bin/python3"):
+        prov = subprocess.run(["/usr/bin/arch", "-arm64", py, "-c", "import sys; sys.exit(sys.version_info < (3, 9))"],
+                              capture_output=True, timeout=120, check=False)
+        if prov.returncode == 0:
+            os.execv("/usr/bin/arch", ["arch", "-arm64", py, str(Path(__file__).resolve()), *sys.argv[1:]])
+
+
 def main() -> int:
+    inte_rosetta()
     p = argparse.ArgumentParser(prog="fabrik.py", description="HJERDAL:s sajtfabrik för restauranger.")
     sub = p.add_subparsers(dest="kommando", required=True)
     s = sub.add_parser("ny", help="skapa en ny kund från mallen")
