@@ -75,9 +75,12 @@ def hitta() -> str | None:
     hit = shutil.which("claude", path=os.pathsep.join(vagar))
     if hit:
         return hit
-    # Claude-appen har en egen Claude Code; den nyaste versionen duger också.
-    appen = sorted(glob.glob(str(hem / "Library/Application Support/Claude/claude-code/*/claude")))
-    return appen[-1] if appen else None
+    # Installerad med npm under nvm, eller Claude-appens egen Claude Code; den nyaste versionen duger.
+    for monster in (".nvm/versions/node/*/bin/claude", ".volta/bin/claude", "Library/Application Support/Claude/claude-code/*/claude"):
+        hittade = sorted(glob.glob(str(hem / monster)))
+        if hittade:
+            return hittade[-1]
+    return None
 
 
 def miljo() -> dict:

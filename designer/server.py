@@ -16,6 +16,7 @@ webbplats inte kan skicka förfrågningar hit.
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import io
 import json
 import mimetypes
@@ -47,6 +48,17 @@ STATUSFIL = fabrik.UT / ".designer.json"
 VILA = 30 * 60
 BILDNAMN = re.compile(r"[A-Za-z0-9_][\w.-]*\.(jpe?g|png|webp|svg)", re.I)
 MAX_BILD = 20 * 1024 * 1024
+
+
+def kodens_version() -> str:
+    """Ett fingeravtryck av Designers Python-kod, så att en Designer som kör äldre kod känns igen."""
+    h = hashlib.sha1()
+    for fil in sorted([fabrik.FABRIK / "fabrik.py", *Path(__file__).resolve().parent.glob("*.py")]):
+        h.update(fil.read_bytes())
+    return h.hexdigest()[:12]
+
+
+KOD = kodens_version()
 
 bygglas = threading.Lock()
 senast_hord = time.monotonic()
@@ -340,7 +352,7 @@ def uppdatera() -> dict:
 
 def info() -> dict:
     gren = git("branch", "--show-current", kolla=False).stdout.strip()
-    return {"app": APP, "karna": fabrik.karnans_version(), "fabrik": str(fabrik.FABRIK), "gren": gren}
+    return {"app": APP, "karna": fabrik.karnans_version(), "fabrik": str(fabrik.FABRIK), "gren": gren, "kod": KOD}
 
 
 # --- HTTP ---------------------------------------------------------------------
@@ -593,13 +605,28 @@ class Server(ThreadingHTTPServer):
 # --- Start och stopp ----------------------------------------------------------
 
 def kor_redan() -> str | None:
-    """Adressen till en Designer som redan kör från samma fabrik, annars None."""
+    """Adressen till en Designer som redan kör från samma fabrik, annars None.
+
+    En Designer som kör äldre kod, till exempel efter git pull eller en ny
+    installation, avslutas, så att den nya koden startar i stället för att
+    fönstret öppnas mot den gamla servern.
+    """
     try:
         port = json.loads(STATUSFIL.read_text(encoding="utf-8"))["port"]
-        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/info", timeout=1.5) as svar:
+        bas = f"http://127.0.0.1:{port}"
+        with urllib.request.urlopen(f"{bas}/api/info", timeout=1.5) as svar:
             i = json.loads(svar.read())
-        if i.get("app") == APP and i.get("fabrik") == str(fabrik.FABRIK):
-            return f"http://127.0.0.1:{port}/"
+        if i.get("app") != APP or i.get("fabrik") != str(fabrik.FABRIK):
+            return None
+        if i.get("kod") == KOD:
+            return f"{bas}/"
+        fabrik.info("En äldre Designer kör. Den avslutas och den nya startar.")
+        avsluta = urllib.request.Request(f"{bas}/api/avsluta", data=b"", method="POST", headers={"X-Hjerdal": "1"})
+        with urllib.request.urlopen(avsluta, timeout=5):
+            pass
+        for _ in range(40):
+            time.sleep(0.25)
+            urllib.request.urlopen(f"{bas}/api/info", timeout=0.5).close()
     except (OSError, ValueError, KeyError):
         pass
     return None
