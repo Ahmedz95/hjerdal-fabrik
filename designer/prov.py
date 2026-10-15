@@ -61,7 +61,7 @@ def main() -> int:
                 time.sleep(0.25)
         print("\n▸ API")
         status, svar = fraga(bas, "GET", "/api/info")
-        kolla(status == 200 and json.loads(svar)["app"] == "HJERDAL Designer", "info svarar")
+        kolla(status == 200 and json.loads(svar)["app"] == "HJERDAL Designer" and json.loads(svar)["kod"], "info svarar med kodens version")
         schema = json.loads(fraga(bas, "GET", "/api/schema")[1])
         kolla({"stilar", "teman", "heros", "menyer", "namn", "schema"} <= schema.keys(), "schemat har stilar, teman och fält")
         kunder = json.loads(fraga(bas, "GET", "/api/kunder")[1])
