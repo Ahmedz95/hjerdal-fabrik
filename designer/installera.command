@@ -75,6 +75,8 @@ PLIST
 # Startaren: sökvägarna skrivs in nu, så att programmet hittar fabriken och rätt Python.
 {
   echo '#!/bin/bash'
+  echo '# macOS kan starta ett skriptprogram under Rosetta, och då fungerar inte git. Starta om som arm64.'
+  echo '[[ "$(sysctl -n sysctl.proc_translated 2>/dev/null)" == 1 ]] && exec /usr/bin/arch -arm64 /bin/bash "$0" "$@"'
   echo 'export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"'
   printf 'FABRIK=%q\n' "$FABRIK"
   printf 'PY=%q\n' "$PY"

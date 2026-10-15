@@ -27,6 +27,8 @@ const RITNINGAR = {
   angra: '<path d="M9 14.5 4.5 10 9 5.5"/><path d="M4.5 10h10a5 5 0 0 1 0 10H11"/>',
   bild: '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4 18 5.5-5.5 4 4 2.5-2.5 4.5 4.5"/>',
   hoger: '<path d="m9.5 6 6 6-6 6"/>',
+  arkiv: '<rect x="3.5" y="4.5" width="17" height="4.5" rx="1.2"/><path d="M5.2 9v9a2 2 0 0 0 2 2h9.6a2 2 0 0 0 2-2V9"/><path d="M10 13h4"/>',
+  export: '<path d="M12 14.5V4m-4 4 4-4 4 4"/><path d="M5 12.5V18a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5.5"/>',
   mote: '<rect x="3" y="4.5" width="18" height="12.5" rx="2"/><path d="m10.5 8.2 4 2.55-4 2.55Z"/><path d="M8.5 20.5h7"/>',
 };
 

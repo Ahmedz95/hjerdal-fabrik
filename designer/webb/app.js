@@ -22,6 +22,7 @@ const app = {
   upptagen: false,
   visning: null, // förhandsvisningen eller förslagen i helskärm
   start: null, // kunderna på startsidan och hur de ritas om
+  arkiv: null, // när den öppna kunden arkiverades och tas bort, om den är arkiverad
 };
 const rot = document.getElementById('app');
 // replaceChildren skriver ut null och false som text, så de filtreras bort först.
@@ -58,6 +59,8 @@ function meddela(text, typ = '') {
 }
 
 const datum = (s) => new Date(s * 1000).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+// "2026-11-14" eller "2026-10-15T13:10:00" blir "14 november".
+const dag = (iso) => new Date(iso.length === 10 ? `${iso}T12:00` : iso).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long' });
 const storlek = (b) => (b >= 1e6 ? `${(b / 1048576).toLocaleString('sv-SE', { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(b / 1024))} kB`);
 
 // --- Chatten ----------------------------------------------------------------------
@@ -90,6 +93,11 @@ document.addEventListener('hjerdal-visa', (e) => {
 function sidhuvud(kund) {
   const meny = h('div', { class: 'meny', hidden: true, role: 'menu' },
     kund && h('button', { type: 'button', role: 'menuitem', onclick: sparaGithub }, ikon('moln'), 'Spara till GitHub'),
+    kund && h('button', { type: 'button', role: 'menuitem', onclick: () => exportera(kund, app.data?.namn || kund) }, ikon('export'), 'Exportera för kunden'),
+    kund && (app.arkiv
+      ? h('button', { type: 'button', role: 'menuitem', onclick: () => aterstallKund({ kund, namn: app.data?.namn || kund }) }, ikon('angra'), 'Ta tillbaka från arkivet')
+      : h('button', { type: 'button', role: 'menuitem', onclick: () => arkiveraKund({ kund, namn: app.data?.namn || kund }) }, ikon('arkiv'), 'Arkivera kunden')),
+    kund && h('hr'),
     h('button', { type: 'button', role: 'menuitem', onclick: uppdatera }, ikon('hamta'), 'Hämta senaste fabriken'),
     h('button', { type: 'button', role: 'menuitem', onclick: visaHjalp }, ikon('hjalp'), 'Så använder du Designer'),
     h('hr'),
@@ -122,6 +130,7 @@ document.addEventListener('click', () => document.querySelectorAll('.meny').forE
 
 async function visaStart() {
   app.kund = null;
+  app.arkiv = null;
   document.title = 'HJERDAL Designer';
   document.body.className = '';
   chatt.laddaKund();
@@ -131,17 +140,31 @@ async function visaStart() {
   const dialog = nyKundDialog();
   const lista = h('ul', { class: 'kundlista' });
   const sok = h('input', { type: 'search', placeholder: 'Sök kund', 'aria-label': 'Sök kund', autocomplete: 'off' });
+  const antal = h('span', {});
+  const arkivRubrik = h('summary', {});
+  const arkivLista = h('ul', { class: 'arkivlista' });
+  const arkiv = h('details', { class: 'arkiv', id: 'arkiv' }, arkivRubrik, arkivLista);
   const ritaLista = () => {
     const q = sok.value.trim().toLowerCase();
-    const urval = app.start.kunder.filter((k) => !q || `${k.namn} ${k.kund}`.toLowerCase().includes(q)).sort((a, b) => b.andrad - a.andrad);
+    const traff = (k) => !q || `${k.namn} ${k.kund}`.toLowerCase().includes(q);
+    const aktiva = app.start.kunder.filter((k) => !k.arkiv);
+    const arkiverade = app.start.kunder.filter((k) => k.arkiv);
+    const urval = aktiva.filter(traff).sort((a, b) => b.andrad - a.andrad);
+    const arkivUrval = arkiverade.filter(traff).sort((a, b) => a.arkiv.tas_bort.localeCompare(b.arkiv.tas_bort));
+    antal.textContent = aktiva.length;
     fyll(lista,
       !q && h('li', {}, h('button', { class: 'kundkort ny', onclick: () => dialog.showModal() },
         h('span', { class: 'plus' }, ikon('plus', 28)), h('span', { class: 'kund-namn' }, 'Ny kund'), h('span', { class: 'kund-design' }, 'Börja med ett namn'))),
       urval.map((k) => kundkort(k, tema[k.design?.tema] ?? tema.fjall, stil)),
-      q && !urval.length && h('li', { class: 'inga' }, `Ingen kund heter något med ”${sok.value}”.`));
+      q && !urval.length && h('li', { class: 'inga' }, arkivUrval.length ? `Ingen aktiv kund heter något med ”${sok.value}”, men det finns i arkivet.` : `Ingen kund heter något med ”${sok.value}”.`));
+    arkiv.hidden = !arkiverade.length;
+    if (q && arkivUrval.length) arkiv.open = true;
+    fyll(arkivRubrik, ikon('arkiv', 18), h('strong', {}, 'Arkiv'), h('span', { class: 'arkiv-antal' }, arkiverade.length),
+      h('span', { class: 'arkiv-hjalp' }, 'Tas bort ur fabriken 30 dagar efter att de arkiverades'));
+    fyll(arkivLista, arkivUrval.map(arkivrad));
     skalaMiniatyrer(lista);
   };
-  app.start = { kunder, ritaLista };
+  app.start = { kunder, ritaLista, laddaOm: async () => { app.start.kunder = await api('GET', 'kunder'); ritaLista(); } };
   sok.addEventListener('input', ritaLista);
   ritaLista();
   fyll(rot,
@@ -155,8 +178,9 @@ async function visaStart() {
           h('button', { type: 'button', class: 'knapp primar stor', onclick: () => dialog.showModal() }, ikon('plus', 18), 'Ny kund'),
           h('button', { type: 'button', class: 'knapp stor', onclick: visaHjalp }, ikon('hjalp', 18), 'Så funkar det'))),
       h('section', { class: 'start-kunder' },
-        h('div', { class: 'start-rubrik' }, h('h2', {}, 'Kunder', h('span', {}, kunder.length)), kunder.length > 6 && h('label', { class: 'sok' }, ikon('sok', 17), sok)),
-        lista),
+        h('div', { class: 'start-rubrik' }, h('h2', {}, 'Kunder', antal), kunder.length > 6 && h('label', { class: 'sok' }, ikon('sok', 17), sok)),
+        lista,
+        arkiv),
       dialog),
     h('footer', { class: 'fot' },
       h('span', {}, `Kärnan ${app.info.karna}${app.info.gren ? ` · ${app.info.gren}` : ''}`),
@@ -184,13 +208,113 @@ function kundkort(k, t, stil) {
       ? h('iframe', { src: `${k.forhandsvisning}?v=${Math.round(k.byggd)}`, title: '', tabindex: '-1', 'aria-hidden': 'true', loading: 'lazy', sandbox: 'allow-same-origin' })
       : h('span', { class: 'kund-tema' }, h('span', { class: 'kund-prick' }), h('b', {}, 'Aa'), h('small', {}, 'Inte förhandsvisad än')),
     k.arbetar && h('span', { class: 'kund-claude' }, ikon('claude', 14), 'Claude arbetar…'));
-  return h('li', {}, h('a', { class: 'kundkort', href: `#/kund/${k.kund}` },
+  const meny = h('div', { class: 'meny', hidden: true, role: 'menu' },
+    h('button', { type: 'button', role: 'menuitem', onclick: () => exportera(k.kund, k.namn) }, ikon('export'), 'Exportera för kunden'),
+    h('button', { type: 'button', role: 'menuitem', onclick: () => arkiveraKund(k) }, ikon('arkiv'), 'Arkivera'));
+  const mer = h('button', { type: 'button', class: 'ikonknapp kort-mer', 'aria-label': `Mer för ${k.namn}`, 'aria-haspopup': 'menu', onclick: (e) => {
+    e.stopPropagation();
+    const dold = meny.hidden;
+    document.querySelectorAll('.meny').forEach((m) => (m.hidden = true));
+    meny.hidden = !dold;
+  } }, ikon('mer', 18));
+  return h('li', { class: 'kund-plats' }, h('a', { class: 'kundkort', href: `#/kund/${k.kund}` },
     bild,
     h('span', { class: 'kund-info' },
       h('span', { class: 'kund-namn' }, k.namn),
       k.status && h('span', { class: 'kund-status', 'data-status': k.status, title: STATUSHJALP[k.status] }, STATUS[k.status](k)),
       h('span', { class: 'kund-design' }, k.fel ?? `${stil[k.design.stil] ?? k.design.stil} · ${t.namn}`),
-      h('span', { class: 'kund-andrad' }, `Ändrad ${datum(k.andrad)}`))));
+      h('span', { class: 'kund-andrad' }, `Ändrad ${datum(k.andrad)}`))),
+  h('div', { class: 'mer kort-meny' }, mer, meny));
+}
+
+/** En arkiverad kund: när den tas bort, och knappar för att exportera eller ta tillbaka den. */
+function arkivrad(k) {
+  const kvar = k.arkiv.dagar_kvar;
+  return h('li', { class: 'arkivrad' },
+    h('a', { class: 'arkiv-namn', href: `#/kund/${k.kund}` }, k.namn),
+    h('span', { class: 'arkiv-nar' }, `Arkiverad ${dag(k.arkiv.arkiverad)}${k.arkiv.av ? ` av ${k.arkiv.av}` : ''}`),
+    h('span', { class: 'arkiv-bort', 'data-snart': String(kvar <= 3) }, kvar ? `Tas bort ${dag(k.arkiv.tas_bort)}, om ${kvar} ${kvar === 1 ? 'dag' : 'dagar'}` : 'Tas bort nu'),
+    h('span', { class: 'arkiv-knappar' },
+      h('button', { type: 'button', class: 'knapp litet', onclick: () => exportera(k.kund, k.namn) }, ikon('export', 15), 'Exportera'),
+      h('button', { type: 'button', class: 'knapp litet', onclick: () => aterstallKund(k) }, ikon('angra', 15), 'Ta tillbaka')));
+}
+
+// --- Arkivet och exporten ---------------------------------------------------------------
+
+/** Kundens underlag som en HTML-fil i Hämtade filer, att skicka till kunden. */
+async function exportera(kund, namn) {
+  if (app.kund === kund) await sparaNu();
+  try {
+    const svar = await fetch(`/api/kunder/${kund}/export`);
+    if (!svar.ok) throw new Error((await svar.json().catch(() => ({}))).fel ?? `Fel ${svar.status}`);
+    const fil = `${kund}-underlag.html`;
+    const url = URL.createObjectURL(await svar.blob());
+    const a = h('a', { href: url, download: fil });
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    meddela(`${fil} ligger i Hämtade filer. Skicka den till ${namn}, den öppnas i webbläsaren.`);
+  } catch (err) {
+    meddela(err.message, 'fel');
+  }
+}
+
+function arkiveraKund(k) {
+  const fel = h('p', { class: 'felrad', role: 'alert' });
+  const ja = h('button', { type: 'button', class: 'knapp primar', onclick: async () => {
+    ja.disabled = true;
+    ja.lastChild.textContent = 'Arkiverar…';
+    try {
+      if (app.kund === k.kund) await sparaNu();
+      const svar = await api('POST', `kunder/${k.kund}/arkivera`);
+      dialog.close();
+      meddela(svar.meddelande);
+      if (app.kund) location.hash = '#/';
+      else await app.start.laddaOm();
+    } catch (err) {
+      fel.textContent = err.message;
+      ja.disabled = false;
+      ja.lastChild.textContent = 'Arkivera';
+    }
+  } }, ikon('arkiv', 17), h('span', {}, 'Arkivera'));
+  const dialog = h('dialog', { class: 'dialog' },
+    h('h2', {}, `Arkivera ${k.namn}?`),
+    h('p', {}, 'Kunden försvinner från startsidan och läggs i Arkiv längst ner. Efter 30 dagar tas den bort ur fabriken. Fram till dess kan du ta tillbaka den.'),
+    h('p', { class: 'hjalp' }, 'Ska kunden få allt som står om restaurangen? Exportera först. Filen öppnas i webbläsaren och går att mejla.'),
+    fel,
+    h('div', { class: 'dialog-knappar' },
+      h('button', { type: 'button', class: 'knapp vanster', onclick: () => exportera(k.kund, k.namn) }, ikon('export', 17), h('span', {}, 'Exportera först')),
+      h('button', { type: 'button', class: 'knapp', onclick: () => dialog.close() }, 'Avbryt'),
+      ja));
+  dialog.addEventListener('close', () => dialog.remove());
+  document.body.append(dialog);
+  dialog.showModal();
+}
+
+async function aterstallKund(k) {
+  try {
+    const svar = await api('POST', `kunder/${k.kund}/aterstall`);
+    meddela(svar.meddelande);
+    if (app.kund === k.kund) {
+      app.arkiv = null;
+      ritaArkivruta();
+      document.querySelector('.topp').replaceWith(sidhuvud(app.kund));
+    } else if (app.start) {
+      await app.start.laddaOm();
+    }
+  } catch (err) {
+    meddela(err.message, 'fel');
+  }
+}
+
+/** Överst i en arkiverad kund: när den tas bort och en knapp för att ta tillbaka den. */
+function ritaArkivruta() {
+  const ruta = document.getElementById('arkivruta');
+  if (!ruta) return;
+  fyll(ruta, app.arkiv && h('div', { class: 'arkivruta', role: 'status' }, ikon('arkiv', 18),
+    h('span', {}, `Kunden är arkiverad och tas bort ur fabriken ${dag(app.arkiv.tas_bort)}.`),
+    h('button', { type: 'button', class: 'knapp litet', onclick: () => aterstallKund({ kund: app.kund, namn: app.data?.namn || app.kund }) }, ikon('angra', 15), 'Ta tillbaka')));
 }
 
 /** Sajterna på startsidan ritas i datorbredd och skalas ner till kortet. */
@@ -244,7 +368,7 @@ function nyKundDialog() {
 
 async function visaKund(kund) {
   const [svar, bilder] = await Promise.all([api('GET', `kunder/${kund}`), api('GET', `kunder/${kund}/bilder`)]);
-  Object.assign(app, { kund, data: svar.data, andrad: svar.andrad, bilder, fel: [], fran: new Map(), osparat: false, stangda: new Set() });
+  Object.assign(app, { kund, data: svar.data, andrad: svar.andrad, arkiv: svar.arkiv, bilder, fel: [], fran: new Map(), osparat: false, stangda: new Set() });
   document.title = `${svar.data.namn ?? kund} | HJERDAL Designer`;
   document.body.className = 'i-kund';
   let chattOppen = true;
@@ -255,8 +379,9 @@ async function visaKund(kund) {
     h('div', { class: 'redigera', id: 'redigera' },
       h('nav', { class: 'stegnav', id: 'nav', 'aria-label': 'Delar av formuläret' }),
       h('main', { class: 'formular-yta', id: 'yta' },
-        h('div', { class: 'formular-bredd' }, h('div', { id: 'sammanfattning' }), h('form', { id: 'formular', onsubmit: (e) => e.preventDefault() }))),
+        h('div', { class: 'formular-bredd' }, h('div', { id: 'arkivruta' }), h('div', { id: 'sammanfattning' }), h('form', { id: 'formular', onsubmit: (e) => e.preventDefault() }))),
       chatt.el));
+  ritaArkivruta();
   ritaOm();
   await chatt.laddaKund();
   dispatchEvent(new Event('hjerdal-kund-oppnad'));
@@ -868,6 +993,7 @@ function visaHjalp() {
     ['Förhandsvisa', 'Tryck Förhandsvisa. Sajten byggs på ungefär 15 sekunder och visas i helskärm. Byt mellan mobil, surfplatta och dator. Esc stänger.'],
     ['Visa kunden förslag', 'Tryck Förslag för fyra stilar och Visa för kunden för helskärm. Pilarna byter stil, Välj den här sparar den kunden gillar.'],
     ['Spara till GitHub', 'När kunden är klar: tryck på de tre prickarna och Spara till GitHub. Då kommer sajten med i fabriken.'],
+    ['Exportera och arkivera', 'Exportera för kunden ger en fil med allt om restaurangen som kunden öppnar i webbläsaren. Arkivera det som inte är aktuellt: kunden flyttas till Arkiv längst ner på startsidan och tas bort efter 30 dagar.'],
   ];
   const dialog = h('dialog', { class: 'dialog hjalp-dialog' },
     h('div', { class: 'hjalp-huvud' }, h('h2', {}, 'Så använder du Designer'), h('button', { type: 'button', class: 'ikonknapp', 'aria-label': 'Stäng', onclick: () => dialog.close() }, ikon('stang', 20))),

@@ -138,6 +138,37 @@ button { cursor: pointer; }
 .kundkort.ny .plus { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: auto; border-radius: 50%; background: var(--ink); color: var(--bg); }
 .kundkort.ny .kund-namn { font-size: 27px; font-weight: 300; }
 .kundlista .inga { padding: 24px 0; color: var(--gra); }
+.kund-plats { position: relative; display: flex; }
+.kund-plats > .kundkort { flex: 1; }
+.kort-meny { position: absolute; top: 10px; right: 10px; }
+.kort-mer { width: 34px; height: 34px; background: var(--vit); color: var(--ink); box-shadow: var(--skugga); opacity: 0; transition: opacity .15s; }
+.kort-mer:hover { background: var(--vit); }
+.kund-plats:hover .kort-mer, .kort-mer:focus-visible, .kort-mer[aria-expanded="true"], .kort-meny:has(.meny:not([hidden])) .kort-mer { opacity: 1; }
+@media (hover: none) { .kort-mer { opacity: 1; } }
+.kort-meny .meny { top: 42px; min-width: 220px; }
+
+/* Arkivet under kunderna: en rad per kund, med när den tas bort. */
+.arkiv { margin-top: 36px; border-top: 1px solid var(--linje); }
+.arkiv > summary { display: flex; align-items: center; gap: 10px; padding: 20px 0; color: var(--gra); cursor: pointer; list-style: none; }
+.arkiv > summary::-webkit-details-marker { display: none; }
+.arkiv > summary::after { content: ""; width: 7px; height: 7px; margin-left: 2px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform .15s; }
+.arkiv[open] > summary::after { transform: rotate(45deg); }
+.arkiv > summary strong { color: var(--ink); font-size: 15px; font-weight: 600; }
+.arkiv-antal { color: var(--gra2); }
+.arkiv-hjalp { order: 1; margin-left: auto; color: var(--gra2); font-size: 13px; }
+.arkivlista { display: grid; margin: 0 0 12px; padding: 0; list-style: none; border-top: 1px solid var(--linje); }
+.arkivrad { display: grid; grid-template-columns: minmax(160px, 1.2fr) 1fr 1fr auto; align-items: center; gap: 8px 20px; padding: 12px 0; border-bottom: 1px solid var(--linje); font-size: 14px; }
+.arkiv-namn { color: inherit; font-size: 16px; text-decoration: none; }
+.arkiv-namn:hover { text-decoration: underline; text-underline-offset: 3px; }
+.arkiv-nar { color: var(--gra); }
+.arkiv-bort { color: var(--gra); }
+.arkiv-bort[data-snart="true"] { color: var(--fel); font-weight: 500; }
+.arkiv-knappar { display: flex; gap: 8px; }
+@media (max-width: 760px) { .arkiv-hjalp { display: none; } .arkivrad { grid-template-columns: 1fr auto; } .arkiv-nar, .arkiv-bort { grid-column: 1; } .arkiv-knappar { grid-column: 2; grid-row: 1 / span 3; flex-direction: column; } }
+.arkivruta { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; padding: 12px 14px 12px 18px; border-radius: 14px; background: var(--yta); color: var(--gra); font-size: 14px; }
+.arkivruta span { flex: 1; }
+.arkivruta .knapp { flex: none; }
+.dialog-knappar .vanster { margin-right: auto; }
 .fot { display: flex; flex-wrap: wrap; gap: 24px; max-width: 1200px; margin: auto; padding: 36px clamp(20px, 4vw, 48px) 56px; color: var(--gra); font-size: 13px; }
 
 /* --- Dialoger -------------------------------------------------------------------- */
