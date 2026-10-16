@@ -1,0 +1,71 @@
+---
+// Historien om kökschefen, från kundfilens Om oss, med det andra ramenfotot och
+// tre siffror. Siffrorna står också i texten; de räknas upp när de syns.
+import { Picture } from 'astro:assets';
+import { kund } from '../../lib/kund';
+import { bild } from '../../lib/bilder';
+
+const om = kund.om;
+const foto = bild('om');
+const siffror = [
+  { tal: 18, enhet: 'h', utlast: 'timmar', text: 'buljong på spisen' },
+  { tal: 7, enhet: 'd', utlast: 'dagar', text: 'vila för tare' },
+  { tal: 42, enhet: '', utlast: '', text: 'platser, med bar mot köket' },
+];
+---
+{om && (
+  <section class="cn-historia" id="historia" aria-labelledby="cn-historia-rubrik">
+    <div class="wrap cn-historia-grid">
+      <div class="cn-historia-text">
+        <p class="lbl"><b>Historia</b> · <span>Från Dotonbori till Götgatan</span></p>
+        <h2 class="h2" id="cn-historia-rubrik">{om.rubrik}</h2>
+        {om.stycken.map((s) => <p>{s}</p>)}
+        <dl class="cn-siffror">
+          {siffror.map((s) => (
+            <div>
+              <dt>{s.text}</dt>
+              <dd><span data-rakna={s.tal}>{s.tal}</span>{s.enhet && <><sup aria-hidden="true">{s.enhet}</sup><span class="sr"> {s.utlast}</span></>}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      {foto && (
+        <figure class="cn-foto">
+          <Picture src={foto.src} alt={foto.alt} widths={[480, 720, 960, 1280]} sizes="(min-width: 900px) 40vw, 92vw" formats={['avif', 'webp']} />
+          <span class="cn-ton" aria-hidden="true"></span>
+          <canvas class="cn-anga" data-anga data-ox=".55" data-oy=".5" data-spread=".55" aria-hidden="true"></canvas>
+          <figcaption><b>Tonkotsu Neon</b> · arton timmar på spisen</figcaption>
+        </figure>
+      )}
+    </div>
+  </section>
+)}
+
+<script>
+  import { startaAnga } from './anga';
+
+  document.querySelectorAll<HTMLCanvasElement>('[data-anga]').forEach(startaAnga);
+
+  // Siffrorna räknas upp från noll första gången de syns.
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const io = new IntersectionObserver(
+      (poster) => {
+        for (const p of poster) {
+          if (!p.isIntersecting) continue;
+          io.unobserve(p.target);
+          const el = p.target as HTMLElement;
+          const slut = Number(el.dataset.rakna);
+          const t0 = performance.now();
+          const steg = (t: number) => {
+            const k = Math.min(1, (t - t0) / 1100);
+            el.textContent = String(Math.round(slut * (1 - Math.pow(1 - k, 3))));
+            if (k < 1) requestAnimationFrame(steg);
+          };
+          requestAnimationFrame(steg);
+        }
+      },
+      { threshold: 0.6 },
+    );
+    document.querySelectorAll('[data-rakna]').forEach((el) => io.observe(el));
+  }
+</script>

@@ -12,7 +12,7 @@ p { margin: 0; }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 2px; }
 .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: max(var(--gut), env(safe-area-inset-left)) max(var(--gut), env(safe-area-inset-right)); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.skip { position: absolute; left: var(--gut); top: -60px; z-index: 10; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; text-decoration: none; }
+.skip { position: absolute; left: var(--gut); top: -60px; z-index: 100; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; text-decoration: none; }
 .skip:focus { top: 12px; }
 
 /* Typografi */
@@ -91,6 +91,9 @@ p { margin: 0; }
 [data-hero="bild"] .fakta { display: none; }
 
 /* Menyn */
+.special { margin-top: clamp(24px, 3vw, 32px); max-width: 60ch; padding: 16px 20px; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--r-kort); }
+.special .lbl { margin: 0 0 6px; }
+.special p:last-child { margin: 0; font-size: 17px; }
 .meny-nav { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
 .meny-nav ul { display: flex; gap: 8px; margin: 0; padding: 12px 0; list-style: none; overflow-x: auto; scrollbar-width: none; }
 .meny-nav a { display: block; padding: 9px 16px; border-radius: var(--r-btn); box-shadow: inset 0 0 0 1px var(--line); font-size: 14px; white-space: nowrap; text-decoration: none; }

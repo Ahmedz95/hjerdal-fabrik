@@ -1,0 +1,59 @@
+/* CyberNoodle: en gränd i Osaka klockan tre på natten. Nattsvart med blå ton,
+   rosa och turkos neon, buljongens guld för priserna och text i rispappersvitt.
+   Färgerna och typsnitten som CSS-variabler, så att också starterns sidor
+   (404, QR-skylten) får dem. Resten av utseendet står i brand.css.
+
+   Typsnitten ligger i src/assets/typsnitt/, beskurna till de latinska tecken som
+   svenska behöver och de japanska tecken som sajten använder, i två filer per vikt
+   så att de latinska kommer först (se DESIGN_LANGUAGE.md). */
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 500; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-500-latin.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0-00FF, U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605; }
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 500; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-500-jp.woff2") format("woff2"); unicode-range: U+3000-30FF, U+4E00-9FFF; }
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 700; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-700-latin.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0-00FF, U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605; }
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 700; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-700-jp.woff2") format("woff2"); unicode-range: U+3000-30FF, U+4E00-9FFF; }
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 800; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-800-latin.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0-00FF, U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605; }
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 800; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-800-jp.woff2") format("woff2"); unicode-range: U+3000-30FF, U+4E00-9FFF; }
+@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 400; font-display: swap; src: url("../assets/typsnitt/zen-kaku-gothic-new-400-latin.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0-00FF, U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605; }
+@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 400; font-display: swap; src: url("../assets/typsnitt/zen-kaku-gothic-new-400-jp.woff2") format("woff2"); unicode-range: U+3000-30FF, U+4E00-9FFF; }
+@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 700; font-display: swap; src: url("../assets/typsnitt/zen-kaku-gothic-new-700-latin.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0-00FF, U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605; }
+@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 700; font-display: swap; src: url("../assets/typsnitt/zen-kaku-gothic-new-700-jp.woff2") format("woff2"); unicode-range: U+3000-30FF, U+4E00-9FFF; }
+@font-face { font-family: "Chakra Petch"; font-weight: 400; font-display: swap; src: url("../assets/typsnitt/chakra-petch-400.woff2") format("woff2"); }
+@font-face { font-family: "Chakra Petch"; font-weight: 500; font-display: swap; src: url("../assets/typsnitt/chakra-petch-500.woff2") format("woff2"); }
+@font-face { font-family: "Chakra Petch"; font-weight: 600; font-display: swap; src: url("../assets/typsnitt/chakra-petch-600.woff2") format("woff2"); }
+
+html {
+  color-scheme: dark;
+
+  /* Gränden */
+  --night: #09090F;      /* bakgrunden */
+  --alley: #12121C;      /* ytor */
+  --wet: #1B1B29;        /* upphöjda ytor */
+  --paper: #EFE8DC;      /* text, varm som rispapper */
+  --dim: #9A96AD;        /* dämpad text */
+  --rule: #2A2A3D;       /* linjer */
+  --rule-strong: #646180; /* kanten på formulärfält */
+  --sakura: #FF3D8B;     /* neon, rosa: det man klickar på */
+  --cyan: #3FE0FF;       /* neon, kall: valt, öppet, fokus */
+  --broth: #F3B65C;      /* buljongens guld: priser */
+  --violet: #C58BFF;     /* en skylt i fjärran */
+
+  /* Starterns namn på samma färger */
+  --bg: var(--night); --surface: var(--alley); --ink: var(--paper); --muted: var(--dim);
+  --line: var(--rule); --accent: var(--sakura); --accent-ink: var(--night);
+
+  /* Typsnitten */
+  --f-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
+  --f-body: "Zen Kaku Gothic New", "Hiragino Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-hud: "Chakra Petch", ui-monospace, Menlo, monospace;
+  --f-pris: var(--f-hud); --pris-track: .02em;
+  --display-weight: 700; --display-track: -.02em; --display-case: none;
+  --lbl: 400 12px/1.5 var(--f-hud); --lbl-track: .28em; --lbl-case: uppercase; --lbl-color: var(--dim);
+  --btn: 600 13px/1 var(--f-hud); --btn-track: .16em; --btn-case: uppercase;
+  --logo: 800 21px/1 var(--f-display); --logo-track: -.01em; --logo-case: none; --logo-h: 34px;
+  --ratt: 700 23px/1.15 var(--f-display); --ratt-case: none;
+
+  /* Mått och former */
+  --wrap: 1180px; --gut: clamp(16px, 4vw, 40px);
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --r-btn: 999px; --r-tagg: 999px; --r-kort: 2px; --r-bild: 4px;
+  --sektion: clamp(72px, 10vw, 128px);
+}

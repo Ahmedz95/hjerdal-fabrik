@@ -1,0 +1,85 @@
+---
+// Hitta hit och boka bord. Adressen och öppettiderna kommer från kundfilen.
+// Bokningen väljer antal, dag och tid med tummen; dagar då det är stängt finns
+// inte med. Den behöver JavaScript, och utan det står telefonnumret kvar.
+import { kund, telLank } from '../../lib/kund';
+import { tidText, datumText, kommande } from '../../lib/format';
+import { veckan } from './data';
+
+interface Props {
+  /** 1 på sidan Hitta hit, där bokningen är sidans rubrik. */
+  niva?: 1 | 2;
+}
+const { niva = 2 } = Astro.props;
+const Rubrik = niva === 1 ? 'h1' : 'h2';
+const { adress, telefon, karta } = kund.kontakt;
+const avvikelser = kommande(kund.avvikelser);
+---
+<section class="cn-boka" id="boka" aria-labelledby="cn-boka-rubrik">
+  <div class="wrap cn-boka-grid">
+    <div class="cn-boka-info">
+      <div class="cn-head">
+        <p class="lbl"><b>Hitta hit</b> · <span>Boka bord</span></p>
+        <Rubrik class="h2" id="cn-boka-rubrik">Följ neonet nedför trappan.</Rubrik>
+      </div>
+      <p class="cn-adress">
+        {adress.gata}, {adress.postnummer} {adress.ort}
+        <small>Två minuter från Medborgarplatsen. Leta efter den rosa skylten.</small>
+      </p>
+      <p class="cn-kontakt">
+        {karta && <a href={karta} rel="noopener">Visa på kartan</a>}
+        <a href={telLank(telefon)}>{telefon}</a>
+      </p>
+      <dl class="cn-tider">
+        {veckan.map((d) => (
+          <div data-veckodag={d.index}>
+            <dt>{d.namn}<span data-idag hidden> · i dag</span></dt>
+            <dd>{tidText(d.tider)}</dd>
+          </div>
+        ))}
+      </dl>
+      {avvikelser.length > 0 && (
+        <ul class="cn-avvikelser">
+          {avvikelser.map((a) => <li>{a.text}, {datumText(a.datum)}: {a.stangt ? 'stängt' : tidText(a.tider).toLowerCase()}</li>)}
+        </ul>
+      )}
+    </div>
+
+    <div class="cn-boka-ruta">
+      <form class="cn-bokning" data-bokning hidden novalidate aria-label="Boka bord">
+        <fieldset class="cn-val">
+          <legend>Antal gäster</legend>
+          <div class="cn-knappval">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <label><input type="radio" name="gaster" value={n} checked={n === 2} /><span>{n}</span></label>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset class="cn-val">
+          <legend>Dag</legend>
+          <div class="cn-knappval" data-dagar></div>
+        </fieldset>
+        <fieldset class="cn-val">
+          <legend>Tid</legend>
+          <p class="cn-tid-fel" id={`cn-tid-fel-${niva}`} data-tid-fel hidden></p>
+          <div class="cn-knappval" data-tider></div>
+        </fieldset>
+        <div class="cn-val">
+          <label class="cn-falt-namn" for={`cn-gast-${niva}`}>Namn</label>
+          <input type="text" id={`cn-gast-${niva}`} name="namn" autocomplete="name" placeholder="Ditt namn" />
+        </div>
+        <button class="btn btn-accent" type="submit">Boka bordet</button>
+        <div class="cn-bekraftelse" data-bekraftelse role="status" aria-live="polite"></div>
+      </form>
+      <p class="cn-ring"><span class="cn-med-js">Hellre ringa, eller fler än sex?</span><span class="cn-utan-js-text">Boka bord genom att ringa. Säg hur många ni är och vilken dag ni vill komma, så ordnar vi ett bord.</span> <a href={telLank(telefon)}>Ring {telefon}</a></p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { startaBokning } from './boka';
+  import { markeraIdag } from './oppet';
+
+  markeraIdag();
+  startaBokning();
+</script>

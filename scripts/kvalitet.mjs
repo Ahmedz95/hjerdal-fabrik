@@ -93,11 +93,13 @@ async function startaChrome() {
 /** Scrollar igenom sidan så att bilder med loading="lazy" laddas, och tillbaka upp. */
 async function scrollaIgenom(sida) {
   await sida.evaluate(async () => {
+    // Utan glidande scroll, som en sajt kan ha slagit på med scroll-behavior: smooth,
+    // så att bilderna längre ned hinner laddas och skärmdumpen tas från toppen.
     for (let y = 0; y < document.documentElement.scrollHeight; y += window.innerHeight * 0.8) {
-      window.scrollTo(0, y);
+      window.scrollTo({ top: y, behavior: 'instant' });
       await new Promise((r) => setTimeout(r, 60));
     }
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   });
   await sida.waitForLoadState('networkidle').catch(() => {});
 }
@@ -161,7 +163,11 @@ async function kontrollera(webblasare, lage, sokvag, rapport) {
     fel.push(`${matt.evigaAnimationer} animationer rör sig fast besökaren har valt minskad rörelse`);
   }
   if (lage.bild) {
-    await sida.screenshot({ path: join(mal, `${bildnamn(sokvag)}-${lage.namn}.jpg`), fullPage: true, type: 'jpeg', quality: 80 });
+    // Chrome tar inte skärmdumpar högre än 16 384 pixlar, så en lång sida i mobilen
+    // tas i en pixel per CSS-pixel i stället för att bli tom längst ned.
+    const hojd = await sida.evaluate(() => document.documentElement.scrollHeight);
+    const skala = hojd * (lage.kontext.deviceScaleFactor ?? 1) > 16384 ? 'css' : 'device';
+    await sida.screenshot({ path: join(mal, `${bildnamn(sokvag)}-${lage.namn}.jpg`), fullPage: true, type: 'jpeg', quality: 80, scale: skala });
   }
   await kontext.close();
 

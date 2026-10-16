@@ -1,0 +1,60 @@
+---
+// Skärmen ovanför baren, samma meny som hemsidan i neon. Laddar om sig själv
+// var femte minut, så en ändrad meny syns efter nästa publicering. Delar av
+// menyn med dagar och tider visas bara då, som på starterns skärm.
+import Bas from '../layouts/Bas.astro';
+import Huvud from '../components/brand/Huvud.astro';
+import { kund } from '../lib/kund';
+import { pris, spann } from '../lib/format';
+---
+<Bas title={`Menyskärm | ${kund.namn}`} description={`Menyskärmen ovanför baren hos ${kund.namn}, med kvällens meny och special.`} sokvag="/skarm/" noindex naken>
+  <meta slot="head" http-equiv="refresh" content="300" />
+  <Huvud slot="head" />
+  <main class="cn-skarm">
+    <header class="cn-skarm-topp">
+      <h1>{kund.namn}</h1>
+      <p><span class="cn-jp-tecken" aria-hidden="true">ラーメン</span><span aria-hidden="true"> · </span><span id="klocka"></span></p>
+    </header>
+    <div class="cn-skarm-grid">
+      {kund.meny.sektioner.map((s) => (
+        <section class="cn-skarm-sek" data-dagar={s.dagar?.join(',')} data-fran={s.fran} data-till={s.till}>
+          <h2>{s.namn}{s.fran && s.till && <span> {spann([s.fran, s.till])}</span>}</h2>
+          <ul>
+            {s.ratter.map((r) => (
+              <li class:list={{ slut: r.slut }}>
+                <span class="cn-skarm-namn">{r.namn}</span>
+                <span class="cn-skarm-pris">{r.slut ? 'Slut' : r.pris !== undefined ? pris(r.pris) : r.prisText}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+    {kund.meny.special && <p class="cn-skarm-special">★ {kund.meny.special}</p>}
+  </main>
+  <script is:inline>
+    (() => {
+      const dagar = ['son', 'man', 'tis', 'ons', 'tor', 'fre', 'lor'];
+      const min = (t) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
+      const sek = [...document.querySelectorAll('.cn-skarm-sek')];
+      const visa = () => {
+        const nu = new Date();
+        const m = nu.getHours() * 60 + nu.getMinutes();
+        const idag = dagar[nu.getDay()];
+        const passar = (el) => {
+          const d = el.dataset.dagar;
+          if (d && !d.split(',').includes(idag)) return false;
+          const { fran, till } = el.dataset;
+          if (!fran || !till) return true;
+          const [a, b] = [min(fran), min(till)];
+          return a <= b ? m >= a && m < b : m >= a || m < b;
+        };
+        const synliga = sek.filter(passar);
+        sek.forEach((el) => (el.hidden = synliga.length > 0 && !synliga.includes(el)));
+        document.getElementById('klocka').textContent = nu.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+      };
+      visa();
+      setInterval(visa, 30000);
+    })();
+  </script>
+</Bas>

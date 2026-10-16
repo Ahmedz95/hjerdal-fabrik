@@ -1,0 +1,29 @@
+{
+  "kund": "cybernoodle",
+  "verksamhet": "En ramenrestaurang på Götgatan på Södermalm med stämningen från Osakas bakgator klockan tre på natten: neon, regn och en lång bar mot köket. Tonkotsu som kokas i arton timmar, tare som vilar i en vecka och öppet till två på helgerna. Ett koncept som HJERDAL har byggt för att visa vad en restaurangsajt kan vara.",
+  "malgrupp": "Kompisgäng, par och ensamma ramenälskare 20-40 som letar middag eller något sent i kväll, nästan alltid i mobilen. De vill se stämningen, menyn med priser, om det är öppet nu och boka ett bord.",
+  "mal": [
+    "besökaren vill gå dit i kväll redan på första skärmen",
+    "besökaren hittar menyn som riktig text med priser och ser om det är öppet nu",
+    "besökaren bokar ett bord med tummen, eller ringer",
+    "restaurangen ser att köket kan ändra menyn på ett ställe och att hemsidan, QR-menyn och skärmen i lokalen ändras samtidigt"
+  ],
+  "kansla": ["nattlig", "våt och upplyst", "elegant", "hantverk", "inte skrikig", "inte en spelsajt"],
+  "maste": [
+    "menyn som riktig text med priser, japanska namn, märkning och allergener",
+    "kvällens special överst på menyn",
+    "menyfilter",
+    "öppet nu, öppettider och adress",
+    "bokning med antal, dag och tid, och telefon",
+    "bakom kulisserna: ändra pris, slut i kväll och special, och se menyn, QR-menyn och skärmen ändras",
+    "menyskärmen ovanför baren och QR-menyn"
+  ],
+  "inte": [
+    "typsnitt eller annat från andra webbplatser",
+    "påhittade omdömen, betyg, väntetider eller lediga platser",
+    "text om att företaget är påhittat utöver märkningen Koncept"
+  ],
+  "referenser": ["cybernoodle"],
+  "fakta": "koncept",
+  "anteckningar": "Designriktningen är HJERDAL:s eget case i examples/cybernoodle, som Ahmed redan har godkänt. Sajten görs om i fabriken på startern och mäts mot caset. Ahmed bestämde 14 oktober 2026 att sajten bara märks Koncept, och att bokningens bekräftelse säger att det är en demo."
+}
