@@ -226,10 +226,10 @@ final class Designer: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNavig
     func applicationDidBecomeActive(_ notification: Notification) {
         guard server != nil, !startar else { return }
         Task {
-            let svarar = await Task.detached { () -> Server? in
+            let svarar = await Task.detached { () async -> Server? in
                 if let server = lasServer() { return server }
                 // En server som startar om efter Hämta senaste fabriken är borta en kort stund.
-                Thread.sleep(forTimeInterval: 3)
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
                 return lasServer()
             }.value
             guard !self.startar else { return }
