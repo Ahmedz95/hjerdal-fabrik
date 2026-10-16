@@ -83,7 +83,10 @@ a[href^="tel:"] { font-family: var(--f-hud); letter-spacing: .02em; }
 .cn-knappar { display: flex; flex-wrap: wrap; gap: 12px; }
 .cn-hud { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 0; padding: 0; list-style: none; font: 400 13px/1.4 var(--f-hud); letter-spacing: .08em; color: var(--dim); }
 .cn-hud li { display: flex; align-items: center; gap: 8px; }
-.cn-hud li[hidden] { display: none; }
+/* Öppet nu fylls i av skriptet. Raden finns från början och står för sig själv, så att
+   adressen och pausknappen inte flyttar sig när texten kommer. */
+.cn-hud .cn-status { flex-basis: 100%; min-height: 18px; }
+.cn-status:has(strong:empty) { visibility: hidden; }
 .cn-hud strong { font-weight: 500; color: var(--paper); }
 .cn-hud a { display: inline-flex; align-items: center; min-height: 44px; color: var(--dim); text-decoration: none; }
 .cn-hud a span { box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--sakura) 70%, transparent); }

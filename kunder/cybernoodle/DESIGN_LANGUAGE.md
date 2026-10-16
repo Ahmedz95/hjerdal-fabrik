@@ -83,6 +83,11 @@ skärmen, och knappen Pausa rörelsen i första skärmen stoppar regnet, ångan 
 Med minskad rörelse står allt still från början: regnet och ångan ritas en gång som en
 stillbild, och ändringar syns direkt.
 
+Natten ritas i tre canvasar ovanpå varandra, så att en långsam telefon hinner med:
+skyltarna i halv upplösning åtta gånger i sekunden, staden en gång, och dropparna 30
+gånger i sekunden i andra bilder än skyltarna. Utan den uppdelningen tog varje bild runt
+70 ms med Lighthouse fyra gånger långsammare processor, och startsidan blev seg.
+
 ## Wow-ögonblicket
 
 Bakom kulisserna: besökaren ändrar ett pris, markerar en rätt som slut eller skriver en

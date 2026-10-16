@@ -20,7 +20,7 @@ const uppraknat = (a: string[]) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}
   <div class="wrap">
     <div class="cn-head">
       <p class="lbl"><b>Kvällens meny</b> · <span>Samma meny som i köket</span></p>
-      <Rubrik class="h2" id="cn-meny-rubrik">{menyRubrik()}</Rubrik>
+      <Rubrik class="h2" id="cn-meny-rubrik">{menyRubrik().map((rad, i) => <>{i > 0 && <br />}{rad}</>)}</Rubrik>
       {kund.meny.text && <p>{kund.meny.text}</p>}
     </div>
     <div class="cn-special" data-special-ruta hidden={!kund.meny.special}>

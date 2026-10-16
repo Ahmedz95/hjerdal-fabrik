@@ -9,6 +9,6 @@ const { adress } = kund.kontakt;
 const description = `Hitta till ${kund.namn} på ${adress.gata} i ${adress.ort}. Öppettider, karta och telefon, två minuter från Medborgarplatsen.`;
 ---
 <Bas title={`Hitta hit, ${adress.gata} på Södermalm | ${kund.namn}`} {description} sokvag="/kontakt/" ld={[restaurangLd()]}>
-  <Huvud slot="head" />
+  <Huvud slot="head" rubrik={700} />
   <Boka niva={1} />
 </Bas>

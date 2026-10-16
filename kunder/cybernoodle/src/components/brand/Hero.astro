@@ -38,7 +38,7 @@ const namn = kund.namn.match(/^(Cyber)(Noodle)$/);
         <a class="btn btn-line" href="#meny">Se kvällens meny</a>
       </div>
       <ul class="cn-hud">
-        <li data-oppet-status hidden><span class="cn-punkt" aria-hidden="true"></span><strong data-oppet-text></strong></li>
+        <li class="cn-status" data-oppet-status><span class="cn-punkt" aria-hidden="true"></span><strong data-oppet-text></strong></li>
         <li>{kund.kontakt.karta ? <a href={kund.kontakt.karta}><span>{adress.gata}, Södermalm</span></a> : `${adress.gata}, Södermalm`}</li>
         <li class="cn-paus"><label><input type="checkbox" data-paus /><i aria-hidden="true"></i>Pausa rörelsen</label></li>
       </ul>

@@ -1,11 +1,22 @@
 ---
-// Det som läggs i varje sidas head: de två typsnitt som syns först hämtas direkt,
-// så att rubriken och ingressen inte hoppar när de kommer, och en stil för den som
-// inte har JavaScript, så att inget hoppar när skripten startar för alla andra.
-import namnet from '../../assets/typsnitt/shippori-mincho-b1-800-latin.woff2?url';
+// Det som läggs i varje sidas head: typsnitten som syns i första skärmen hämtas
+// direkt, så att rubriken, etiketterna och knapparna inte hoppar när de kommer, och
+// en stil för den som inte har JavaScript, så att inget hoppar när skripten startar
+// för alla andra. Startsidan och 404 har namnet i 800; menyn och Hitta hit har
+// rubriken i 700.
+import rubrik700 from '../../assets/typsnitt/shippori-mincho-b1-700-latin.woff2?url';
+import rubrik800 from '../../assets/typsnitt/shippori-mincho-b1-800-latin.woff2?url';
 import texten from '../../assets/typsnitt/zen-kaku-gothic-new-400-latin.woff2?url';
+import hud400 from '../../assets/typsnitt/chakra-petch-400.woff2?url';
+import hud500 from '../../assets/typsnitt/chakra-petch-500.woff2?url';
+import hud600 from '../../assets/typsnitt/chakra-petch-600.woff2?url';
+
+interface Props {
+  rubrik?: 700 | 800;
+}
+const { rubrik = 800 } = Astro.props;
+const filer = [rubrik === 700 ? rubrik700 : rubrik800, texten, hud400, hud500, hud600];
 ---
-<link rel="preload" href={namnet} as="font" type="font/woff2" crossorigin />
-<link rel="preload" href={texten} as="font" type="font/woff2" crossorigin />
+{filer.map((fil) => <link rel="preload" href={fil} as="font" type="font/woff2" crossorigin />)}
 {/* html före klassen, eftersom sajtens stil kommer efter den här i head. */}
-<noscript><style>html .cn-filter, html .cn-med-js { display: none; } html .cn-utan-js-text { display: revert; }</style></noscript>
+<noscript><style>html .cn-filter, html .cn-med-js, html .cn-status { display: none; } html .cn-utan-js-text { display: revert; }</style></noscript>

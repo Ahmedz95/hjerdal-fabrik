@@ -36,10 +36,11 @@ export const prisText = (r: { pris?: number; prisText?: string }) => (r.pris !==
 
 const tal = ['Noll', 'En', 'Två', 'Tre', 'Fyra', 'Fem', 'Sex', 'Sju', 'Åtta', 'Nio', 'Tio', 'Elva', 'Tolv'];
 /** "Sex skålar, en natt i Osaka.", räknat ur menyns första sektion. */
-export const menyRubrik = () => {
+/** Menyns rubrik i två rader, "Sex skålar," och "en natt i Osaka.". Raden bryts alltid
+ *  efter kommat, också innan typsnittet har kommit, så att rubriken inte hoppar. */
+export const menyRubrik = (): string[] => {
   const n = sektioner[0].ratter.length;
-  // Hårda mellanslag, så att raden bryts efter kommat: "Sex skålar, / en natt i Osaka."
-  return n <= 12 ? `${tal[n]} ${n === 1 ? 'skål' : 'skålar'}, en\u00a0natt\u00a0i\u00a0Osaka.` : 'En natt i Osaka.';
+  return n <= 12 ? [`${tal[n]} ${n === 1 ? 'skål' : 'skålar'},`, 'en natt i Osaka.'] : ['En natt i Osaka.'];
 };
 
 const minuter = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
