@@ -167,6 +167,10 @@ export const schema = z.object({
     .object({
       rubrik: z.string().default('Meny').describe('Rubrik'),
       text: z.string().optional().describe('Text under rubriken||flerrad'),
+      special: z
+        .string()
+        .optional()
+        .describe('Special|En rätt eller ett erbjudande som gäller nu, till exempel kvällens special. Visas överst på menyn och på menyskärmen. Töm fältet när den inte gäller längre.|flerrad'),
       allergiText: z.string().default('Fråga oss om allergener. Vi vet vad som finns i varje rätt.').describe('Text om allergener||flerrad'),
       sektioner: z.array(sektion).min(1).describe('Sektioner'),
     })

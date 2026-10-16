@@ -93,11 +93,13 @@ async function startaChrome() {
 /** Scrollar igenom sidan så att bilder med loading="lazy" laddas, och tillbaka upp. */
 async function scrollaIgenom(sida) {
   await sida.evaluate(async () => {
+    // Utan glidande scroll, som en sajt kan ha slagit på med scroll-behavior: smooth,
+    // så att bilderna längre ned hinner laddas och skärmdumpen tas från toppen.
     for (let y = 0; y < document.documentElement.scrollHeight; y += window.innerHeight * 0.8) {
-      window.scrollTo(0, y);
+      window.scrollTo({ top: y, behavior: 'instant' });
       await new Promise((r) => setTimeout(r, 60));
     }
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   });
   await sida.waitForLoadState('networkidle').catch(() => {});
 }

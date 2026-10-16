@@ -28,6 +28,7 @@ import { pris, spann } from '../lib/format';
         </section>
       ))}
     </div>
+    {kund.meny.special && <p class="skarm-special"><span class="lbl">Special</span> {kund.meny.special}</p>}
   </div>
   <script is:inline>
     (() => {
@@ -66,6 +67,8 @@ import { pris, spann } from '../lib/format';
     .skarm ul { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
     .skarm li { display: flex; justify-content: space-between; gap: 2vw; padding-block: .9vw; border-bottom: 1px solid var(--line); font-size: max(18px, 1.55vw); }
     .skarm li.slut { color: var(--muted); text-decoration: line-through; }
+    .skarm-special { margin: 0; padding-top: 1.4vw; border-top: 1px solid var(--line); font-size: max(18px, 1.55vw); }
+    .skarm-special .lbl { margin-right: .8em; }
     .skarm-tagg { font-size: .6em; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
   </style>
 </Bas>

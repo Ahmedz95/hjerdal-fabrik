@@ -1,0 +1,71 @@
+---
+// Första skärmen: CyberNoodle lyser som en neonskylt över regn och en stad i
+// natten, med ett rykande ramenfoto bredvid, inramat av skyltar på japanska.
+// Utan JavaScript står staden still som en bakgrund i CSS, och fotot och texten
+// är desamma.
+import { Picture } from 'astro:assets';
+import { kund } from '../../lib/kund';
+import { bild } from '../../lib/bilder';
+import { prisText } from './data';
+
+const foto = bild('hero');
+const { adress } = kund.kontakt;
+// Rätten på fotot. Priset står i menyn, så att bildtexten följer med när köket ändrar det.
+const fotoRatt = kund.meny.sektioner.flatMap((s) => s.ratter).find((r) => r.namn === 'Osaka Midnight');
+// Buljongens arton timmar i guld, om ingressen säger det.
+const guld = 'arton timmar';
+const [fore, efter] = kund.ingress.includes(guld) ? kund.ingress.split(guld) : [kund.ingress, undefined];
+const namn = kund.namn.match(/^(Cyber)(Noodle)$/);
+---
+<section class="cn-hero" aria-labelledby="cn-namn">
+  <canvas class="cn-regn" data-regn aria-hidden="true"></canvas>
+  <div class="cn-fjarran" aria-hidden="true">
+    <span style="left:3%;top:10%;font-size:22px;color:var(--cyan)">居酒屋</span>
+    <span style="left:44%;top:6%;font-size:18px;color:var(--sakura)">カラオケ</span>
+    <span style="left:36%;bottom:16%;font-size:16px;color:var(--broth)">焼き鳥</span>
+    <span style="right:2%;top:4%;font-size:20px;color:var(--violet)">ホテル</span>
+    <span style="left:18%;top:62%;font-size:14px;color:var(--cyan)">喫茶</span>
+  </div>
+  <div class="wrap cn-hero-grid">
+    <div class="cn-hero-text">
+      <p class="lbl"><b>Osaka</b> × Södermalm · Ramen-ya sedan 2024</p>
+      <h1 class="cn-skylt" id="cn-namn">
+        {namn ? <><span>{namn[1]}</span><span class="cn-neon">{namn[2]}</span></> : <span class="cn-neon">{kund.namn}</span>}
+      </h1>
+      <p class="cn-ingress">{kund.rubrik} {fore}{efter !== undefined && <><em>{guld}</em>{efter}</>}</p>
+      <div class="cn-knappar">
+        <a class="btn btn-accent" href="#boka">Boka bord</a>
+        <a class="btn btn-line" href="#meny">Se kvällens meny</a>
+      </div>
+      <ul class="cn-hud">
+        <li data-oppet-status hidden><span class="cn-punkt" aria-hidden="true"></span><strong data-oppet-text></strong></li>
+        <li>{adress.gata}, Södermalm</li>
+      </ul>
+    </div>
+    {foto && (
+      <div class="cn-visual">
+        <figure class="cn-foto">
+          <Picture src={foto.src} alt={foto.alt} widths={[480, 720, 960, 1280]} sizes="(min-width: 900px) 42vw, 92vw" formats={['avif', 'webp']} loading="eager" fetchpriority="high" />
+          <span class="cn-ton" aria-hidden="true"></span>
+          <canvas class="cn-anga" data-anga data-ox=".5" data-oy=".42" data-spread=".5" aria-hidden="true"></canvas>
+          {fotoRatt && <figcaption><b>{fotoRatt.namn}</b> · {prisText(fotoRatt)}</figcaption>}
+        </figure>
+        <span class="cn-vskylt cn-s1" aria-hidden="true">ラーメン<small>Ramen</small></span>
+        <span class="cn-vskylt cn-s2" aria-hidden="true">深夜営業<small>Open late</small></span>
+        <span class="cn-vskylt cn-s3" aria-hidden="true">大阪</span>
+        <span class="cn-vskylt cn-s4" aria-hidden="true">麺</span>
+      </div>
+    )}
+  </div>
+</section>
+
+<script>
+  import { startaRegn } from './regn';
+  import { startaAnga } from './anga';
+  import { visaStatus } from './oppet';
+
+  visaStatus();
+  const regn = document.querySelector<HTMLCanvasElement>('[data-regn]');
+  if (regn) startaRegn(regn);
+  document.querySelectorAll<HTMLCanvasElement>('[data-anga]').forEach(startaAnga);
+</script>

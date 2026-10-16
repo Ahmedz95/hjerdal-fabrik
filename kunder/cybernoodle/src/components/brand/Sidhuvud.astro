@@ -1,0 +1,32 @@
+---
+// Sidhuvudet: namnet, länkarna och Boka bord, fast överst när man scrollar.
+// I mobilen ligger länkarna på en egen rad under, som scrollar bort.
+import { kund, url } from '../../lib/kund';
+
+interface Props { sokvag: string }
+const { sokvag } = Astro.props;
+const lankar = [
+  { href: '/meny/', label: 'Meny' },
+  ...(kund.om ? [{ href: '/#historia', label: 'Historia' }] : []),
+  { href: '/kontakt/', label: 'Hitta hit' },
+  { href: '/#bakom', label: 'Bakom kulisserna' },
+];
+// Bokningen finns på startsidan och på Hitta hit.
+const boka = sokvag === '/' || sokvag === '/kontakt/' ? '#boka' : url('/kontakt/#boka');
+---
+<header class="cn-top">
+  <div class="wrap">
+    <a class="cn-logo" href={url('/')} aria-label={`${kund.namn}, till startsidan`}>
+      <span>{kund.namn}</span><small aria-hidden="true">サイバーヌードル</small>
+    </a>
+    <nav class="cn-nav" aria-label="Huvudmeny">
+      {lankar.map((l) => <a href={url(l.href)} aria-current={sokvag === l.href ? 'page' : undefined}>{l.label}</a>)}
+    </nav>
+    <a class="btn btn-accent btn-liten" href={boka}>Boka bord</a>
+  </div>
+</header>
+<nav class="cn-nav-mobil" aria-label="Huvudmeny">
+  <div class="wrap">
+    {lankar.map((l) => <a href={url(l.href)} aria-current={sokvag === l.href ? 'page' : undefined}>{l.label}</a>)}
+  </div>
+</nav>

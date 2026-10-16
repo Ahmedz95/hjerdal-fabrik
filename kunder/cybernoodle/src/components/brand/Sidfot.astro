@@ -1,0 +1,46 @@
+---
+// Sidfoten: natten på japanska som en släckt skylt, var stället ligger, när det
+// är öppet och vem som har gjort sajten. Här ligger också öppettiderna som data
+// till skripten som visar om det är öppet just nu.
+import { kund, url, telLank } from '../../lib/kund';
+import { dagText, tidText } from '../../lib/format';
+import { oppet } from './data';
+
+const { adress, telefon } = kund.kontakt;
+const sociala = Object.entries(kund.sociala).filter(([, l]) => l) as [string, string][];
+const socialaNamn: Record<string, string> = { instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok' };
+const oppetJson = JSON.stringify(oppet());
+---
+<footer class="cn-fot">
+  <div class="wrap">
+    <p class="cn-fot-skylt" aria-hidden="true">夜のラーメン</p>
+    <div class="cn-fot-grid">
+      <div>
+        <h2 class="lbl">Hitta hit</h2>
+        <p>{adress.gata}<br />{adress.postnummer} {adress.ort}</p>
+        <p><a href={telLank(telefon)}>{telefon}</a></p>
+      </div>
+      <div>
+        <h2 class="lbl">Öppet</h2>
+        <ul>
+          {kund.oppettider.map((o) => <li>{dagText(o.dagar)} <span class="cn-tab">{tidText(o.tider).toLowerCase()}</span></li>)}
+        </ul>
+      </div>
+      <div>
+        <h2 class="lbl">Sidor</h2>
+        <ul>
+          <li><a href={url('/meny/')}>Meny</a></li>
+          <li><a href={url('/kontakt/')}>Hitta hit och boka</a></li>
+          <li><a href={url('/#bakom')}>Bakom kulisserna</a></li>
+          {sociala.map(([vad, lank]) => <li><a href={lank} rel="noopener">{socialaNamn[vad]}</a></li>)}
+        </ul>
+      </div>
+    </div>
+    <div class="cn-fot-bas">
+      <span>© {new Date().getFullYear()} {kund.namn} · Koncept</span>
+      <span>Foton: <a href="https://unsplash.com/license" rel="noopener">Unsplash</a></span>
+      {kund.funktioner.hjerdalLank && <a href="https://hjerdal.se/hemsida-for-restaurang/">Design och kod av HJERDAL</a>}
+    </div>
+  </div>
+</footer>
+<script type="application/json" id="cn-oppet" set:html={oppetJson}></script>

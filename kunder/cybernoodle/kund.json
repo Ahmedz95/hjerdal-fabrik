@@ -1,0 +1,73 @@
+{
+  "namn": "CyberNoodle",
+  "doman": "cybernoodle.hjerdal.se",
+  "beskrivning": "Ramen från Osakas bakgator på Götgatan, Södermalm. Tonkotsu som kokat i arton timmar, öppet sent och bord att boka direkt på sajten.",
+  "rubrik": "Ramen från Osakas bakgator, serverad under neon.",
+  "ingress": "Buljongen har kokat i arton timmar innan du ens har hängt av dig jackan.",
+  "kok": ["Ramen", "Japansk"],
+  "prisniva": "$$",
+  "kontakt": {
+    "telefon": "+46 70 174 06 42",
+    "adress": { "gata": "Götgatan 42", "postnummer": "118 26", "ort": "Stockholm" },
+    "karta": "https://www.google.com/maps/search/?api=1&query=G%C3%B6tgatan+42%2C+118+26+Stockholm"
+  },
+  "boka": { "url": "https://cybernoodle.hjerdal.se/kontakt/#boka", "text": "Boka bord" },
+  "sociala": {},
+  "oppettider": [
+    { "dagar": ["man"], "tider": [] },
+    { "dagar": ["tis", "ons"], "tider": [["17:00", "23:00"]] },
+    { "dagar": ["tor"], "tider": [["17:00", "00:00"]] },
+    { "dagar": ["fre"], "tider": [["17:00", "02:00"]] },
+    { "dagar": ["lor"], "tider": [["15:00", "02:00"]] },
+    { "dagar": ["son"], "tider": [["16:00", "22:00"]] }
+  ],
+  "avvikelser": [],
+  "om": {
+    "rubrik": "Kökschefen Rin Takeda lärde sig ramen klockan tre på natten.",
+    "stycken": [
+      "I en gränd bakom Dōtonbori, under en skylt som surrade, stod hon i sju år vid samma gryta. Det är den grytan vi försöker laga i Stockholm.",
+      "Neonet är för stämningen. Allt annat är hantverk: tonkotsu som kokas i arton timmar, tare som vilar i en vecka och ägg som marineras över natten. Vi har 42 platser, en lång bar mot köket och lagom mycket rök i luften."
+    ]
+  },
+  "meny": {
+    "rubrik": "Meny",
+    "text": "Allt kokas här, från buljongen till den sjudna äggulan. Nudlarna dras varje morgon av vetemjöl från Östergötland och kansui från Osaka.",
+    "special": "Hakata-ramen med extra fet tonkotsu och tunna nudlar. Bara 30 skålar i kväll.",
+    "allergiText": "Priser i kronor inklusive moms. Säg till om allergier, vi anpassar gärna.",
+    "sektioner": [
+      {
+        "namn": "Ramen",
+        "ratter": [
+          { "namn": "Tonkotsu Neon", "text": "Fläskbuljong i arton timmar, chashu, sjudet ägg, svart vitlöksolja och nori.", "pris": 195, "taggar": [], "allergener": ["gluten", "ägg", "soja"] },
+          { "namn": "Miso Blackout", "text": "Röd och vit miso från Sendai, stekt fläskfärs, majs, smör och sesam.", "pris": 189, "taggar": [], "allergener": ["gluten", "soja", "mjölk", "sesam"] },
+          { "namn": "Tantan Pulse", "text": "Sesam och chiliolja, malet fläsk, pak choi och Sichuanpeppar som stickar.", "pris": 198, "taggar": ["stark"], "allergener": ["gluten", "soja", "sesam"] },
+          { "namn": "Yuzu Shio Glow", "text": "Klar kycklingbuljong med havssalt och yuzu, kyckling sous vide, mitsuba.", "pris": 185, "taggar": [], "allergener": ["gluten"] },
+          { "namn": "Vegan Ghost", "text": "Shiitake- och kombudashi, rostad sojabuljong, tofu och grillad svamp.", "pris": 179, "taggar": ["vegansk"], "allergener": ["gluten", "soja"] },
+          { "namn": "Osaka Midnight", "text": "Shoyu på tre sorters soja, tunna raka nudlar, wagyu-chashu och vårlök.", "pris": 245, "taggar": [], "allergener": ["gluten", "soja"] }
+        ]
+      },
+      {
+        "namn": "Smått",
+        "ratter": [
+          { "namn": "Gyoza Circuit", "text": "Sex stekta gyoza med fläsk och kål, chilivinäger.", "pris": 89, "taggar": [], "allergener": ["gluten", "soja", "sesam"] },
+          { "namn": "Karaage Osaka", "text": "Friterad kyckling marinerad i ingefära och soja, yuzumajonnäs.", "pris": 95, "taggar": [], "allergener": ["gluten", "soja", "ägg"] },
+          { "namn": "Edamame Static", "text": "Grillade sojabönor med flingsalt och shichimi.", "pris": 55, "taggar": ["vegansk", "stark"], "allergener": ["soja", "sesam"] }
+        ]
+      },
+      {
+        "namn": "Dryck",
+        "ratter": [
+          { "namn": "Yuzu Highball", "text": "Japansk whisky, yuzu och kolsyrat vatten.", "pris": 135, "taggar": [], "allergener": [] },
+          { "namn": "Calpis Soda", "text": "Syrlig japansk läsk med jäst mjölk. Alkoholfri.", "pris": 49, "taggar": [], "allergener": ["mjölk"] },
+          { "namn": "Ramune", "text": "Glasflaskan med kulan. Fråga om dagens smak.", "pris": 45, "taggar": [], "allergener": [] }
+        ]
+      }
+    ]
+  },
+  "bilder": {
+    "hero": { "fil": "ramen-osaka-midnight.jpg", "alt": "Rykande skål shoyu-ramen med chashu, sjudet ägg, menma och nori" },
+    "om": { "fil": "ramen-tonkotsu.jpg", "alt": "Tonkotsu-ramen med chashu, spenat, nori och två sjudna ägg i svart skål" }
+  },
+  "design": { "stil": "hjerdal", "tema": "skiffer", "hero": "text", "meny": "lista" },
+  "funktioner": { "omOss": false, "skarm": true, "qr": true, "hjerdalLank": true }
+}

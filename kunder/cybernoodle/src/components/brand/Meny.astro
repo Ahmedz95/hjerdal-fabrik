@@ -1,0 +1,82 @@
+---
+// Kvällens meny som riktig text: kvällens special överst, en knapp per del av
+// menyn att visa och rätterna som kort med japanskt namn, pris, märkning och
+// allergener. Allt från kundfilen. Köksadmin på startsidan ändrar samma kort.
+import { kund, taggar } from '../../lib/kund';
+import { japanska, sektioner, prisText, menyRubrik } from './data';
+
+interface Props {
+  /** 1 på menysidan, där menyn är sidans rubrik. */
+  niva?: 1 | 2;
+}
+const { niva = 2 } = Astro.props;
+const Rubrik = niva === 1 ? 'h1' : 'h2';
+const SektionRubrik = niva === 1 ? 'h2' : 'h3';
+const RattRubrik = niva === 1 ? 'h3' : 'h4';
+const tagg: Partial<Record<string, string>> = { stark: 'het', vegansk: 'gron', vegetarisk: 'gron' };
+const uppraknat = (a: string[]) => (a.length > 1 ? `${a.slice(0, -1).join(', ')} och ${a.at(-1)}` : a[0]);
+---
+<section class="cn-meny cn-sektion-yta" id="meny" aria-labelledby="cn-meny-rubrik">
+  <div class="wrap">
+    <div class="cn-head">
+      <p class="lbl"><b>Kvällens meny</b> · Uppdateras live från köket</p>
+      <Rubrik class="h2" id="cn-meny-rubrik">{menyRubrik()}</Rubrik>
+      {kund.meny.text && <p>{kund.meny.text}</p>}
+    </div>
+    <div class="cn-special" data-special-ruta hidden={!kund.meny.special}>
+      <p class="lbl">Kvällens special</p>
+      <p class="cn-special-text" data-special-text>{kund.meny.special}</p>
+    </div>
+    {sektioner.length > 1 && (
+      <div class="cn-filter" role="group" aria-label="Visa en del av menyn" data-filter hidden>
+        <button type="button" data-visa="alla" aria-pressed="true">Alla</button>
+        {sektioner.map((s) => <button type="button" data-visa={s.id} aria-pressed="false">{s.namn}</button>)}
+      </div>
+    )}
+    <div class="cn-sektioner">
+      {sektioner.map((s) => (
+        <section class="cn-sektion" data-sektion={s.id} aria-labelledby={`cn-sek-${s.id}`}>
+          <div class="cn-sektion-head">
+            <SektionRubrik class="cn-sektion-namn" id={`cn-sek-${s.id}`}>{s.namn}</SektionRubrik>
+            {s.text && <p>{s.text}</p>}
+          </div>
+          <div class="cn-ratter">
+            {s.ratter.map((r) => (
+              <article class:list={['cn-ratt', { slut: r.slut }]} data-ratt={r.id}>
+                <span class="cn-stampel" data-stampel hidden={!r.slut}>Slut i kväll</span>
+                {japanska[r.namn] && <span class="cn-jp" aria-hidden="true">{japanska[r.namn]}</span>}
+                <div class="cn-ratt-rad">
+                  <RattRubrik class="cn-ratt-namn">{r.namn}</RattRubrik>
+                  <span class="cn-pris" data-pris>{prisText(r)}</span>
+                </div>
+                {r.text && <p class="cn-ratt-text">{r.text}</p>}
+                {r.taggar.length > 0 && (
+                  <ul class="cn-taggar" aria-label="Märkning">
+                    {r.taggar.map((t) => <li class:list={['cn-tagg', tagg[t]]}>{taggar[t]}</li>)}
+                  </ul>
+                )}
+                {r.allergener.length > 0 && <p class="cn-allergener">Innehåller {uppraknat(r.allergener)}</p>}
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+    <p class="cn-meny-fot">{kund.meny.allergiText}</p>
+  </div>
+</section>
+
+<script>
+  // Knapparna som visar en del av menyn. Utan JavaScript syns hela menyn.
+  for (const grupp of document.querySelectorAll<HTMLElement>('[data-filter]')) {
+    const meny = grupp.closest('.cn-meny')!;
+    grupp.hidden = false;
+    grupp.addEventListener('click', (e) => {
+      const knapp = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-visa]');
+      if (!knapp) return;
+      const visa = knapp.dataset.visa;
+      for (const b of grupp.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b === knapp));
+      for (const s of meny.querySelectorAll<HTMLElement>('[data-sektion]')) s.hidden = visa !== 'alla' && s.dataset.sektion !== visa;
+    });
+  }
+</script>

@@ -1,0 +1,134 @@
+---
+// Wow-ögonblicket: köksadmin. Besökaren ändrar ett pris, markerar en rätt som
+// slut eller skriver en ny special, och menyn på sidan, QR-menyn på borden och
+// skärmen ovanför baren ändras samtidigt. Allt utgår från kundfilens meny, så
+// det som visas innan någon ändrar är kvällens riktiga meny. På en riktig sajt
+// gör köket samma sak i HJERDAL Designer, och skärmen (/skarm/) och QR-menyn
+// (/meny/) är sidor på sajten.
+import QRCode from 'qrcode';
+import { kund, url } from '../../lib/kund';
+import { sektioner, ratter, prisText } from './data';
+
+const special = kund.meny.special ?? '';
+const menyUrl = `https://${kund.doman}/meny/`;
+const qr = await QRCode.toString(menyUrl, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#09090fff', light: '#00000000' } });
+// Skärmen visar maten: allt utom menyns sista del (drycken), högst åtta rätter.
+const tvRatter = (sektioner.length > 1 ? sektioner.slice(0, -1) : sektioner).flatMap((s) => s.ratter).slice(0, 8);
+const data = {
+  special,
+  sektioner: sektioner.map((s) => s.id),
+  ratter: ratter.map((r) => ({ id: r.id, namn: r.namn, sektion: r.sektion, pris: r.pris, prisText: r.prisText, slut: r.slut, stark: r.taggar.includes('stark') })),
+};
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+---
+<section class="cn-kulisser" id="bakom" aria-labelledby="cn-bakom-rubrik">
+  <div class="wrap">
+    <div class="cn-head">
+      <p class="lbl"><b>Bakom kulisserna</b> · Byggt av HJERDAL</p>
+      <h2 class="h2" id="cn-bakom-rubrik">Ändra en gång. Syns överallt.</h2>
+      <p>Det här är panelen som köket använder. Prova att höja ett pris, markera en rätt som slut eller skriva en ny special. Menyn ovanför, QR-menyn på borden och skärmen ovanför baren ändras samtidigt.</p>
+    </div>
+
+    <div class="cn-studio">
+      <div class="cn-panel" data-panel>
+        <div class="cn-panel-head">
+          <h3 class="lbl">Köksadmin · Kvällens meny</h3>
+          <span class="cn-sparat" data-ping aria-hidden="true">● Sparat</span>
+        </div>
+        <fieldset class="cn-redigera" data-redigera disabled>
+          <legend class="sr">Kvällens meny</legend>
+          <div class="cn-kolumner" aria-hidden="true"><span>Rätt</span><span>Pris</span><span>Slut</span></div>
+          {ratter.map((r) => (
+            <div class="cn-rad">
+              {r.pris !== undefined ? (
+                <label class="cn-rad-namn" for={`cn-pris-${r.id}`}><span class="sr">Pris för </span>{r.namn}</label>
+              ) : (
+                <span class="cn-rad-namn">{r.namn}</span>
+              )}
+              {r.pris !== undefined ? (
+                <input class="cn-rad-pris" type="number" id={`cn-pris-${r.id}`} data-id={r.id} data-falt="pris" min="0" max="999" step="5" value={r.pris} inputmode="numeric" />
+              ) : (
+                <span class="cn-rad-pris">{r.prisText}</span>
+              )}
+              <span class="cn-brytare">
+                <input type="checkbox" data-id={r.id} data-falt="slut" checked={r.slut} aria-label={`${r.namn} slut i kväll`} />
+                <i aria-hidden="true"></i>
+              </span>
+            </div>
+          ))}
+          <div class="cn-special-falt">
+            <label class="lbl" for="cn-special-in">Kvällens special</label>
+            <textarea id="cn-special-in" data-falt="special" maxlength="110" rows="3">{special}</textarea>
+          </div>
+          <div class="cn-snabbval" role="group" aria-label="Snabbval">
+            <button type="button" data-snabb="rusning">Fredagsrusning</button>
+            <button type="button" data-snabb="happy">Happy hour −15 %</button>
+            <button type="button" data-snabb="aterstall">Återställ</button>
+          </div>
+        </fieldset>
+        <p class="cn-utan-js" data-utan-js>Panelen behöver JavaScript. Skärmen och QR-menyn bredvid visar kvällens meny som den är.</p>
+      </div>
+
+      <div class="cn-utdata">
+        <div class="cn-skarmar">
+          <div class="cn-ut">
+            <div class="cn-ut-rubrik">
+              <p class="lbl">Skärmen ovanför baren</p>
+              <span class="cn-ping" data-ping aria-hidden="true">uppdaterad</span>
+            </div>
+            <div class="cn-tv" aria-hidden="true">
+              <div class="cn-tv-topp"><b>{kund.namn}</b><span data-klocka>ラーメン</span></div>
+              <div class="cn-tv-lista">
+                {tvRatter.map((r) => (
+                  <div class:list={['cn-tv-rad', { slut: r.slut }]} data-ratt={r.id}>
+                    <span class="cn-tv-namn">{r.namn}</span>
+                    <span class="cn-tv-pris" data-pris-tal>{r.pris ?? r.prisText}</span>
+                  </div>
+                ))}
+              </div>
+              <div class="cn-tv-special" data-special-tv>★ {special || 'Ingen special i kväll'}</div>
+            </div>
+            {kund.funktioner.skarm && <a class="cn-ut-lank" href={url('/skarm/')}>Öppna skärmen</a>}
+          </div>
+          <div class="cn-ut">
+            <div class="cn-ut-rubrik">
+              <p class="lbl">QR-menyn på borden</p>
+              <span class="cn-ping" data-ping aria-hidden="true">uppdaterad</span>
+            </div>
+            <div class="cn-mobil" aria-hidden="true">
+              <div class="cn-mobil-topp"><b>{kund.namn}</b><span>Bord 7</span></div>
+              <div class="cn-mobil-special" data-special-text>{special || 'Ingen special i kväll'}</div>
+              <div class="cn-mobil-lista">
+                {ratter.map((r) => (
+                  <div class:list={['cn-mobil-rad', { slut: r.slut }]} data-ratt={r.id}>
+                    <span class="cn-mobil-namn">{r.namn}</span>
+                    <span class="cn-mobil-pris" data-pris-mobil>{r.slut ? 'Slut' : prisText(r)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <a class="cn-ut-lank" href={url('/meny/')}>Öppna QR-menyn</a>
+          </div>
+        </div>
+        <div class="cn-qr">
+          <div class="cn-qr-kod" set:html={qr} role="img" aria-label={`QR-kod till ${kund.doman}/meny`}></div>
+          <p>Gästen skannar koden på bordet och får samma meny i mobilen. Ingen tryckt meny att byta ut när priset ändras eller när gyozan tar slut klockan nio.</p>
+        </div>
+      </div>
+    </div>
+
+    <ul class="cn-bevis">
+      <li><b>Ett ställe att ändra</b><span>Köket uppdaterar menyn från mobilen mellan två beställningar.</span></li>
+      <li><b>Tre ställen som visar</b><span>Hemsidan, QR-menyn och skärmen läser från samma meny.</span></li>
+      <li><b>Syns på Google</b><span>Menyn är riktig text som sökmotorer läser, inte en PDF eller en bild.</span></li>
+    </ul>
+  </div>
+  <div class="cn-toast" data-toast role="status" aria-live="polite"></div>
+  <script type="application/json" id="cn-meny-data" set:html={json}></script>
+</section>
+
+<script>
+  import { startaKulisser } from './kulisser';
+
+  startaKulisser();
+</script>

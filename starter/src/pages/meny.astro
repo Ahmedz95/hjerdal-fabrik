@@ -17,6 +17,7 @@ const description = `${kund.meny.rubrik} hos ${kund.namn} i ${kund.kontakt.adres
       <p class="lbl">{kund.namn}</p>
       <h1 class="h1">{kund.meny.rubrik}</h1>
       {kund.meny.text && <p class="lede">{kund.meny.text}</p>}
+      {kund.meny.special && <div class="special"><p class="lbl">Special</p><p>{kund.meny.special}</p></div>}
     </div>
   </section>
   {sektioner.length > 1 && (

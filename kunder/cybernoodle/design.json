@@ -1,0 +1,145 @@
+{
+  "ide": "En gränd i Osaka klockan tre på natten: mörkt, vått och upplyst av skyltar, med en rykande skål ramen i mitten. Lugn japansk typografi gör det elegant i stället för skrikigt.",
+  "farger": {
+    "night": "#09090F",
+    "alley": "#12121C",
+    "wet": "#1B1B29",
+    "paper": "#EFE8DC",
+    "dim": "#9A96AD",
+    "rule": "#2A2A3D",
+    "rule-strong": "#646180",
+    "sakura": "#FF3D8B",
+    "cyan": "#3FE0FF",
+    "broth": "#F3B65C",
+    "violet": "#C58BFF",
+    "bg": "#09090F",
+    "surface": "#12121C",
+    "ink": "#EFE8DC",
+    "muted": "#9A96AD",
+    "line": "#2A2A3D",
+    "accent": "#FF3D8B",
+    "accent-ink": "#09090F"
+  },
+  "kontrast": [
+    {
+      "text": "paper",
+      "bakgrund": "night"
+    },
+    {
+      "text": "paper",
+      "bakgrund": "alley"
+    },
+    {
+      "text": "paper",
+      "bakgrund": "wet"
+    },
+    {
+      "text": "dim",
+      "bakgrund": "night"
+    },
+    {
+      "text": "dim",
+      "bakgrund": "alley"
+    },
+    {
+      "text": "dim",
+      "bakgrund": "wet"
+    },
+    {
+      "text": "sakura",
+      "bakgrund": "night"
+    },
+    {
+      "text": "sakura",
+      "bakgrund": "alley"
+    },
+    {
+      "text": "sakura",
+      "bakgrund": "wet"
+    },
+    {
+      "text": "cyan",
+      "bakgrund": "night"
+    },
+    {
+      "text": "cyan",
+      "bakgrund": "alley"
+    },
+    {
+      "text": "cyan",
+      "bakgrund": "wet"
+    },
+    {
+      "text": "broth",
+      "bakgrund": "night"
+    },
+    {
+      "text": "broth",
+      "bakgrund": "alley"
+    },
+    {
+      "text": "broth",
+      "bakgrund": "wet"
+    },
+    {
+      "text": "accent-ink",
+      "bakgrund": "accent"
+    },
+    {
+      "text": "night",
+      "bakgrund": "cyan"
+    },
+    {
+      "text": "rule-strong",
+      "bakgrund": "night",
+      "storText": true
+    },
+    {
+      "text": "rule-strong",
+      "bakgrund": "alley",
+      "storText": true
+    }
+  ],
+  "typsnitt": [
+    {
+      "namn": "Shippori Mincho B1",
+      "roll": "rubrik",
+      "kalla": "src/assets/typsnitt/shippori-mincho-b1-500.woff2, -700 och -800",
+      "licens": "OFL"
+    },
+    {
+      "namn": "Zen Kaku Gothic New",
+      "roll": "brodtext",
+      "kalla": "src/assets/typsnitt/zen-kaku-gothic-new-400.woff2 och -700",
+      "licens": "OFL"
+    },
+    {
+      "namn": "Chakra Petch",
+      "roll": "etikett",
+      "kalla": "src/assets/typsnitt/chakra-petch-400.woff2, -500 och -600",
+      "licens": "OFL"
+    }
+  ],
+  "typskala": "Namnet i neon clamp(54px, 15vw, 110px) i Shippori Mincho B1 800, rubriker clamp(34px, 5.4vw, 64px) i 700, rättens namn 23 px. Brödtext 16-17 px i Zen Kaku Gothic New. Etiketter, priser, klockor och siffror i Chakra Petch, 11-13 px spärrade med versaler, priser 18 px i buljongens guld.",
+  "layout": "Mobil först. En kolumn med smal marginal i mobilen; från 900 px står fotot och de vertikala skyltarna bredvid namnet, och menyns kort fyller ett rutnät med en pixels linjer, två eller tre i bredd. Avsnitten skiljs med linjer och mörka nyanser, inte med kort som svävar. Sidhuvudet ligger fast överst; i mobilen ligger länkarna på en egen rad som scrollar bort.",
+  "bilder": [
+    {
+      "fil": "bilder/ramen-osaka-midnight.jpg",
+      "kalla": "https://images.unsplash.com/photo-1557872943-16a5ac26437e",
+      "licens": "Unsplash-licensen, kommersiell användning utan krav på namn"
+    },
+    {
+      "fil": "bilder/ramen-tonkotsu.jpg",
+      "kalla": "https://images.unsplash.com/photo-1614563637806-1d0e645e0940",
+      "licens": "Unsplash-licensen, kommersiell användning utan krav på namn"
+    }
+  ],
+  "rorelse": {
+    "princip": "Regnet faller över stadssiluetten, ångan stiger från skålarna och namnet flimrar ibland som en skylt med glappkontakt. När köket ändrar menyn glitchar de rader som ändras, kort. Allt som rör sig av sig självt stannar när det är utanför skärmen.",
+    "minskadRorelse": "Regnet, ångan, flimret, glitchen och uppräkningen av siffrorna står still. Regnet och ångan ritas en gång som en stillbild, och ändringarna i menyn syns direkt utan effekt."
+  },
+  "wow": "Bakom kulisserna ändrar besökaren ett pris, markerar en rätt som slut eller skriver en ny special, och menyn på sajten, QR-menyn i mobilen och skärmen ovanför baren ändras samtidigt, med hur många millisekunder det tog.",
+  "referenser": [
+    "cybernoodle"
+  ]
+}
