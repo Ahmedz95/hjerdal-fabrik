@@ -1,6 +1,6 @@
-// Formuläret ritas från kundfilens schema (karna/fabrik-schema.json). Varje fält
+// Formuläret ritas från kundfilens schema (starter/cms.manifest.json). Varje fält
 // i schemat får en kontroll efter sin typ: text, tal, ja/nej, val, listor och
-// grupper. Ett nytt fält i kärnan syns därför här utan att Designer ändras.
+// grupper. Ett nytt fält i startern syns därför här utan att Designer ändras.
 //
 // Etiketterna kommer från .describe('Etikett|Hjälptext|tips') i schemat.
 // Några fält får en bättre kontroll än standard, och den väljs efter vad fältet

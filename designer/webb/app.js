@@ -183,7 +183,7 @@ async function visaStart() {
         arkiv),
       dialog),
     h('footer', { class: 'fot' },
-      h('span', {}, `Kärnan ${app.info.karna}${app.info.gren ? ` · ${app.info.gren}` : ''}`),
+      h('span', {}, `Startern ${app.info.starter}${app.info.gren ? ` · ${app.info.gren}` : ''}`),
       h('button', { class: 'lank', onclick: uppdatera }, 'Hämta senaste fabriken'),
       h('button', { class: 'lank', onclick: avsluta }, 'Avsluta Designer')));
 }

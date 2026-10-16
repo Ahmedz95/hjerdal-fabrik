@@ -1,0 +1,77 @@
+---
+import { Picture } from 'astro:assets';
+import Bas from '../layouts/Bas.astro';
+import Hero from '../components/brand/Hero.astro';
+import MenySektion from '../components/core/MenySektion.astro';
+import Oppettider from '../components/core/Oppettider.astro';
+import { kund, url, telLank } from '../lib/kund';
+import { bild } from '../lib/bilder';
+import { restaurangLd } from '../lib/ld';
+
+const om = bild('om');
+const { adress } = kund.kontakt;
+// Ett smakprov från första sektionen, högst fyra rätter.
+const forsta = kund.meny.sektioner[0];
+const smakprov = { ...forsta, ratter: forsta.ratter.slice(0, 4) };
+const title = `${kund.namn} | Restaurang i ${adress.ort}`;
+---
+<Bas {title} description={kund.beskrivning} sokvag="/" ld={[restaurangLd()]}>
+  <Hero />
+
+  <section class="sec" aria-labelledby="fran-menyn">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="lbl">Från menyn</p>
+          <h2 class="h2" id="fran-menyn">{kund.meny.text ? 'Lagat från grunden.' : kund.meny.rubrik}</h2>
+        </div>
+        {kund.meny.text && <p class="p">{kund.meny.text}</p>}
+      </div>
+      <MenySektion sektion={smakprov} id="smakprov" rubrikNiva={3} />
+      <div class="actions"><a class="tl" href={url('/meny/')}>Hela menyn</a></div>
+    </div>
+  </section>
+
+  {kund.funktioner.omOss && kund.om && (
+    <section class="sec" aria-labelledby="om">
+      <div class="wrap split">
+        <div>
+          <p class="lbl">Om oss</p>
+          <h2 class="h2" id="om">{kund.om.rubrik}</h2>
+        </div>
+        <div>
+          {om && <div class="om-bild"><Picture src={om.src} alt={om.alt} widths={[480, 760, 1100]} sizes="(min-width: 900px) 45vw, 100vw" formats={['avif', 'webp']} /></div>}
+          <p class="p">{kund.om.stycken[0]}</p>
+          <div class="actions"><a class="tl" href={url('/om-oss/')}>Läs mer om oss</a></div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="sec" aria-labelledby="oppet">
+    <div class="wrap split">
+      <div>
+        <p class="lbl">Öppettider</p>
+        <h2 class="h2" id="oppet">Välkommen in.</h2>
+        <p class="lede">{adress.gata}, {adress.postnummer} {adress.ort}</p>
+        <div class="actions">
+          {kund.kontakt.karta && <a class="tl" href={kund.kontakt.karta} rel="noopener">Visa på kartan</a>}
+          <a class="tl" href={url('/kontakt/')}>Hitta hit</a>
+        </div>
+      </div>
+      <div><Oppettider /></div>
+    </div>
+  </section>
+
+  {kund.boka && (
+    <section class="band">
+      <div class="wrap">
+        <h2 class="h2">Boka bord hos {kund.namn}.</h2>
+        <div class="actions">
+          <a class="btn btn-accent" href={kund.boka.url}>{kund.boka.text} <span aria-hidden="true">→</span></a>
+          <a class="tl" href={telLank(kund.kontakt.telefon)}>Eller ring {kund.kontakt.telefon}</a>
+        </div>
+      </div>
+    </section>
+  )}
+</Bas>

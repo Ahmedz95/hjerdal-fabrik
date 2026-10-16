@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Designspec",
+  "description": "Designens beslut i en form som går att kontrollera: idén, färgerna med kontrasten mellan dem, typsnitten med licens, rörelsen och det besökaren ska minnas. Skrivs efter briefen och före koden, tillsammans med DESIGN_LANGUAGE.md som beskriver samma design i ord. Ligger i kunder/<kund>/design.json och kontrolleras av fabrik.py validera och bygg: färgparen i kontrast ska klara WCAG AA.",
+  "type": "object",
+  "required": ["ide", "farger", "kontrast", "typsnitt", "rorelse", "wow", "referenser"],
+  "additionalProperties": false,
+  "$defs": {
+    "farg": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "formatText": "skrivs som #RRGGBB"
+    }
+  },
+  "properties": {
+    "ide": {
+      "type": "string",
+      "minLength": 30,
+      "description": "Idén i en eller två meningar, som en bild man kan se framför sig, till exempel 'En gränd i Osaka klockan tre på natten: mörkt, vått och upplyst av skyltar, men med lugn typografi'."
+    },
+    "farger": {
+      "type": "object",
+      "required": ["bg", "ink", "accent"],
+      "additionalProperties": { "$ref": "#/$defs/farg" },
+      "description": "Färgerna med sin roll som namn, samma namn som CSS-variablerna i kundens tokens.css utan --, till exempel bg, surface, ink, muted, line, accent, accent-ink."
+    },
+    "kontrast": {
+      "type": "array",
+      "minItems": 2,
+      "description": "Varje par av text och bakgrund som finns på sajten, med namnen i farger. Bygget stoppar under 4,5, eller under 3 för stor text (från 24 px, eller 19 px i fetstil).",
+      "items": {
+        "type": "object",
+        "required": ["text", "bakgrund"],
+        "additionalProperties": false,
+        "properties": {
+          "text": { "type": "string" },
+          "bakgrund": { "type": "string" },
+          "storText": { "type": "boolean" }
+        }
+      }
+    },
+    "typsnitt": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Typsnitten. De ligger på sajten själv (ett @fontsource-paket i starter/package.json eller en fil i kundens src/assets/typsnitt/), aldrig från Google Fonts eller en annan webbplats.",
+      "items": {
+        "type": "object",
+        "required": ["namn", "roll", "kalla", "licens"],
+        "additionalProperties": false,
+        "properties": {
+          "namn": { "type": "string", "minLength": 2 },
+          "roll": { "enum": ["rubrik", "brodtext", "etikett", "siffror", "logga", "dekor"] },
+          "kalla": { "type": "string", "minLength": 3, "description": "Paketet, till exempel @fontsource/chakra-petch, eller filen i src/assets/typsnitt/." },
+          "licens": { "enum": ["OFL", "Apache-2.0", "MIT", "egen licens"] }
+        }
+      }
+    },
+    "typskala": {
+      "type": "string",
+      "description": "Storlekarna och hur de växer med skärmen, till exempel 'rubrik clamp(2.6rem, 8vw, 6rem), brödtext 17-18 px, etiketter 12 px spärrade'."
+    },
+    "layout": {
+      "type": "string",
+      "description": "Hur sidorna är byggda: rutnät, rytm och vad som händer i mobilen."
+    },
+    "bilder": {
+      "type": "array",
+      "description": "Bilderna och var de kommer ifrån. Riktiga kunders egna bilder, eller bilder med en licens som tillåter kommersiell användning.",
+      "items": {
+        "type": "object",
+        "required": ["fil", "kalla", "licens"],
+        "additionalProperties": false,
+        "properties": {
+          "fil": { "type": "string", "minLength": 3 },
+          "kalla": { "type": "string", "minLength": 3 },
+          "licens": { "type": "string", "minLength": 3 }
+        }
+      }
+    },
+    "rorelse": {
+      "type": "object",
+      "required": ["princip", "minskadRorelse"],
+      "additionalProperties": false,
+      "properties": {
+        "princip": { "type": "string", "minLength": 10, "description": "Vad som rör sig och varför." },
+        "minskadRorelse": { "type": "string", "minLength": 10, "description": "Vad som händer när besökaren har valt minskad rörelse. Allt som rör sig av sig självt ska stå still." }
+      }
+    },
+    "wow": {
+      "type": "string",
+      "minLength": 30,
+      "description": "Det besökaren minns och berättar om: ögonblicket som skiljer sajten från en mall, till exempel 'köket ändrar ett pris och menyn, QR-menyn och skärmen ändras samtidigt'."
+    },
+    "referenser": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 3 },
+      "description": "Exempel i examples/ (mappens namn) som sajten ska mätas mot i granskningen."
+    },
+    "godkand": {
+      "type": "object",
+      "required": ["av", "datum"],
+      "additionalProperties": false,
+      "description": "Vem som godkände designriktningen och när. Byggaren skriver inga sidor förrän den finns.",
+      "properties": {
+        "av": { "type": "string", "minLength": 2 },
+        "datum": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "formatText": "skrivs som 2026-10-16" }
+      }
+    }
+  }
+}

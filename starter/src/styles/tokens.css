@@ -1,0 +1,21 @@
+/* Standardvärdena för mått, typsnitt och former, som CSS-variabler. Det är
+   stilen hjerdal, samma formspråk som hjerdal.se (design/tokens.md i repot
+   hjerdal-se): stora lätta rubriker, spärrade etiketter, 1px-linjer, inga
+   skuggor, runda knappar. Stilarna i src/styles/stilar/ skriver över dem.
+
+   En kund med egen design har en egen tokens.css i kunder/<kund>/src/styles/.
+   Har kunden också egna färger (src/config/brand.json: "farger": "egna")
+   sätter den filen även --bg, --surface, --ink, --muted, --line, --accent och
+   --accent-ink, och color-scheme. Selektorn är html, så att temats :root och
+   stilarnas [data-stil] går före. */
+html {
+  --wrap: 1180px; --gut: clamp(18px, 4.5vw, 48px); --ease: cubic-bezier(.2, .7, .2, 1);
+  --f-body: "Albert Sans Variable", "Albert Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-display: var(--f-body); --display-weight: 300; --display-track: -0.045em; --display-case: none;
+  --f-pris: "Azeret Mono", ui-monospace, Menlo, monospace; --pris-track: -.01em;
+  --lbl: 500 12px/1.4 var(--f-body); --lbl-track: .3em; --lbl-case: uppercase; --lbl-color: var(--muted);
+  --btn: 500 15px/1 var(--f-body); --btn-track: normal; --btn-case: none;
+  --logo: 500 14px/1.2 var(--f-body); --logo-track: .32em; --logo-case: uppercase; --logo-h: 34px;
+  --ratt: 500 18px/1.35 var(--f-body); --ratt-case: none;
+  --r-btn: 999px; --r-tagg: 999px; --r-kort: 4px; --r-bild: 2px;
+}

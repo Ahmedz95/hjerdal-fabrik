@@ -1,0 +1,39 @@
+---
+import { kund, sidor, url, telLank } from '../../lib/kund';
+import { dagText, tidText } from '../../lib/format';
+
+const { adress } = kund.kontakt;
+const sociala = Object.entries(kund.sociala).filter(([, l]) => l) as [string, string][];
+const namn: Record<string, string> = { instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok' };
+---
+<footer class="fot">
+  <div class="wrap">
+    <div class="fot-grid">
+      <div>
+        <h2>{kund.namn}</h2>
+        <p>{adress.gata}<br />{adress.postnummer} {adress.ort}</p>
+        <p class="fot-kontakt">
+          <a href={telLank(kund.kontakt.telefon)}>{kund.kontakt.telefon}</a>
+          {kund.kontakt.epost && <><br /><a href={`mailto:${kund.kontakt.epost}`}>{kund.kontakt.epost}</a></>}
+        </p>
+      </div>
+      <div>
+        <h2>Öppet</h2>
+        <ul class="lista">
+          {kund.oppettider.map((o) => <li>{dagText(o.dagar)} {tidText(o.tider).toLowerCase()}</li>)}
+        </ul>
+      </div>
+      <div>
+        <h2>Sidor</h2>
+        <ul class="lista">
+          {sidor.map((s) => <li><a href={url(s.href)}>{s.label}</a></li>)}
+          {sociala.map(([vad, lank]) => <li><a href={lank} rel="noopener">{namn[vad]}</a></li>)}
+        </ul>
+      </div>
+    </div>
+    <div class="fot-bas">
+      <span>© {new Date().getFullYear()} {kund.namn}</span>
+      {kund.funktioner.hjerdalLank && <a href="https://hjerdal.se/hemsida-for-restaurang/">Webbplats av HJERDAL</a>}
+    </div>
+  </div>
+</footer>

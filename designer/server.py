@@ -3,8 +3,8 @@
     python3 fabrik.py designer
 
 Startar en webbserver på den här datorn (bara 127.0.0.1) och öppnar formuläret
-i webbläsaren. Formuläret byggs från kärnans schema (karna/fabrik-schema.json),
-så ett nytt fält eller en ny stil i kärnan syns här utan att Designer ändras.
+i webbläsaren. Formuläret byggs från starterns schema (starter/cms.manifest.json),
+så ett nytt fält eller en ny stil i startern syns här utan att Designer ändras.
 Allt arbete görs av fabrik.py: Designer läser och skriver kundfilen, bygger
 förhandsvisningar och förslag och sparar kunden i GitHub med git.
 
@@ -232,7 +232,7 @@ def ny_kund(namn: str, kund: str | None = None) -> dict:
     kund = kund or slug(namn)
     if kundfil(kund).exists():
         raise ApiFel(409, f"Det finns redan en kund som heter {kund}.", [("kund", "finns redan")])
-    mall = json.loads((fabrik.FABRIK / "mall-kund.json").read_text(encoding="utf-8"))
+    mall = json.loads(fabrik.MALL.read_text(encoding="utf-8"))
     data = {**utan_platshallare(mall), "namn": namn}
     mapp = fabrik.kundmapp(kund)
     (mapp / "bilder").mkdir(parents=True, exist_ok=True)
@@ -538,7 +538,7 @@ def uppdatera() -> dict:
 
 def info() -> dict:
     gren = git("branch", "--show-current", kolla=False).stdout.strip()
-    return {"app": APP, "karna": fabrik.karnans_version(), "fabrik": str(fabrik.FABRIK), "gren": gren, "kod": KOD}
+    return {"app": APP, "starter": fabrik.starterns_version(), "fabrik": str(fabrik.FABRIK), "gren": gren, "kod": KOD}
 
 
 # --- HTTP ---------------------------------------------------------------------
@@ -604,7 +604,7 @@ class Hanterare(BaseHTTPRequestHandler):
         if (metod, d) == ("GET", ["info"]):
             return self.json(info())
         if (metod, d) == ("GET", ["schema"]):
-            return self.fil(fabrik.KARNA / "fabrik-schema.json")
+            return self.fil(fabrik.MANIFEST)
         if (metod, d) == ("GET", ["puls"]):
             kund = q.get("kund", [""])[0]
             return self.json({"andrad": andrad(kund) if kund else None})
@@ -747,7 +747,7 @@ class Hanterare(BaseHTTPRequestHandler):
 
     def fil(self, fil: Path, status: int = 200) -> None:
         fil = fil.resolve()
-        tillatna = (WEBB.resolve(), DESIGNER_UT.resolve(), fabrik.KUNDER.resolve(), fabrik.KARNA.resolve(), IKON.resolve())
+        tillatna = (WEBB.resolve(), DESIGNER_UT.resolve(), fabrik.KUNDER.resolve(), fabrik.STARTER.resolve(), IKON.resolve())
         if not fil.is_file() or not any(fil == t or t in fil.parents for t in tillatna):
             raise ApiFel(404, "Finns inte.")
         typ = mimetypes.guess_type(fil.name)[0] or "application/octet-stream"

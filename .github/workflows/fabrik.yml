@@ -18,24 +18,25 @@ jobs:
             3.9
             3.12
       - name: Kundfilens schema är uppdaterat
-        working-directory: karna
+        working-directory: starter
         run: |
           npm ci --no-audit --no-fund --loglevel=error
           npm run schema
-          git diff --exit-code fabrik-schema.json || { echo "::error::fabrik-schema.json är inte uppdaterad. Kör npm run schema i karna/ och checka in filen."; exit 1; }
-      - name: Bygg och kontrollera Bistro Nordvik
-        run: python3 fabrik.py bygg bistro-nordvik
+          git diff --exit-code cms.manifest.json || { echo "::error::cms.manifest.json är inte uppdaterad. Kör npm run schema i starter/ och checka in filen."; exit 1; }
+      - name: Kvalitetsgrinden för alla aktiva kunder
+        run: python3 fabrik.py kvalitet
+      - name: Egen design, brief och designspec
+        run: python3 quality/prov_fabrik.py
       - name: HJERDAL Designer och MCP
         run: python3.9 designer/prov.py
       - name: Bygg en variant i varje stil
         run: python3 fabrik.py varianter bistro-nordvik
-      - name: Lighthouse (mobil)
-        run: npx --yes @lhci/cli@0.14 autorun
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: fabrik
           path: |
+            ut/*/kvalitet
             ut/bistro-nordvik/dist
             ut/bistro-nordvik-varianter
             lhci
