@@ -1,0 +1,20 @@
+---
+// Sidan som inte finns: fel gränd, med en släckt skylt och vägen tillbaka till
+// menyn och bokningen.
+import Bas from '../layouts/Bas.astro';
+import { kund, url } from '../lib/kund';
+---
+<Bas title={`Sidan finns inte | ${kund.namn}`} description={`Sidan finns inte hos ${kund.namn}. Menyn, öppettiderna och bordsbokningen hittar du härifrån.`} sokvag="/404/" noindex>
+  <section class="cn-fel" aria-labelledby="cn-fel-rubrik">
+    <p class="cn-fel-skylt" aria-hidden="true">迷子</p>
+    <div class="wrap cn-fel-text">
+      <p class="lbl"><b>404</b> · Sidan finns inte</p>
+      <h1 class="cn-skylt" id="cn-fel-rubrik"><span>Fel</span><span class="cn-neon">gränd.</span></h1>
+      <p class="cn-ingress">Här finns ingen sida, bara regn och en släckt skylt. Buljongen kokar fortfarande två kvarter bort.</p>
+      <div class="cn-knappar">
+        <a class="btn btn-accent" href={url('/meny/')}>Se menyn</a>
+        <a class="btn btn-line" href={url('/kontakt/#boka')}>Boka bord</a>
+      </div>
+    </div>
+  </section>
+</Bas>

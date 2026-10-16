@@ -163,7 +163,11 @@ async function kontrollera(webblasare, lage, sokvag, rapport) {
     fel.push(`${matt.evigaAnimationer} animationer rör sig fast besökaren har valt minskad rörelse`);
   }
   if (lage.bild) {
-    await sida.screenshot({ path: join(mal, `${bildnamn(sokvag)}-${lage.namn}.jpg`), fullPage: true, type: 'jpeg', quality: 80 });
+    // Chrome tar inte skärmdumpar högre än 16 384 pixlar, så en lång sida i mobilen
+    // tas i en pixel per CSS-pixel i stället för att bli tom längst ned.
+    const hojd = await sida.evaluate(() => document.documentElement.scrollHeight);
+    const skala = hojd * (lage.kontext.deviceScaleFactor ?? 1) > 16384 ? 'css' : 'device';
+    await sida.screenshot({ path: join(mal, `${bildnamn(sokvag)}-${lage.namn}.jpg`), fullPage: true, type: 'jpeg', quality: 80, scale: skala });
   }
   await kontext.close();
 

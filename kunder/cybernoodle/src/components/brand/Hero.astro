@@ -39,7 +39,7 @@ const namn = kund.namn.match(/^(Cyber)(Noodle)$/);
       </div>
       <ul class="cn-hud">
         <li data-oppet-status hidden><span class="cn-punkt" aria-hidden="true"></span><strong data-oppet-text></strong></li>
-        <li>{adress.gata}, Södermalm</li>
+        <li>{kund.kontakt.karta ? <a href={kund.kontakt.karta}><span>{adress.gata}, Södermalm</span></a> : `${adress.gata}, Södermalm`}</li>
       </ul>
     </div>
     {foto && (

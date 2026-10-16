@@ -10,7 +10,8 @@ body { font: 400 16px/1.65 var(--f-body); overflow-x: clip; }
 :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 2px; }
 .skip { background: var(--cyan); color: var(--night); font: 600 13px/1 var(--f-hud); letter-spacing: .12em; text-transform: uppercase; }
 
-.lbl { margin: 0; }
+.lbl { margin: 0; text-wrap: balance; }
+a[href^="tel:"] { font-family: var(--f-hud); letter-spacing: .02em; }
 .lbl b { color: var(--cyan); font-weight: 500; }
 .h1, .h2, .h3 { font-weight: 700; letter-spacing: -.02em; }
 .h2 { max-width: none; font-size: clamp(34px, 5.4vw, 64px); line-height: 1.05; }
@@ -32,7 +33,7 @@ body { font: 400 16px/1.65 var(--f-body); overflow-x: clip; }
 .cn-head > p:not(.lbl) { max-width: 58ch; font-size: 17px; color: var(--dim); }
 
 /* ---------- Sidhuvud ---------- */
-.cn-top { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--rule); background: color-mix(in srgb, var(--night) 82%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.cn-top { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--rule); background: color-mix(in srgb, var(--night) 94%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .cn-top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; padding-block: 10px; }
 .cn-logo { display: flex; align-items: baseline; gap: 10px; text-decoration: none; }
 .cn-logo span { font: var(--logo); letter-spacing: var(--logo-track); }
@@ -81,6 +82,9 @@ body { font: 400 16px/1.65 var(--f-body); overflow-x: clip; }
 .cn-hud li { display: flex; align-items: center; gap: 8px; }
 .cn-hud li[hidden] { display: none; }
 .cn-hud strong { font-weight: 500; color: var(--paper); }
+.cn-hud a { display: inline-flex; align-items: center; min-height: 44px; color: var(--dim); text-decoration: none; }
+.cn-hud a span { box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--sakura) 70%, transparent); }
+@media (hover: hover) { .cn-hud a:hover { color: var(--paper); } }
 .cn-punkt { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); animation: cn-puls 2s infinite; }
 .stangt .cn-punkt { background: var(--sakura); box-shadow: 0 0 10px var(--sakura); }
 @keyframes cn-puls { 50% { opacity: .35; } }
@@ -107,6 +111,11 @@ body { font: 400 16px/1.65 var(--f-body); overflow-x: clip; }
 .cn-s2 { top: 28%; right: 0; font-size: clamp(18px, 2.2vw, 28px); color: var(--cyan); }
 .cn-s3 { bottom: 6%; left: 2%; font-size: clamp(14px, 1.6vw, 20px); color: var(--broth); animation: cn-flimmer 11s infinite 4s; }
 .cn-s4 { right: 3%; bottom: 10%; padding: 10px 7px; font-size: clamp(13px, 1.3vw, 17px); color: var(--violet); }
+/* I mobilen är skyltarna kortare, så att de hänger fritt bredvid varandra och bildtexten. */
+@media (max-width: 899px) {
+  .cn-vskylt small { display: none; }
+  .cn-hero .cn-foto figcaption { left: 30px; }
+}
 @media (min-width: 900px) { .cn-hero .cn-foto { aspect-ratio: 4 / 4.6; } }
 
 /* ---------- Menyn ---------- */
@@ -115,9 +124,9 @@ body { font: 400 16px/1.65 var(--f-body); overflow-x: clip; }
 .cn-special[hidden] { display: none; }
 .cn-special .lbl { color: var(--broth); }
 .cn-special-text { min-width: 0; font: 500 clamp(18px, 2.2vw, 22px)/1.45 var(--f-display); }
-.cn-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+.cn-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
 .cn-filter[hidden] { display: none; }
-.cn-filter button { min-height: 44px; padding: 0 16px; border: 1px solid var(--rule-strong); border-radius: var(--r-btn); background: transparent; color: var(--dim); font: 400 12px/1 var(--f-hud); letter-spacing: .18em; text-transform: uppercase; cursor: pointer; transition: color .2s, background .2s, border-color .2s; }
+.cn-filter button { min-height: 44px; padding: 0 14px; border: 1px solid var(--rule-strong); border-radius: var(--r-btn); background: transparent; color: var(--dim); font: 400 12px/1 var(--f-hud); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: color .2s, background .2s, border-color .2s; }
 .cn-filter button[aria-pressed="true"] { border-color: var(--paper); background: var(--paper); color: var(--night); }
 @media (hover: hover) { .cn-filter button:hover { color: var(--paper); border-color: var(--cyan); } .cn-filter button[aria-pressed="true"]:hover { color: var(--night); } }
 .cn-sektion + .cn-sektion { margin-top: clamp(40px, 5vw, 60px); }
@@ -318,13 +327,24 @@ span.cn-rad-pris { font: 400 13px/1.4 var(--f-hud); color: var(--dim); text-alig
 @media (hover: hover) { .cn-fot a:hover { text-decoration: underline; text-decoration-color: var(--sakura); } }
 @media (min-width: 700px) { .cn-fot-grid { grid-template-columns: 1.2fr 1fr 1fr; } }
 
+/* ---------- 404: fel gränd ---------- */
+.cn-fel {
+  position: relative; overflow: hidden; display: grid; align-items: center; min-height: min(78vh, 720px); border-bottom: 1px solid var(--rule);
+  background:
+    radial-gradient(45% 40% at 20% 30%, rgba(255, 61, 139, .10), transparent 70%),
+    radial-gradient(40% 40% at 85% 70%, rgba(63, 224, 255, .07), transparent 70%),
+    var(--night);
+}
+.cn-fel-skylt { position: absolute; right: -2vw; bottom: -4vw; margin: 0; color: transparent; font: 800 clamp(160px, 38vw, 460px)/1 var(--f-display); -webkit-text-stroke: 1px #3A3A52; pointer-events: none; }
+.cn-fel-text { position: relative; display: grid; gap: 24px; justify-items: start; padding-block: clamp(56px, 10vw, 120px); }
+
 /* ---------- Skärmen ovanför baren, /skarm/ ---------- */
 .cn-skarm { position: relative; display: flex; flex-direction: column; gap: 2.6vw; min-height: 100vh; padding: 3vw 4vw; background: #050508; }
 .cn-skarm::before { content: ""; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .025) 0 1px, transparent 1px 3px); pointer-events: none; }
 .cn-skarm-topp { display: flex; align-items: baseline; justify-content: space-between; gap: 2vw; padding-bottom: 1.2vw; border-bottom: 1px solid var(--rule); }
 .cn-skarm-topp h1 { margin: 0; font: 800 max(28px, 3.2vw)/1 var(--f-display); color: var(--sakura); text-shadow: 0 0 18px var(--sakura); }
 .cn-skarm-topp p { font: 400 max(14px, 1.3vw)/1 var(--f-hud); letter-spacing: .2em; color: var(--cyan); }
-.cn-skarm-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 34vw), 1fr)); gap: 2.6vw 5vw; align-content: start; }
+.cn-skarm-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, max(34vw, 320px)), 1fr)); gap: 2.6vw 5vw; align-content: start; }
 .cn-skarm-sek[hidden] { display: none; }
 .cn-skarm-sek h2 { margin: 0 0 1vw; font: 500 max(13px, 1.05vw)/1.4 var(--f-hud); letter-spacing: .28em; text-transform: uppercase; color: var(--dim); }
 .cn-skarm-sek h2 span { letter-spacing: .1em; }

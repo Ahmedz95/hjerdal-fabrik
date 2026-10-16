@@ -45,8 +45,15 @@ Alla par av text och bakgrund klarar WCAG AA och står i design.json.
 Typsnitten ligger i `src/assets/typsnitt/` med sina licenser (OFL). De är beskurna med
 `pyftsubset` till latinska tecken (U+0020-007E, U+00A0-017F, U+2000-206F, U+20AC,
 U+2190-2199, U+2212, U+25CF, U+2605) och de japanska tecken som står i kundens filer,
-med `vert` och `palt` kvar för de vertikala skyltarna. Läggs en rätt med nya japanska
-tecken till, gör om beskärningen så att tecknen finns med.
+med `vert` och `palt` kvar för de vertikala skyltarna. Chakra Petch har bara de latinska.
+Läggs en rätt med nya japanska tecken till, gör om beskärningen från typsnittens TTF-filer
+(github.com/google/fonts, mappen `ofl/`), så att tecknen finns med:
+
+```sh
+pyftsubset ShipporiMinchoB1-ExtraBold.ttf --flavor=woff2 \
+  --unicodes="U+0020-007E,U+00A0-017F,U+2000-206F,U+20AC,U+2190-2199,U+2212,U+25CF,U+2605,<japanska tecken>" \
+  --layout-features+=palt,vert,vrt2,vkrn,vpal,tnum --output-file=src/assets/typsnitt/shippori-mincho-b1-800.woff2
+```
 
 ## Layout och rytm
 
@@ -88,4 +95,8 @@ millisekunder det tog. Det är restaurangens verkliga problem, menyn på tre st�
   fram. Caset hade väntetid och lediga platser; de är borttagna här.
 - Gör inte: neon på brödtext eller fler än två neonfärger i samma ruta.
 - Gör inte: typsnitt eller bilder från andra webbplatser.
-- Bokningen är en demo och säger det i bekräftelsen. Utan JavaScript visas telefonnumret.
+- Bokningen är en demo och säger det i bekräftelsen. Några tider visas som fullbokade
+  för att visa hur det ser ut; hos en riktig kund kommer tiderna från bokningssystemet.
+  Utan JavaScript visas telefonnumret.
+- 404-sidan är en fel gränd med en släckt skylt (迷子), och favikonen är namnets C i
+  rosa neon.

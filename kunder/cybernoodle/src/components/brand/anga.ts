@@ -33,13 +33,14 @@ export function startaAnga(cv: HTMLCanvasElement) {
 
   function rita(t: number) {
     x!.clearRect(0, 0, W, H);
-    x!.globalCompositeOperation = 'lighter';
+    // screen i stället för lighter, så att puffarna inte summeras till en vit lampa.
+    x!.globalCompositeOperation = 'screen';
     for (const f of puffar) {
       const p = stilla ? f.p : (f.p + (t / 9000) * f.s) % 1;
       const y = oy * H - p * oy * H * 1.05;
       const px = f.x + Math.sin(p * 5 + f.fas) * W * 0.05 * p;
       const r = f.r * (1 + p * 1.8);
-      const a = Math.sin(p * Math.PI) * 0.16;
+      const a = Math.sin(p * Math.PI) * 0.11;
       const g = x!.createRadialGradient(px, y, 0, px, y, r);
       g.addColorStop(0, `rgba(255,244,232,${a})`);
       g.addColorStop(0.6, `rgba(255,220,235,${a * 0.45})`);
