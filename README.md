@@ -160,7 +160,9 @@ skickas till GitHub, där kunden finns kvar i historiken. En publicerad sajt
 ligger kvar på Cloudflare.
 
 *Hämta senaste fabriken* på startsidan och under de tre prickarna hämtar nya
-stilar, fält och rättningar från GitHub och startar om Designer. Designer stänger sig själv efter en
+stilar, fält och rättningar från GitHub och startar om Designer. Kunder som är
+sparade på datorn men inte skickade än läggs ovanpå det som har kommit, och
+meddelandet säger hur många som väntar på *Spara till GitHub*. Designer stänger sig själv efter en
 halvtimme utan öppet fönster. Publicering görs fortfarande med `fabrik.py
 publicera`.
 

@@ -508,15 +508,29 @@ def skicka(kund: str, meddelande: str) -> bool:
 
 
 def uppdatera() -> dict:
-    """Hämtar den senaste fabriken från GitHub. Servern startar om om något ändrades."""
+    """Hämtar den senaste fabriken från GitHub. Servern startar om om något ändrades.
+
+    Kunder som är sparade på datorn men inte skickade än, till exempel när Spara till
+    GitHub inte kom fram, läggs ovanpå det som har kommit, som när kunden sparas.
+    """
     fore = git("rev-parse", "HEAD").stdout.strip()
     with bygglas:
-        res = git("pull", "--ff-only", kolla=False)
+        res = git("pull", "--rebase", "--autostash", kolla=False)
+        if res.returncode != 0:
+            git("rebase", "--abort", kolla=False)
     if res.returncode != 0:
-        raise ApiFel(409, "Kunde inte uppdatera: " + (res.stderr or res.stdout).strip())
+        utskrift = (res.stderr or res.stdout).strip()
+        if "CONFLICT" in utskrift or "could not apply" in utskrift:
+            raise ApiFel(409, "Kunde inte uppdatera: en kund som är sparad på den här datorn har också ändrats i GitHub. "
+                              "Inget är ändrat på datorn. Be någon som kan git om hjälp.", logg=utskrift)
+        raise ApiFel(409, "Kunde inte uppdatera: " + utskrift)
     efter = git("rev-parse", "HEAD").stdout.strip()
-    return {"andrat": fore != efter, "logg": res.stdout.strip(),
-            "meddelande": "Fabriken är uppdaterad. Designer startar om." if fore != efter else "Fabriken är redan den senaste."}
+    meddelande = "Fabriken är uppdaterad. Designer startar om." if fore != efter else "Fabriken är redan den senaste."
+    kvar = git("rev-list", "--count", "@{u}..HEAD", kolla=False).stdout.strip()
+    if kvar.isdigit() and int(kvar):
+        meddelande += (" En sparad ändring på den här datorn är inte skickad" if kvar == "1" else
+                       f" {kvar} sparade ändringar på den här datorn är inte skickade") + " till GitHub än: tryck Spara till GitHub i en kund."
+    return {"andrat": fore != efter, "logg": res.stdout.strip(), "meddelande": meddelande}
 
 
 def info() -> dict:
