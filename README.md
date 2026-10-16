@@ -8,7 +8,10 @@ samma sak utan Terminal.
 
 Version 1 gör restauranger, kaféer och bagerier (paketet Start på
 hjerdal.se/hemsida-for-restaurang/). Frisörer, hantverkare och kliniker blir egna
-nischer på samma kärna.
+nischer på samma starter.
+
+En kund kan också få en [egen design](#egen-design), gjord med Claude Code ovanpå samma
+starter och mätt mot HJERDAL:s egna case. Reglerna för Claude står i `CLAUDE.md`.
 
 ## Snabbstart
 
@@ -29,11 +32,13 @@ bygge tar runt tio sekunder. Inget konto behövs utom för `publicera`.
 
 | Kommando | Vad det gör |
 | --- | --- |
-| `ny <kund> --namn "…"` | Skapar `kunder/<kund>/kund.json` från `mall-kund.json`. Alla fält med FYLL I måste fyllas i innan bygget går. |
-| `bygg <kund> [--visa]` | Kopierar kärnan till `ut/<kund>/`, lägger in kundfil och bilder, tar bort sidor kunden inte valt, bygger och kontrollerar. `--stil`, `--tema`, `--hero` och `--meny` provar ett annat designval utan att ändra kundfilen. |
+| `ny <kund> --namn "…" [--egen-design]` | Skapar `kunder/<kund>/kund.json` från `schemas/mallar/kund.json`. Alla fält med FYLL I måste fyllas i innan bygget går. Med `--egen-design` även brief, designspec, designspråk och en startpunkt för kundens egen design. |
+| `bygg <kund> [--visa]` | Kopierar startern till `ut/<kund>/`, lägger in kundfil, bilder och kundens egen design, tar bort sidor kunden inte valt, bygger och kontrollerar. `--stil`, `--tema`, `--hero` och `--meny` provar ett annat designval utan att ändra kundfilen. |
 | `varianter <kund> [val …] [--visa]` | Bygger samma kund i flera varianter till `ut/<kund>-varianter/` med en översiktssida. Utan val blir det fyra förslag i fyra olika stilar. Ett val är stil, tema, hero och meny med kolon emellan, i valfri ordning: `varianter cafe-solros mjuk:linne klassisk:ek:bild`. Det som inte anges tas från kundfilen. |
 | `visa <kund> [--varianter]` | Öppnar den byggda sajten, eller förhandsvisningen, i webbläsaren. |
 | `kontroll <kund>` | Kontrollerar en byggd sajt igen. |
+| `kvalitet [<kund> …] [--snabb]` | Kvalitetsgrinden i `quality/STANDARD.md`: bygger, kontrollerar, öppnar varje sida i Chrome i mobil och dator (`scripts/kvalitet.mjs`) och kör Lighthouse. Skärmdumparna hamnar i `ut/<kund>/kvalitet/`. Utan kund: alla aktiva kunder. `--snabb` hoppar över Lighthouse. Kräver Google Chrome. |
+| `validera <kund>` | Kontrollerar kundfil, brief, designspec och kundens egna filer utan att bygga. |
 | `publicera <kund> [--varianter]` | Publicerar på Cloudflare Workers med `wrangler deploy`. Kräver `CLOUDFLARE_API_TOKEN`. Med `--varianter` publiceras förhandsvisningen, så att kunden kan välja via en länk. |
 | `lista` | Visar alla kunder, deras stil och tema och när de byggdes. |
 | `designer` | Öppnar [HJERDAL Designer](#hjerdal-designer). |
@@ -183,13 +188,13 @@ från iPhone görs först om med macOS egna `sips`. SVG lämnas som den är.
 Meddelandet efter uppladdningen säger hur mycket mindre bilden blev.
 
 **Så växer den med fabriken.** Formuläret ritas från kundfilens schema
-(`karna/src/lib/schema.ts`), som `npm run schema` i `karna/` skriver till
-`karna/fabrik-schema.json`. Ett nytt fält i schemat blir ett nytt fält i
-Designer, en ny stil eller ett nytt tema i `karna/src/lib/designval.ts` blir ett
+(`starter/src/lib/schema.ts`), som `npm run schema` i `starter/` skriver till
+`starter/cms.manifest.json`. Ett nytt fält i schemat blir ett nytt fält i
+Designer, en ny stil eller ett nytt tema i `starter/src/lib/designval.ts` blir ett
 nytt kort att välja. Etiketten och hjälptexten är `.describe('Etikett|Hjälptext')`,
 och `|flerrad` sist ger en textruta med flera rader. Fältets kontroll väljs efter
 vad det tar emot: ett mönster som godtar `11:00` blir en klocka, ett som godtar
-`bild.jpg` blir en bildväljare. CI stoppar om `fabrik-schema.json` inte är
+`bild.jpg` blir en bildväljare. CI stoppar om `cms.manifest.json` inte är
 uppdaterad.
 
 **Tekniskt.** `designer/server.py` är en webbserver på `127.0.0.1` med bara
@@ -292,14 +297,35 @@ Varningar, till exempel en avvikelse vars datum har passerat, stoppar inte bygge
 Exempelkunden Bistro Nordvik får 100 i alla fyra Lighthouse-kategorier i mobil i
 alla fyra stilarna. Startsidan väger 49 kB i `hjerdal`, runt 70 kB i `kvarter`
 och `mjuk` och 133 kB i `klassisk`, som laddar tre typsnittsfiler. CI-jobbet
-Fabrik bygger exempelkunden och en variant i varje stil vid varje ändring och
-kör Lighthouse.
+Fabrik kör kvalitetsgrinden för varje aktiv kund, provkör egen design
+(`quality/prov_fabrik.py`) och Designer och bygger en variant i varje stil vid
+varje ändring.
 
 ## Mappar
 
 ```
 fabrik.py          kommandona ovan, bara Pythons standardbibliotek
-mall-kund.json     mallen för en ny kund
+CLAUDE.md          reglerna för Claude Code i fabriken
+starter/           Astro-sajten alla kunder byggs från (regler i starter/CLAUDE.md)
+  cms.manifest.json  fälten som går att redigera, för fabrik.py och Designer (npm run schema)
+  DESIGN_LANGUAGE.md starterns eget designspråk
+  src/components/core/  det som fungerar likadant för alla: Seo, MenySektion, Oppettider
+  src/components/brand/ utseendet som en kund med egen design byter: Sidhuvud, Hero, Sidfot
+  src/layouts/Bas.astro ramen för alla sidor
+  src/styles/        tokens.css (mått, typsnitt, former), bas.css (grunden),
+                     stilar/ (en fil per stil med typsnitt och former), brand.css (kundens egen)
+  src/config/        site.ts (namn, adress, språk) och brand.json (hur en egen design tar över)
+  src/lib/schema.ts  kundfilens fält, regler och etiketter
+  src/lib/designval.ts stilarna, färgtemana och layouterna
+  src/lib/tema.ts    kontrastkontrollen
+  src/lib/ld.ts      strukturerad data
+  src/data/kund.json exempelkunden, så att startern går att köra med npm run dev
+schemas/           brief.schema.json och design.schema.json, och mallar/ för en ny kund
+quality/           STANDARD.md, rubrik.md för designgranskningen, lighthouserc.json och
+                   prov_fabrik.py som provkör egen design
+examples/          HJERDAL:s godkända case och inspirationen, med vad som gör dem bra
+scripts/           kvalitet.mjs, webbläsarkontrollen i grinden
+.claude/           skills/ (ny-sajt, granska-sajt) och agents/ (byggare, designkritiker, granskare)
 designer/          HJERDAL Designer
   installera.command installerar programmet på en Mac
   server.py          webbservern och API:t, bara Pythons standardbibliotek
@@ -314,33 +340,44 @@ designer/          HJERDAL Designer
                      Mac-kontrollen i GitHub med bygg-ikon.sh. Utan den krymper macOS 26 ikonen
   webb/              formuläret och chatten: HTML, CSS och JavaScript utan byggsteg
   prov.py            provkörningen som CI kör
-karna/             Astro-sajten alla kunder byggs från
-  src/lib/schema.ts  kundfilens fält, regler och etiketter
-  src/lib/designval.ts stilarna, färgtemana och layouterna
-  fabrik-schema.json schemat för fabrik.py och Designer (npm run schema)
-  src/lib/tema.ts    kontrastkontrollen
-  src/stilar/        en CSS-fil per stil med dess typsnitt och former
-  src/styles/bas.css grunden som alla stilar bygger på
-  src/lib/ld.ts      strukturerad data
-  src/data/kund.json exempelkunden, så att kärnan går att köra med npm run dev
-kunder/<kund>/     kund.json och bilder/, en mapp per kund, och arkiv.json om den är arkiverad
+kunder/<kund>/     kund.json och bilder/, en mapp per kund, och arkiv.json om den är arkiverad.
+                   Med egen design även brief.json, design.json, DESIGN_LANGUAGE.md, src/ och public/
 ut/                byggda sajter, förhandsvisningar och delade beroenden (checkas inte in)
 ```
 
-Ändringar görs i `karna/`, aldrig i en kunds kopia i `ut/`. Varje bygge skriver
-`fabrik.json` med kärnans version, så att det syns vilken kärna en kund har.
+Ändringar görs i `starter/`, aldrig i en kunds kopia i `ut/`. Varje bygge skriver
+`fabrik.json` med starterns version, så att det syns vilken starter en kund har.
 
-En ny stil är en ny fil i `karna/src/stilar/` som sätter variablerna överst i
-`bas.css` och laddar sina typsnitt, plus stilens namn och beskrivning i
-`karna/src/lib/designval.ts`. Kör sedan `npm run schema` i `karna/`, så känner
+En ny stil är en ny fil i `starter/src/styles/stilar/` som sätter variablerna i
+`tokens.css` och laddar sina typsnitt, plus stilens namn och beskrivning i
+`starter/src/lib/designval.ts`. Kör sedan `npm run schema` i `starter/`, så känner
 fabrik.py och Designer till den. Ett nytt fält läggs till i
-`karna/src/lib/schema.ts` på samma sätt.
+`starter/src/lib/schema.ts` på samma sätt.
+
+## Egen design
+
+Mallen ger en prydlig sajt. En kund som ska nå HJERDAL:s standard får en egen design,
+gjord av Claude Code ovanpå samma starter:
+
+1. `python3 fabrik.py ny <kund> --namn "…" --egen-design` gör mappen med kundfilen,
+   `brief.json`, `design.json` och `DESIGN_LANGUAGE.md`.
+2. Briefen säger vem kunden är och vad sajten ska åstadkomma, designspecen och
+   designspråket vilken riktning designen tar. Ahmed godkänner riktningen innan något byggs.
+3. Kundens egna komponenter, sidor, typsnitt och CSS ligger i `kunder/<kund>/src/` och
+   läggs ovanpå startern vid bygget. Det som delas av alla kunder (metadata, menyn,
+   öppettiderna, ramen) går inte att ändra per kund, så en rättning i startern når alla.
+4. `python3 fabrik.py kvalitet <kund>` måste vara grön, och designkritikern bedömer
+   skärmdumparna mot `quality/rubrik.md` och casen i `examples/`.
+
+Hela arbetsgången står i `.claude/skills/ny-sajt/SKILL.md`. Sajten byggs, förhandsvisas
+och publiceras sedan som alla andra kunder, och kundfilen går fortfarande att ändra i
+Designer.
 
 ## Nästa steg
 
 - **Kunden ändrar menyn själv.** Keystatic ovanpå `kund.json`, för paketet Tillväxt.
 - **Ett repo per kund.** `publicera` skapar ett GitHub-repo från `ut/<kund>/`, så att
   koden kan lämnas över enligt allmänna villkoren 19.2.
-- **Kärnan som paket.** När en andra nisch tillkommer flyttas det gemensamma till
-  versionerade paket, så att en rättning når alla kunder som en PR per kund.
+- **Startern som paket.** När kunderna får egna repon flyttas `core/` och `layouts/`
+  till ett versionerat paket, så att en rättning når alla kunder som en PR per kund.
 - **Bokning och beställning.** En modul för paketet Lokal, med en Worker och D1.

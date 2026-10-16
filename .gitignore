@@ -3,8 +3,8 @@ ut/
 lhci/
 .lighthouseci/
 node_modules/
-karna/dist/
-karna/.astro/
+starter/dist/
+starter/.astro/
 .wrangler/
 __pycache__/
 .DS_Store

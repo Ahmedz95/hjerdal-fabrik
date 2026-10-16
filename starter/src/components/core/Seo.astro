@@ -1,0 +1,38 @@
+---
+// Sidans metadata för Google och för delningar: titel, beskrivning, canonical,
+// Open Graph, favikon, sitemap och strukturerad data. Samma för alla kunder.
+import { sajt } from '../../config/site';
+import { url } from '../../lib/kund';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Sidans sökväg, till exempel "/meny/". */
+  sokvag: string;
+  ld?: object[];
+  noindex?: boolean;
+  ogBild?: string;
+  /** Webbläsarens färg runt sidan i mobilen. */
+  temaFarg: string;
+}
+
+const { title, description, sokvag, ld = [], noindex = false, ogBild, temaFarg } = Astro.props;
+const canonical = new URL(sokvag, Astro.site).href;
+// Förhandsvisningar av varianter ska inte hamna på Google.
+const dold = noindex || import.meta.env.PUBLIC_FORHANDSVISNING === '1';
+---
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{dold && <meta name="robots" content="noindex" />}
+<meta name="theme-color" content={temaFarg} />
+<link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+<link rel="sitemap" href={url('/sitemap-index.xml')} />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content={sajt.locale} />
+<meta property="og:site_name" content={sajt.namn} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+{ogBild && <meta property="og:image" content={ogBild} />}
+{ld.map((l) => <script type="application/ld+json" set:html={JSON.stringify(l)} />)}

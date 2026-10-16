@@ -1,0 +1,11 @@
+{
+  "kund": "FYLL I kundens mapp i kunder/",
+  "verksamhet": "FYLL I vad kunden gör, var och för vem, och vad som gör dem olika andra.",
+  "malgrupp": "FYLL I vilka som besöker sajten och vad de vill göra där.",
+  "mal": ["FYLL I det viktigaste sajten ska åstadkomma, till exempel att besökaren bokar bord i kväll"],
+  "kansla": ["FYLL I", "FYLL I"],
+  "maste": ["menyn som riktig text med priser", "öppettider och adress", "bokning eller telefon med tummen"],
+  "inte": [],
+  "referenser": [],
+  "fakta": "riktiga"
+}

@@ -1,0 +1,30 @@
+{
+  "ide": "FYLL I idén i en eller två meningar, som en bild man kan se framför sig.",
+  "farger": {
+    "bg": "#F5F6F4",
+    "surface": "#E8EBE9",
+    "ink": "#101315",
+    "muted": "#596066",
+    "line": "#D5DAD8",
+    "accent": "#101315",
+    "accent-ink": "#F5F6F4"
+  },
+  "kontrast": [
+    { "text": "ink", "bakgrund": "bg" },
+    { "text": "muted", "bakgrund": "bg" },
+    { "text": "muted", "bakgrund": "surface" },
+    { "text": "accent-ink", "bakgrund": "accent" }
+  ],
+  "typsnitt": [
+    { "namn": "Albert Sans", "roll": "brodtext", "kalla": "@fontsource-variable/albert-sans", "licens": "OFL" }
+  ],
+  "typskala": "FYLL I",
+  "layout": "FYLL I",
+  "bilder": [],
+  "rorelse": {
+    "princip": "FYLL I vad som rör sig och varför.",
+    "minskadRorelse": "Allt som rör sig av sig självt står still."
+  },
+  "wow": "FYLL I det besökaren minns och berättar om.",
+  "referenser": ["cybernoodle"]
+}

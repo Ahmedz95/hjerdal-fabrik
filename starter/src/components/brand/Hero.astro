@@ -1,0 +1,40 @@
+---
+// Startsidans överdel: rubrik, ingress, knappar och fakta, med eller utan
+// herobild (kundfilens design.hero). En kund med egen design byter den här.
+import { Picture } from 'astro:assets';
+import { kund, url, telLank } from '../../lib/kund';
+import { dagText, tidText } from '../../lib/format';
+import { bild } from '../../lib/bilder';
+
+const hero = bild('hero');
+// Delad hero och bildhero kräver en bild; utan bild blir det texthero.
+const heroLayout = hero ? kund.design.hero : 'text';
+const { adress } = kund.kontakt;
+const vardag = kund.oppettider[0];
+---
+<section class="hero">
+  {heroLayout === 'bild' && hero && (
+    <div class="hero-media"><Picture src={hero.src} alt={hero.alt} widths={[640, 1024, 1600, 2200]} sizes="100vw" formats={['avif', 'webp']} loading="eager" fetchpriority="high" /></div>
+  )}
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <p class="lbl">{kund.kok[0] ?? 'Restaurang'} · {adress.ort}</p>
+        <h1 class="h1">{kund.rubrik}</h1>
+        <p class="lede">{kund.ingress}</p>
+        <div class="actions">
+          {kund.boka && <a class="btn btn-accent" href={kund.boka.url}>{kund.boka.text} <span aria-hidden="true">→</span></a>}
+          <a class:list={['btn', kund.boka ? 'btn-line' : 'btn-accent']} href={url('/meny/')}>Se menyn</a>
+        </div>
+      </div>
+      {heroLayout === 'delad' && hero && (
+        <div class="hero-media"><Picture src={hero.src} alt={hero.alt} widths={[480, 760, 1100]} sizes="(min-width: 900px) 45vw, 100vw" formats={['avif', 'webp']} loading="eager" fetchpriority="high" /></div>
+      )}
+    </div>
+    <dl class="fakta">
+      <div><dt>Adress</dt><dd>{adress.gata}, {adress.ort}</dd></div>
+      <div><dt>{dagText(vardag.dagar)}</dt><dd class="tab">{tidText(vardag.tider)}</dd></div>
+      <div><dt>Telefon</dt><dd><a href={telLank(kund.kontakt.telefon)}>{kund.kontakt.telefon}</a></dd></div>
+    </dl>
+  </div>
+</section>
