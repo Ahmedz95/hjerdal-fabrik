@@ -67,6 +67,7 @@ const godtar = (s, ...prov) => {
   const re = new RegExp(s.pattern);
   return prov.every((p) => (p.startsWith('!') ? !re.test(p.slice(1)) : re.test(p)));
 };
+const arTal = (s) => s.type === 'number' || s.type === 'integer';
 const arTid = (s) => godtar(s, '11:00', '!1100');
 const arDatum = (s) => godtar(s, '2026-12-24');
 const arFarg = (s) => godtar(s, '#1E1B16', '!1E1B16');
@@ -88,12 +89,15 @@ export function validera(s, v, kravd) {
     if (s.format === 'email' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return em.format ?? 'skrivs som namn@exempel.se';
     if (s.format === 'uri' && !/^https?:\/\/[^\s/]+\.[^\s]+$/.test(v)) return em.format ?? 'måste börja med https://';
   }
-  if (s.type === 'number') {
+  if (s.type === 'number' || s.type === 'integer') {
     if (typeof v !== 'number' || Number.isNaN(v)) return 'ska vara ett tal';
+    if (s.type === 'integer' && !Number.isInteger(v)) return 'ska vara ett heltal';
     if (s.minimum !== undefined && v < s.minimum) return `får inte vara mindre än ${s.minimum}`;
+    if (s.maximum !== undefined && v > s.maximum) return `får inte vara större än ${s.maximum}`;
   }
-  if (s.type === 'array' && Array.isArray(v) && s.minItems && v.length < s.minItems) {
-    return s.minItems === 1 ? 'behöver minst en' : `behöver minst ${s.minItems}`;
+  if (s.type === 'array' && Array.isArray(v)) {
+    if (s.minItems && v.length < s.minItems) return s.minItems === 1 ? 'behöver minst en' : `behöver minst ${s.minItems}`;
+    if (s.maxItems !== undefined && v.length > s.maxItems) return `får ha högst ${s.maxItems}`;
   }
   return null;
 }
@@ -173,7 +177,7 @@ function ram(s, vag, kravd, kontroll, opt = {}) {
   const { namn, hjalp } = etikett(s);
   const id = `f-${vag.join('-')}`;
   const forsta = kontroll.id === id || kontroll.querySelector?.(`[id="${id}"]`);
-  return h('div', { class: `falt${s.type === 'number' || arTid(s) || arDatum(s) ? ' smal' : ''}`, 'data-vag': vag.join('.') },
+  return h('div', { class: `falt${arTal(s) || arTid(s) || arDatum(s) ? ' smal' : ''}`, 'data-vag': vag.join('.') },
     !opt.utanEtikett && namn && h(forsta ? 'label' : 'p', { class: 'etikett', for: forsta ? id : null }, namn, !kravd && s.default === undefined && h('span', { class: 'valfri' }, 'valfritt')),
     !opt.utanEtikett && hjalp && h('p', { class: 'hjalp' }, hjalp),
     kontroll,
@@ -183,11 +187,12 @@ function ram(s, vag, kravd, kontroll, opt = {}) {
 function inmatning(s, vag, kravd, ctx) {
   const v = hamta(ctx.data, vag);
   const flerrad = etikett(s).tips.includes('flerrad');
-  const typ = s.type === 'number' ? 'number' : arTid(s) ? 'time' : arDatum(s) ? 'date'
+  const typ = arTal(s) ? 'number' : arTid(s) ? 'time' : arDatum(s) ? 'date'
     : s.format === 'email' ? 'email' : s.format === 'uri' ? 'url' : 'text';
   const el = flerrad
     ? h('textarea', { rows: s.maxLength && s.maxLength <= 200 ? 2 : 3, placeholder: s.default ?? '' })
-    : h('input', { type: typ, inputmode: typ === 'number' ? 'decimal' : null, min: s.minimum, step: typ === 'number' ? 'any' : null,
+    : h('input', { type: typ, inputmode: typ === 'number' ? (s.type === 'integer' ? 'numeric' : 'decimal') : null, min: s.minimum, max: s.maximum,
+      step: typ === 'number' ? (s.type === 'integer' ? 1 : 'any') : null,
       placeholder: s.format === 'uri' ? 'https://' : s.default ?? '', autocomplete: 'off', spellcheck: typ === 'text' });
   if (typ === 'text' && s.errorMessage?.pattern?.startsWith('skrivs som ')) el.placeholder = s.errorMessage.pattern.slice(11);
   el.id = `f-${vag.join('-')}`;

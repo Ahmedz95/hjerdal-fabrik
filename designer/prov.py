@@ -94,6 +94,16 @@ def main() -> int:
         nu = json.loads(svar)
         status, svar = fraga(bas, "PUT", f"/api/kunder/{PROVKUND}", {"data": {**nu["data"], "kontakt": {"telefon": "040-12"}}, "andrad": nu["andrad"]})
         kolla(any(f == "kontakt.telefon" for f, _ in json.loads(svar).get("problem", [])), "ett fält i fel format syns direkt")
+        nu = json.loads(fraga(bas, "GET", f"/api/kunder/{PROVKUND}")[1])
+        kort = {"rubrik": "Kaffekortet", "text": "Det tionde bjuder vi på."}
+        status, svar = fraga(bas, "PUT", f"/api/kunder/{PROVKUND}", {"data": {**nu["data"], "remsa": ["Naturvin"] * 9, "stampelkort": {**kort, "antal": 13}},
+                                                                     "andrad": nu["andrad"]})
+        problem = dict(json.loads(svar).get("problem", []))
+        kolla(problem.get("remsa") == "får ha högst 8" and problem.get("stampelkort.antal") == "får inte vara större än 12",
+              "högsta antalet i en lista och högsta talet syns direkt")
+        nu = json.loads(fraga(bas, "GET", f"/api/kunder/{PROVKUND}")[1])
+        status, svar = fraga(bas, "PUT", f"/api/kunder/{PROVKUND}", {"data": {**nu["data"], "remsa": [], "stampelkort": {**kort, "antal": 7.5}}, "andrad": nu["andrad"]})
+        kolla(dict(json.loads(svar).get("problem", [])).get("stampelkort.antal") == "ska vara ett heltal", "ett tal som ska vara ett heltal syns direkt")
         kolla(fraga(bas, "PUT", f"/api/kunder/{PROVKUND}", {"data": ny["data"], "andrad": 1.0})[0] == 409,
               "en ändring utanför formuläret upptäcks")
         status, svar = fraga(bas, "POST", f"/api/kunder/{PROVKUND}/bygg")
@@ -274,6 +284,7 @@ def provarkiv(bas: str) -> None:
     text = svar.decode()
     kolla(status == 200 and "Stekt torsk med brynt smör" in text and "Mån–Fre" in text and "Det här behöver vi" not in text,
           "underlaget har menyn och öppettiderna")
+    kolla("Stämpelkort" not in text and "Frågor före besöket" not in text, "underlaget visar bara de kännetecken kunden har")
     nu = json.loads(fraga(bas, "GET", f"/api/kunder/{PROVKUND}")[1])
     fraga(bas, "PUT", f"/api/kunder/{PROVKUND}", {"data": {**nu["data"], "namn": "Prov <b>Designer</b>"}, "andrad": nu["andrad"]})
     r = urllib.request.Request(f"{bas}/api/kunder/{PROVKUND}/export")

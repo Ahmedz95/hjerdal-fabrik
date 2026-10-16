@@ -1,0 +1,32 @@
+---
+// Stämpelkortet på startsidan (kundfilens stampelkort), som kortet i kassan. Texten bär
+// erbjudandet; själva kortet är en bild av det och döljs för skärmläsare. De första
+// rutorna är stämplade med initialen, och den sista är det som bjuds.
+import { kund } from '../../lib/kund';
+import Framhavd from './Framhavd.astro';
+
+const kort = kund.stampelkort;
+// Upp till sex rutor på en rad, annars två jämna rader.
+const kolumner = kort ? (kort.antal <= 6 ? kort.antal : Math.ceil(kort.antal / 2)) : 0;
+const stamplade = kort ? Math.min(3, kort.antal - 3) : 0;
+const initial = kund.namn.trim().charAt(0).toUpperCase();
+---
+{kort && (
+  <section class="sec" aria-labelledby="stampelkort">
+    <div class="wrap split stampelkort">
+      <div>
+        <p class="lbl">Stämpelkort</p>
+        <h2 class="h2" id="stampelkort"><Framhavd text={kort.rubrik} /></h2>
+        <p class="lede">{kort.text}</p>
+      </div>
+      <div class="stampelkort-kort" aria-hidden="true">
+        <p class="stampelkort-namn">{kund.namn}</p>
+        <div class="stampelkort-rutor" style={`--kolumner: ${kolumner}`}>
+          {Array.from({ length: kort.antal }, (_, i) => (
+            <span class:list={['stampelkort-ruta', { stamplad: i < stamplade, bjuds: i === kort.antal - 1 }]}>{i < stamplade ? initial : ''}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+)}

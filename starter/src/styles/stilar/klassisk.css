@@ -15,6 +15,7 @@
 [data-stil="klassisk"] .band { text-align: center; }
 [data-stil="klassisk"] .band .h2 { margin-inline: auto; }
 [data-stil="klassisk"] .band .actions { justify-content: center; }
+[data-stil="klassisk"] .tidslinje { margin-inline: auto; }
 
 /* Menyn: inga linjer mellan rätterna, en punktlinje fram till priset. */
 [data-stil="klassisk"] .ratter { border-top: 0; }

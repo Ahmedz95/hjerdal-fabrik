@@ -4,6 +4,7 @@ import Bas from '../layouts/Bas.astro';
 import { kund, url } from '../lib/kund';
 import { bild } from '../lib/bilder';
 import Framhavd from '../components/core/Framhavd.astro';
+import Tidslinje from '../components/core/Tidslinje.astro';
 
 // fabrik.py tar bort sidan när kunden inte har någon om-text.
 const om = kund.om!;
@@ -31,4 +32,5 @@ const description = om.stycken[0].length > 155 ? `${om.stycken[0].slice(0, 155).
       </div>
     </div>
   </section>
+  <Tidslinje />
 </Bas>

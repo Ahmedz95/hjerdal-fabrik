@@ -1,0 +1,23 @@
+---
+// Frågor före besöket (kundfilens fragor), som öppnas en i taget med <details>, utan
+// JavaScript. Svaren finns i sidan från början, så de syns för sökmotorer och skärmläsare.
+import { kund } from '../../lib/kund';
+---
+{kund.fragor.length > 0 && (
+  <section class="sec" aria-labelledby="fragor">
+    <div class="wrap split">
+      <div>
+        <p class="lbl">Före besöket</p>
+        <h2 class="h2" id="fragor">Bra att veta.</h2>
+      </div>
+      <div class="fragor">
+        {kund.fragor.map((f) => (
+          <details class="fraga">
+            <summary>{f.fraga}</summary>
+            <p class="p">{f.svar}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

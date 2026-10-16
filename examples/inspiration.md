@@ -48,9 +48,12 @@ design. Idéerna är tagna härifrån; texter, bilder och kod är våra egna.
 | Temana `oliv`, `terrakotta`, `senap` | WATDA, ÉTÉ, Glød | Kräm med oliv, varm beige med tegel och senapsgult med svart. |
 | Menyn `numrerad` | Ombra | Sektionerna med stora siffror, romerska i Afton, som satserna i en avsmakningsmeny. |
 | `*stjärnor*` i rubriken | Ombra, WATDA | Ett par ord i rubriken framhävs, kursivt eller i en annan stil. |
+| `remsa` i kundfilen | WATDA, Casa Victoria | Det stället har som en remsa under första skärmen. Den står still, så att inget rör sig av sig självt. |
+| `stampelkort` | Casa Victoria | Stämpelkortet från kassan som ett kort på startsidan, med den sista rutan som det som bjuds. |
+| `fragor` | WATDA | Frågor före besöket på startsidan, som öppnas utan JavaScript. |
+| `om.historia` | Ombra | Ställets historia som en tidslinje på sidan Om oss. |
 
-Kvar att göra: frågorna före besöket (WATDA), stämpelkortet (Casa Victoria), kockens
-tidslinje (Ombra) och en löpande remsa som egna sektioner med kundens riktiga innehåll.
+Kännetecknen syns bara när kunden har fyllt i dem, med kundens riktiga innehåll.
 
 ## Det vi gör bättre som standard
 

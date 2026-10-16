@@ -158,6 +158,50 @@ p { margin: 0; }
 .om-bild + .p { margin-top: 28px; }
 .om-bild img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--r-bild); }
 
+/* Kännetecken: remsan, stämpelkortet, frågorna och tidslinjen. Var och en syns bara när
+   kunden har fyllt i den. Formen kommer från delarna: hörnen från --r-tagg och --r-kort,
+   linjerna från formerna och texten från typsnittet, så de följer stilen. */
+
+/* Remsan under första skärmen: ett band i accentfärgen, orden efter en liten markering. */
+.remsa { background: var(--accent); color: var(--accent-ink); }
+.remsa ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 32px; margin-block: 0; padding-block: clamp(16px, 2.4vw, 24px); list-style: none; }
+.remsa li { display: flex; align-items: center; gap: 14px; font: max(400, var(--display-weight)) clamp(1.05rem, 1.9vw, 1.45rem)/1.25 var(--f-display); text-transform: var(--display-case); }
+.remsa li::before { content: ""; flex: none; width: .4em; height: .4em; border-radius: var(--r-tagg); background: currentColor; }
+/* Remsan avslutar första skärmen, så nästa sektion behöver ingen egen linje ovanför, inte
+   heller med formernas kraftigare linjer ([data-former] för att gå före dem). */
+[data-former] .remsa + .sec { border-top: 0; }
+
+/* Stämpelkortet: en bild av kortet i kassan. Rutorna har märkningens hörn. */
+.stampelkort { align-items: center; }
+.stampelkort-kort { width: 100%; max-width: 440px; padding: clamp(20px, 3vw, 32px); border-radius: var(--r-kort); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+@media (min-width: 900px) { .stampelkort-kort { justify-self: center; } }
+.stampelkort-namn { margin-bottom: 18px; font: var(--logo); letter-spacing: var(--logo-track); text-transform: var(--logo-case); }
+.stampelkort-rutor { display: grid; grid-template-columns: repeat(var(--kolumner), minmax(0, 1fr)); gap: clamp(8px, 1.4vw, 12px); }
+.stampelkort-ruta { display: grid; place-items: center; aspect-ratio: 1; border: 1.5px dashed color-mix(in srgb, var(--ink) 40%, transparent); border-radius: var(--r-tagg); font: 700 clamp(1rem, 2.4vw, 1.35rem)/1 var(--f-display); }
+.stampelkort-ruta.stamplad { border: 2px solid currentColor; color: var(--accent-tekst); rotate: -10deg; }
+.stampelkort-ruta.stamplad:nth-child(2n) { rotate: 7deg; }
+.stampelkort-ruta.bjuds { border: 0; background: var(--accent); }
+.stampelkort-ruta.bjuds::after { content: ""; width: 46%; aspect-ratio: 1; background: var(--accent-ink); clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+
+/* Frågor före besöket: frågan som rätterna i menyn och ett plus som blir ett kryss. */
+.fragor { border-top: 1px solid var(--line); }
+.fraga { border-bottom: 1px solid var(--line); }
+.fraga summary { display: flex; justify-content: space-between; align-items: center; gap: 24px; min-height: 48px; padding-block: 18px; font: var(--ratt); cursor: pointer; list-style: none; }
+.fraga summary::-webkit-details-marker { display: none; }
+.fraga summary::after { content: ""; flex: none; width: 14px; height: 14px; background: linear-gradient(currentColor, currentColor) center / 100% 1.5px no-repeat, linear-gradient(currentColor, currentColor) center / 1.5px 100% no-repeat; transition: rotate .25s var(--ease); }
+.fraga[open] summary::after { rotate: 45deg; }
+.fraga .p { padding-bottom: 22px; }
+
+/* Tidslinjen på Om oss: en punkt i accentfärgen för varje händelse, med en linje emellan,
+   och året stort i rubrikernas typsnitt. */
+.tidslinje { --nar: clamp(1.6rem, 3.4vw, 2.6rem); max-width: 980px; margin: 0; padding: 0; list-style: none; }
+.tidslinje li { position: relative; display: grid; gap: 10px 48px; padding: 0 0 clamp(36px, 5vw, 56px) clamp(32px, 4vw, 44px); }
+.tidslinje li:last-child { padding-bottom: 0; }
+.tidslinje li::before { content: ""; position: absolute; z-index: 1; left: 0; top: calc(var(--nar) / 2 - 6px); width: 12px; height: 12px; border-radius: var(--r-tagg); background: var(--accent); }
+.tidslinje li:not(:last-child)::after { content: ""; position: absolute; left: 5.5px; top: calc(var(--nar) / 2); bottom: calc(var(--nar) / -2); width: 1px; background: var(--line); }
+.tidslinje-nar { font: var(--display-weight) var(--nar)/1 var(--f-display); letter-spacing: var(--display-track); text-transform: var(--display-case); }
+@media (min-width: 760px) { .tidslinje li { grid-template-columns: minmax(0, 3fr) minmax(0, 8fr); align-items: baseline; } }
+
 /* Avslutande band */
 .band { padding-block: clamp(64px, 10vw, 128px); background: var(--surface); }
 .band .h2 { max-width: 16ch; }

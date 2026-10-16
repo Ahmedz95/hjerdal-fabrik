@@ -191,13 +191,19 @@ def schemafel(s: dict, v, vag: str = "", kravd: bool = True) -> list[tuple[str, 
     elif typ in ("number", "integer"):
         if isinstance(v, bool) or not isinstance(v, (int, float)):
             return [(vag, "ska vara ett tal")]
+        if typ == "integer" and not float(v).is_integer():
+            return [(vag, "ska vara ett heltal")]
         if "minimum" in s and v < s["minimum"]:
             return [(vag, f"får inte vara mindre än {s['minimum']}")]
+        if "maximum" in s and v > s["maximum"]:
+            return [(vag, f"får inte vara större än {s['maximum']}")]
     elif typ == "array":
         if not isinstance(v, list):
             return [(vag, "ska vara en lista")]
         if s.get("minItems") and len(v) < s["minItems"]:
             return [(vag, "behöver minst en" if s["minItems"] == 1 else f"behöver minst {s['minItems']}")]
+        if "maxItems" in s and len(v) > s["maxItems"]:
+            return [(vag, f"får ha högst {s['maxItems']}")]
         delar = s.get("items")
         return [f for i, x in enumerate(v)
                 for f in schemafel((delar[i] if i < len(delar) else {}) if isinstance(delar, list) else delar or {}, x, under(i))]

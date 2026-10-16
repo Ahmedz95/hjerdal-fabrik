@@ -891,7 +891,7 @@ STIL_ORD = {
 def stilar_for(data: dict) -> list[str]:
     """Stilarna i den ordning de passar stället bäst, efter orden i STIL_ORD."""
     text = " ".join(str(data.get(k) or "") for k in ("namn", "beskrivning", "rubrik", "ingress"))
-    text = (text + " " + " ".join(data.get("kok") or [])).lower()
+    text = (text + " " + " ".join([*(data.get("kok") or []), *(data.get("remsa") or [])])).lower()
     poang = {s: sum(text.count(o) for o in STIL_ORD.get(s, ())) for s in STILAR}
     ordning = [s for s in STIL_ORD if s in STILAR] + [s for s in STILAR if s not in STIL_ORD]
     return sorted(ordning, key=lambda s: -poang[s])

@@ -15,7 +15,7 @@ export const svenskaFel: z.ZodErrorMap = (fel, ctx) => {
   if (tom || (fel.code === 'too_small' && fel.type === 'string' && fel.minimum === 1)) return { message: 'måste fyllas i' };
   switch (fel.code) {
     case 'invalid_type':
-      return { message: `ska vara ${{ string: 'text', number: 'ett tal', boolean: 'ja eller nej', array: 'en lista', object: 'en grupp' }[fel.expected as string] ?? fel.expected}` };
+      return { message: `ska vara ${{ string: 'text', number: 'ett tal', integer: 'ett heltal', boolean: 'ja eller nej', array: 'en lista', object: 'en grupp' }[fel.expected as string] ?? fel.expected}` };
     case 'too_small':
       if (fel.type === 'string') return { message: `ska vara minst ${fel.minimum} tecken` };
       if (fel.type === 'array') return { message: fel.minimum === 1 ? 'behöver minst en' : `behöver minst ${fel.minimum}` };
@@ -110,6 +110,11 @@ export const schema = z.object({
     .describe('Beskrivning för Google|En mening på 50–160 tecken: vad, var och varför.|flerrad'),
   rubrik: z.string().min(1).describe('Rubrik på startsidan|Gärna en kort mening. Ord mellan *stjärnor* framhävs, kursivt eller i accentfärgen beroende på stilen.'),
   ingress: z.string().min(1).describe('Ingress|Två meningar under rubriken.|flerrad'),
+  remsa: z
+    .array(z.string().min(1).max(32))
+    .max(8)
+    .default([])
+    .describe('Remsa|Korta ord om det ni har, till exempel Naturvin, Surdeg från eget bageri eller Uteservering. Visas som en remsa under första skärmen på startsidan.'),
   kok: z.array(z.string()).default([]).describe('Kök|Till exempel Svensk eller Italiensk. Den första visas på startsidan.'),
   prisniva: z.enum(['$', '$$', '$$$', '$$$$']).optional().describe('Prisnivå'),
   kontakt: z
@@ -160,6 +165,18 @@ export const schema = z.object({
     .object({
       rubrik: z.string().min(1).describe('Rubrik|Ord mellan *stjärnor* framhävs.'),
       stycken: z.array(z.string().min(1)).min(1).describe('Text|Ett eller flera stycken.|flerrad'),
+      historia: z
+        .array(
+          z
+            .object({
+              nar: z.string().min(1).max(24).describe('När|Ett år eller en tid, till exempel 2014 eller Våren 2019.'),
+              text: z.string().min(1).describe('Vad hände||flerrad'),
+            })
+            .describe('Händelse'),
+        )
+        .max(12)
+        .default([])
+        .describe('Historien|Viktiga händelser för stället, den första först. Visas som en tidslinje på sidan Om oss.'),
     })
     .optional()
     .describe('Om oss'),
@@ -175,6 +192,26 @@ export const schema = z.object({
       sektioner: z.array(sektion).min(1).describe('Sektioner'),
     })
     .describe('Meny'),
+  fragor: z
+    .array(
+      z
+        .object({
+          fraga: z.string().min(1).describe('Fråga|Till exempel Behöver vi boka bord?'),
+          svar: z.string().min(1).describe('Svar||flerrad'),
+        })
+        .describe('Fråga'),
+    )
+    .max(10)
+    .default([])
+    .describe('Frågor före besöket|Det gästerna brukar undra över, som bokning, barn, hund, allergier eller parkering. Visas på startsidan.'),
+  stampelkort: z
+    .object({
+      rubrik: z.string().min(1).describe('Rubrik|Till exempel Kaffekortet. Ord mellan *stjärnor* framhävs.'),
+      text: z.string().min(1).describe('Erbjudandet|Till exempel Köp nio kaffe, det tionde bjuder vi på. Skriv bara det ni verkligen erbjuder.|flerrad'),
+      antal: z.number().int().min(4).max(12).default(10).describe('Rutor på kortet|Från 4 till 12. Den sista är det som bjuds.'),
+    })
+    .optional()
+    .describe('Stämpelkort|Om ni har ett stämpelkort i kassan. Visas som ett kort på startsidan.'),
   bilder: z
     .object({
       hero: bild.optional().describe('Stor bild på startsidan|Används när hero är delad eller bild.'),

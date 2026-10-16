@@ -38,6 +38,11 @@ att byta var för sig: formerna i `src/styles/former/`, etiketterna i
 `src/styles/etiketter/` och hur foton visas i `src/styles/foton/`. Det som bara en stil
 har, som Klassisks punktlinjer och Stämpels mörka remsa, står i `src/styles/stilar/`.
 
+Kännetecknen (remsan under första skärmen, stämpelkortet, frågorna före besöket och
+tidslinjen på Om oss) syns bara när kunden har fyllt i dem. De har inga egna former:
+hörnen kommer från `--r-tagg` och `--r-kort`, linjerna från formerna och texten från
+rubrikernas typsnitt, så de ser ut som resten av sajten i varje stil.
+
 ## Rörelse
 
 Nästan ingen: knappar lyfter två pixlar under muspekaren. Ingen JavaScript utom på

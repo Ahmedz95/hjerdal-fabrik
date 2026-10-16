@@ -5,6 +5,9 @@ import Hero from '../components/brand/Hero.astro';
 import MenySektion from '../components/core/MenySektion.astro';
 import Oppettider from '../components/core/Oppettider.astro';
 import Framhavd from '../components/core/Framhavd.astro';
+import Remsa from '../components/core/Remsa.astro';
+import Stampelkort from '../components/core/Stampelkort.astro';
+import Fragor from '../components/core/Fragor.astro';
 import { kund, url, telLank } from '../lib/kund';
 import { bild } from '../lib/bilder';
 import { restaurangLd } from '../lib/ld';
@@ -18,6 +21,7 @@ const title = `${kund.namn} | Restaurang i ${adress.ort}`;
 ---
 <Bas {title} description={kund.beskrivning} sokvag="/" ld={[restaurangLd()]}>
   <Hero />
+  <Remsa />
 
   <section class="sec" aria-labelledby="fran-menyn">
     <div class="wrap">
@@ -32,6 +36,8 @@ const title = `${kund.namn} | Restaurang i ${adress.ort}`;
       <div class="actions"><a class="tl" href={url('/meny/')}>Hela menyn</a></div>
     </div>
   </section>
+
+  <Stampelkort />
 
   {kund.funktioner.omOss && kund.om && (
     <section class="sec" aria-labelledby="om">
@@ -63,6 +69,8 @@ const title = `${kund.namn} | Restaurang i ${adress.ort}`;
       <div><Oppettider /></div>
     </div>
   </section>
+
+  <Fragor />
 
   {kund.boka && (
     <section class="band">

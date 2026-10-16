@@ -107,12 +107,28 @@ Kunder med egen design och arkiverade kunder räknas inte.
 - `publicera` stoppar. Ska två sajter vara lika, till exempel två ställen med samma
   ägare, publiceras de med `--trots-likhet`.
 - *Förslag* (`varianter` utan val) väljer fyra olika stilar efter orden i kundens
-  namn, kök, beskrivning, rubrik och ingress: avsmakning och vinbar ger Afton
+  namn, kök, beskrivning, rubrik, ingress och remsa: avsmakning och vinbar ger Afton
   först, tapas och delade rätter Stämpel, kafé och bageri Mjuk, och så vidare
   (`STIL_ORD` i `fabrik.py`). Inget förslag ligger för nära en annan kund eller
   ett annat förslag, och de fyra får olika teman. Är stilens alla teman tagna lånar den etiketter och foton från
   en annan stil. Samma kund får samma förslag varje gång, men två kunder av samma
   slag börjar på olika teman.
+
+### Kännetecken
+
+Idéer från inspirationen (`examples/inspiration.md`) som egna sektioner med kundens
+eget innehåll. En sektion syns bara när fältet är ifyllt, och den tar sin form från
+delarna: hörnen, linjerna och typsnittet följer stilen.
+
+| Fält | Var och hur | Från |
+| --- | --- | --- |
+| `remsa` | Upp till åtta korta ord om stället, som *Naturvin* eller *Uteservering*, som en remsa under första skärmen på startsidan. Ett band i accentfärgen, med tunna linjer i formerna Tunna. Den står still. | WATDA, Casa Victoria |
+| `stampelkort` | Stämpelkortet från kassan på startsidan efter menyn: rubrik, erbjudandet och 4 till 12 rutor, där den sista är det som bjuds. Bilden av kortet döljs för skärmläsare; texten bär erbjudandet. | Casa Victoria |
+| `fragor` | *Frågor före besöket* på startsidan före bokningen. Varje fråga öppnas med `<details>`, utan JavaScript. | WATDA |
+| `om.historia` | En tidslinje på sidan Om oss: när och vad som hände, den första händelsen först. | Ombra |
+
+Som allt i kundfilen är det kundens egna uppgifter. Ett stämpelkort, en historia eller
+ett svar som kunden inte har gett hittas inte på.
 
 ## Bilder och logga
 

@@ -562,6 +562,17 @@
         "minLength": 1,
         "description": "Ingress|Två meningar under rubriken.|flerrad"
       },
+      "remsa": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "maxItems": 8,
+        "default": [],
+        "description": "Remsa|Korta ord om det ni har, till exempel Naturvin, Surdeg från eget bageri eller Uteservering. Visas som en remsa under första skärmen på startsidan."
+      },
       "kok": {
         "type": "array",
         "items": {
@@ -848,6 +859,34 @@
             },
             "minItems": 1,
             "description": "Text|Ett eller flera stycken.|flerrad"
+          },
+          "historia": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nar": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24,
+                  "description": "När|Ett år eller en tid, till exempel 2014 eller Våren 2019."
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Vad hände||flerrad"
+                }
+              },
+              "required": [
+                "nar",
+                "text"
+              ],
+              "additionalProperties": false,
+              "description": "Händelse"
+            },
+            "maxItems": 12,
+            "default": [],
+            "description": "Historien|Viktiga händelser för stället, den första först. Visas som en tidslinje på sidan Om oss."
           }
         },
         "required": [
@@ -1003,6 +1042,61 @@
         ],
         "additionalProperties": false,
         "description": "Meny"
+      },
+      "fragor": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "fraga": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Fråga|Till exempel Behöver vi boka bord?"
+            },
+            "svar": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Svar||flerrad"
+            }
+          },
+          "required": [
+            "fraga",
+            "svar"
+          ],
+          "additionalProperties": false,
+          "description": "Fråga"
+        },
+        "maxItems": 10,
+        "default": [],
+        "description": "Frågor före besöket|Det gästerna brukar undra över, som bokning, barn, hund, allergier eller parkering. Visas på startsidan."
+      },
+      "stampelkort": {
+        "type": "object",
+        "properties": {
+          "rubrik": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Rubrik|Till exempel Kaffekortet. Ord mellan *stjärnor* framhävs."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Erbjudandet|Till exempel Köp nio kaffe, det tionde bjuder vi på. Skriv bara det ni verkligen erbjuder.|flerrad"
+          },
+          "antal": {
+            "type": "integer",
+            "minimum": 4,
+            "maximum": 12,
+            "default": 10,
+            "description": "Rutor på kortet|Från 4 till 12. Den sista är det som bjuds."
+          }
+        },
+        "required": [
+          "rubrik",
+          "text"
+        ],
+        "additionalProperties": false,
+        "description": "Stämpelkort|Om ni har ett stämpelkort i kassan. Visas som ett kort på startsidan."
       },
       "bilder": {
         "type": "object",

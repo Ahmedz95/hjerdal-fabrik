@@ -131,6 +131,13 @@ def main() -> int:
         (mapp / "src/styles/bas.css").unlink()
 
         fabrik.rubrik("Egen design ovanpå startern")
+        # Kännetecknen från inspirationen syns när de är ifyllda, också med en egen design.
+        data = json.loads((mapp / "kund.json").read_text(encoding="utf-8"))
+        data["remsa"] = ["Surdeg", "Naturvin", "Uteservering"]
+        data["stampelkort"] = {"rubrik": "Kaffe*kortet*", "text": "Köp nio kaffe, det tionde bjuder vi på.", "antal": 10}
+        data["fragor"] = [{"fraga": "Behöver vi boka?", "svar": "Till middag, ja."}, {"fraga": "Får hunden följa med?", "svar": "Ja, ute."}]
+        data["om"]["historia"] = [{"nar": "2009", "text": "Vi öppnar vid hamnen."}, {"nar": "I dag", "text": "Samma kök."}]
+        skriv(mapp / "kund.json", json.dumps(data, ensure_ascii=False, indent=2))
         skriv(mapp / "src/config/brand.json", json.dumps({"farger": "egna", "temaFarg": "#0A0B10", "skript": True}))
         tokens = (fabrik.STARTER / "src/styles/tokens.css").read_text(encoding="utf-8")
         skriv(mapp / "src/styles/tokens.css", tokens.replace("html {\n", "html {\n  --bg: #0A0B10; --surface: #15171F; --ink: #F2EEE6; --muted: #B9B2A6;"
@@ -151,6 +158,12 @@ def main() -> int:
         prov("egen JavaScript är tillåten med skript i brand.json", "dataset.js" in start or any(
             "dataset.js" in f.read_text(encoding="utf-8") for f in (ut / "dist").rglob("*.js")))
         prov("kundens public/ kommer med", (ut / "dist/prov.txt").exists())
+        om_oss = (ut / "dist/om-oss/index.html").read_text(encoding="utf-8")
+        prov("remsan står under första skärmen", "<li>Naturvin</li>" in start and start.index('class="remsa"') < start.index('id="fran-menyn"'))
+        prov("stämpelkortet har tio rutor och den sista bjuds", start.count('class="stampelkort-ruta') == 10
+             and start.count('stampelkort-ruta bjuds"') == 1 and "Kaffe<em>kortet</em>" in start)
+        prov("frågorna går att öppna utan JavaScript", start.count('<details class="fraga">') == 2)
+        prov("historien är en tidslinje på Om oss", om_oss.count('class="tidslinje-nar"') == 2 and 'class="tidslinje-nar"' not in start)
         prov("kundens filer stannar i ut/, inte i startern", not (fabrik.STARTER / "public/prov.txt").exists())
 
         fabrik.rubrik("Utan brand.json gäller starterns regler")

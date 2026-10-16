@@ -1,0 +1,27 @@
+---
+// Ställets historia som en tidslinje på sidan Om oss (kundfilens om.historia), den
+// första händelsen först.
+import { kund } from '../../lib/kund';
+
+const historia = kund.om?.historia ?? [];
+---
+{historia.length > 0 && (
+  <section class="sec" aria-labelledby="historia">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="lbl">Vår historia</p>
+          <h2 class="h2" id="historia">Från början till i dag.</h2>
+        </div>
+      </div>
+      <ol class="tidslinje">
+        {historia.map((h) => (
+          <li>
+            <p class="tidslinje-nar">{h.nar}</p>
+            <p class="p">{h.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+)}

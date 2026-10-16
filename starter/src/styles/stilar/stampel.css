@@ -5,7 +5,7 @@
    examples/inspiration.md. Bäst med de ljusa temana Oliv, Terrakotta och Linne. */
 
 /* Det praktiska som en mörk remsa över hela bredden direkt under första skärmen. */
-[data-stil="stampel"] .hero .fakta { margin-top: clamp(48px, 8vw, 96px); padding-block: 4px; border: 0; background: var(--ink); color: var(--bg); box-shadow: 0 0 0 100vmax var(--ink); clip-path: inset(0 -100vmax); }
+[data-stil="stampel"] .hero .fakta { margin-block: clamp(48px, 8vw, 96px) 0; padding-block: 4px; border: 0; background: var(--ink); color: var(--bg); box-shadow: 0 0 0 100vmax var(--ink); clip-path: inset(0 -100vmax); }
 [data-stil="stampel"] .hero .fakta > div { border-color: color-mix(in srgb, var(--bg) 30%, transparent); }
 [data-stil="stampel"] .hero .fakta dt { color: var(--bg); opacity: .8; }
 [data-stil="stampel"] .hero .fakta a { color: inherit; }
