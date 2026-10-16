@@ -61,7 +61,7 @@ HERO_NAMN = SCHEMA["namn"]["hero"]
 MENY_NAMN = SCHEMA["namn"]["meny"]
 TEMA_FARG = {t["id"]: (t["bg"], t["ink"]) for t in SCHEMA["teman"]}
 # Förslagen när varianter körs utan argument: fyra stilar som skiljer sig så mycket som möjligt.
-STANDARDVARIANTER = ("klassisk:linne:delad:lista", "kvarter:skiffer:bild:kort", "mjuk:salvia:delad:kort", "hjerdal:hav:text:kolumner")
+STANDARDVARIANTER = ("afton:kol:bild:numrerad", "stampel:oliv:delad:kort", "affisch:senap:text:lista", "mjuk:salvia:delad:kolumner")
 # Sidor som kan stängas av i kundfilen, och vilken flagga som styr dem.
 VALBARA_SIDOR = {"om-oss.astro": "omOss", "skarm.astro": "skarm", "qr.astro": "qr"}
 # Det som aldrig kopieras från startern till en kund.

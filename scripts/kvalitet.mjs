@@ -5,6 +5,7 @@
 //   - fel i konsolen, eller ett skript som kraschar
 //   - en fil som inte finns (bild, typsnitt, skript) eller en länk inom sajten som inte leder någonstans
 //   - en bild som inte går att visa
+//   - en rubrik där ett ord inte får plats på raden och sticker ut eller bryts mitt i
 //   - sidan hämtar något från en annan webbplats medan den laddas (typsnitt, skript, spårning)
 //   - innehållet syns inte utan JavaScript
 //   - något rör sig i en oändlig animation fast besökaren har valt minskad rörelse
@@ -143,6 +144,24 @@ async function kontrollera(webblasare, lage, sokvag, rapport) {
         .filter((id) => id && !document.getElementById(decodeURIComponent(id))),
       skript: document.querySelectorAll('script:not([type="application/ld+json"])').length,
       text: (document.querySelector('main') ?? document.body).innerText.trim().length,
+      // Rubriker där ett ord inte får plats på raden: det sticker ut ur rubriken eller
+      // bryts mitt i. Händer med långa ord i stora rubriker, särskilt bredvid en bild.
+      trangaRubriker: [...document.querySelectorAll('h1, h2, h3')].flatMap((h) => {
+        if (getComputedStyle(h).writingMode !== 'horizontal-tb' || !h.getClientRects().length) return [];
+        const ord = [];
+        const gang = document.createTreeWalker(h, NodeFilter.SHOW_TEXT);
+        for (let n = gang.nextNode(); n; n = gang.nextNode()) {
+          for (const m of n.data.matchAll(/[A-Za-zÀ-ÖØ-öø-ÿ]{2,}/g)) {
+            const r = document.createRange();
+            r.setStart(n, m.index);
+            r.setEnd(n, m.index + m[0].length);
+            const rader = new Set([...r.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top)));
+            if (rader.size > 1) ord.push(m[0]);
+          }
+        }
+        const ut = h.scrollWidth > h.clientWidth + 1;
+        return ord.length || ut ? [`${beskriv(h)} "${h.textContent.trim().slice(0, 40)}"${ord.length ? `: ${ord.join(', ')} bryts mitt i` : ': sticker ut'}`] : [];
+      }),
       // Animationer som rullar för evigt. Med minskad rörelse ska allt stå still.
       evigaAnimationer: document.getAnimations().filter((a) => a.playState === 'running' && a.effect?.getComputedTiming().iterations === Infinity).length,
     };
@@ -152,6 +171,7 @@ async function kontrollera(webblasare, lage, sokvag, rapport) {
     fel.push(`går att scrolla i sidled: sidan är ${matt.sidbredd} px bred och skärmen ${matt.bredd} px` + (matt.syndare.length ? ` (${matt.syndare.join(', ')})` : ''));
   }
   for (const src of matt.trasigaBilder) fel.push(`bilden går inte att visa: ${src.replace(bas, '')}`);
+  for (const r of matt.trangaRubriker) fel.push(`rubriken får inte plats: ${r}`);
   for (const id of matt.saknadeAnkare) fel.push(`länken #${id} leder ingenstans på sidan`);
   if (lage.namn === 'dator') {
     for (const href of new Set(matt.lankar)) {

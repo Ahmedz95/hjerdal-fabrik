@@ -1,0 +1,77 @@
+/* Stilen stämpel: feta versaler blandade med en mjuk serif, etiketter som tejp, lutande
+   bilder med en ram i accentfärgen, knappar som klistermärken och märkningen som
+   stämplar. Archivo i rubrikerna och texten; Fraunces, mjuk och fet, i ord mellan
+   *stjärnor* i kundfilens rubrik, i loggan, rätterna och priserna. Det praktiska ligger
+   som en mörk remsa under första skärmen. Idén kommer från WATDA och Casa Victoria i
+   examples/inspiration.md. Bäst med de ljusa temana Oliv, Terrakotta och Linne. */
+@import '@fontsource-variable/archivo/wght.css';
+@import '@fontsource-variable/fraunces/soft.css';
+
+/* Typsnitt */
+[data-stil="stampel"] {
+  --f-display: "Archivo Variable", "Archivo", "Arial Black", system-ui, sans-serif;
+  --f-body: "Archivo Variable", "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-serif: "Fraunces Variable", "Fraunces", Georgia, serif;
+  --display-weight: 800; --display-track: -0.022em; --display-case: uppercase;
+  --f-pris: var(--f-serif); --pris-track: 0;
+  --btn: 700 13.5px/1 var(--f-body); --btn-track: .07em; --btn-case: uppercase;
+  --logo: 800 25px/1 var(--f-serif); --logo-track: -0.02em; --logo-case: none;
+  --ratt: 620 20px/1.22 var(--f-serif); --ratt-case: none;
+}
+/* Fraunces mjukaste variant, som en rund trycksvärta. */
+[data-stil="stampel"] :is(.logo, .ratt-namn, .ratt-pris, :is(.h1, .h2, .h3) em) { font-variation-settings: "SOFT" 100; }
+/* Storleken följer spalten rubriken står i (cqi), så att ett långt ord i versaler får
+   plats även bredvid en bild; ett ord som ändå är för långt bryts hellre än att sticka ut. */
+[data-stil="stampel"] :is(.hero > .wrap, .hero-grid > div) { container-type: inline-size; }
+/* Med helbild är överdelen ett rutnät, där wrap annars krymper till ingenting som behållare. */
+[data-stil="stampel"] .hero > .wrap { width: 100%; }
+[data-stil="stampel"] .h1 { max-width: none; font-size: clamp(1.9rem, 7.8vw, 6.9rem); font-size: clamp(1.9rem, 9.6cqi, 6.9rem); line-height: .94; overflow-wrap: break-word; }
+[data-stil="stampel"] :is(.h2, .h3) { line-height: 1; }
+[data-stil="stampel"] :is(.h1, .h2, .h3) em { font-family: var(--f-serif); font-style: normal; font-weight: 640; text-transform: none; letter-spacing: -0.03em; color: inherit; }
+[data-stil="stampel"] .ratt-pris { font-size: 18px; font-weight: 600; }
+
+/* Etiketter: små versaler på en remsa tejp i textfärgen, lite sned. */
+[data-stil="stampel"] { --lbl: 700 11.5px/1.2 var(--f-body); --lbl-track: .12em; --lbl-case: uppercase; --lbl-color: var(--bg); }
+[data-stil="stampel"] .lbl { display: inline-block; padding: 7px 10px 6px; background: var(--ink); rotate: -1.5deg; }
+[data-stil="stampel"][data-hero="bild"] .hero .lbl { color: var(--bg); }
+[data-stil="stampel"] :is(.fakta dt, .kontaktlista dt, .fot h2) { font-weight: 700; color: var(--ink); }
+
+/* Former: kraftiga linjer i textfärgen, knappar som klistermärken med en skugga. */
+[data-stil="stampel"] { --r-btn: 4px; --r-tagg: 999px; --r-kort: 4px; --r-bild: 4px; }
+[data-stil="stampel"] .top { border-bottom: 2px solid var(--ink); }
+[data-stil="stampel"] .nav a { font-size: 13px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink); }
+[data-stil="stampel"] .nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--accent); }
+[data-stil="stampel"] :is(.sec, .fot) { border-top: 2px solid var(--ink); }
+[data-stil="stampel"] .sec-tat { border-top: 0; }
+[data-stil="stampel"] .btn { box-shadow: inset 0 0 0 2px var(--ink), 3px 3px 0 var(--ink); }
+[data-stil="stampel"] .btn-line { box-shadow: inset 0 0 0 2px var(--ink), 3px 3px 0 var(--ink); }
+[data-stil="stampel"][data-hero="bild"] .hero .btn { box-shadow: inset 0 0 0 2px #F5F6F4, 3px 3px 0 #F5F6F4; }
+@media (hover: hover) {
+  [data-stil="stampel"] .btn:hover, [data-stil="stampel"] .btn-line:hover { transform: translate(-1px, -1px); box-shadow: inset 0 0 0 2px var(--ink), 4px 4px 0 var(--ink); }
+}
+[data-stil="stampel"] .tl { border-bottom-width: 2px; font-weight: 700; }
+
+/* Det praktiska som en mörk remsa över hela bredden direkt under första skärmen. */
+[data-stil="stampel"] .hero .fakta { margin-top: clamp(48px, 8vw, 96px); padding-block: 4px; border: 0; background: var(--ink); color: var(--bg); box-shadow: 0 0 0 100vmax var(--ink); clip-path: inset(0 -100vmax); }
+[data-stil="stampel"] .hero .fakta > div { border-color: color-mix(in srgb, var(--bg) 30%, transparent); }
+[data-stil="stampel"] .hero .fakta dt { color: var(--bg); opacity: .8; }
+[data-stil="stampel"] .hero .fakta a { color: inherit; }
+[data-stil="stampel"]:is([data-hero="text"], [data-hero="delad"]) .hero:has(.fakta) { padding-bottom: 0; }
+
+/* Bilderna lutar lite, med en ram och en förskjuten platta i accentfärgen bakom. */
+[data-stil="stampel"]:is([data-hero="delad"]) .hero-media, [data-stil="stampel"] .om-bild { rotate: 1.4deg; }
+[data-stil="stampel"]:is([data-hero="delad"]) .hero-media img, [data-stil="stampel"] .om-bild img { border: 2px solid var(--ink); box-shadow: -12px 12px 0 var(--accent); }
+
+/* Menyn: märkningen som runda stämplar, korten med ram och lite snett. */
+[data-stil="stampel"]:not([data-meny="kort"]) .ratter { border-top: 2px solid var(--ink); }
+[data-stil="stampel"] .tagg { box-shadow: inset 0 0 0 1.5px currentColor; color: var(--ink); font-weight: 700; letter-spacing: .1em; rotate: -2deg; }
+[data-stil="stampel"] .meny-nav { border-bottom: 2px solid var(--ink); }
+[data-stil="stampel"] .meny-nav a { box-shadow: inset 0 0 0 2px var(--ink); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; font-size: 13px; }
+[data-stil="stampel"][data-meny="kort"] .ratt { box-shadow: inset 0 0 0 2px var(--ink), 4px 4px 0 var(--ink); }
+[data-stil="stampel"][data-meny="kort"] .ratt:nth-child(3n + 1) { rotate: -.6deg; }
+[data-stil="stampel"][data-meny="kort"] .ratt:nth-child(3n + 2) { rotate: .5deg; }
+[data-stil="stampel"] .special { border: 2px solid var(--ink); border-left-width: 2px; box-shadow: 4px 4px 0 var(--accent); }
+
+/* Bokningsbandet i accentfärgen. */
+[data-stil="stampel"] .band { background: var(--accent); color: var(--accent-ink); }
+[data-stil="stampel"] .band .btn-accent { background: var(--accent-ink); color: var(--accent); }

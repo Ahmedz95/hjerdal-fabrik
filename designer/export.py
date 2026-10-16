@@ -101,6 +101,11 @@ def bilddata(mapp: Path, fil: str | None) -> str | None:
     return f"data:{MIME.get(ext, 'application/octet-stream')};base64,{base64.b64encode(innehall).decode()}"
 
 
+def framhav(text: str) -> str:
+    """En rubrik med ord mellan *stjärnor* framhävda, som på sajten (Framhavd.astro)."""
+    return re.sub(r"\*([^*\n]+)\*", r"<em>\1</em>", escape(text))
+
+
 def html(kund: str, data: dict, problem: list[tuple[str, str]]) -> str:
     s = fabrik.SCHEMA
     namn_pa = s["namn"]
@@ -152,7 +157,7 @@ def html(kund: str, data: dict, problem: list[tuple[str, str]]) -> str:
     om = data.get("om") or {}
     if om:
         om_bild = bilddata(mapp, (bilder.get("om") or {}).get("fil"))
-        sektion("Om oss", (f"<h3>{escape(om.get('rubrik', ''))}</h3>" if om.get("rubrik") else "")
+        sektion("Om oss", (f"<h3>{framhav(om['rubrik'])}</h3>" if om.get("rubrik") else "")
                 + "".join(f"<p>{escape(st)}</p>" for st in om.get("stycken") or [])
                 + (f'<img class="foto" src="{om_bild}" alt="{escape((bilder.get("om") or {}).get("alt", ""))}">' if om_bild else ""))
 
@@ -275,7 +280,7 @@ footer {{ padding: 24px; font-size: 13px; color: #5c6368; }}
 <header><div>
 <p class="etikett">Underlag för webbplatsen · {datum(idag)}</p>
 <h1>{escape(namn)}</h1>
-{f'<p class="rubrik">{escape(data["rubrik"])}</p>' if data.get("rubrik") else ""}
+{f'<p class="rubrik">{framhav(data["rubrik"])}</p>' if data.get("rubrik") else ""}
 {f'<p class="ingress">{escape(data["ingress"])}</p>' if data.get("ingress") else ""}
 {f'<span class="kok">{escape(kok)}</span>' if kok else ""}
 {f'<img class="hero" src="{hero}" alt="{escape((bilder.get("hero") or {}).get("alt", ""))}">' if hero else ""}

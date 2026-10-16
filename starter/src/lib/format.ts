@@ -55,3 +55,12 @@ export function kommande<T extends { datum: string }>(lista: readonly T[], idag 
   const nu = idag.toISOString().slice(0, 10);
   return lista.filter((a) => a.datum >= nu).sort((a, b) => a.datum.localeCompare(b.datum));
 }
+
+/** Ord mellan stjärnor i en rubrik framhävs: "Vi lagar *med eld*." blir
+ *  [["Vi lagar ", false], ["med eld", true], [".", false]]. Stilen bestämmer hur, som
+ *  kursivt i accentfärgen i Afton. Se Framhavd.astro. */
+export const framhavt = (text: string): [string, boolean][] =>
+  text
+    .split(/\*([^*\n]+)\*/)
+    .map((del, i): [string, boolean] => [del, i % 2 === 1])
+    .filter(([del]) => del);

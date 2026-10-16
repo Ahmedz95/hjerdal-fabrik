@@ -1,0 +1,66 @@
+/* Stilen affisch: ett typsnitt i jätteformat, som en affisch på en vägg. Schibsted
+   Grotesk i allt, tjocka linjer, svartvita foton med linjer i bakgrundsfärgen och små
+   versala etiketter. Startsidan läses uppifrån som en affisch: ingressen först och
+   rubriken stor längst ner, med knappen under en linje. Idén kommer från Glød i
+   examples/inspiration.md. Bäst med en kort rubrik och med temat Senap eller Fjäll. */
+@import '@fontsource-variable/schibsted-grotesk';
+@import '@fontsource-variable/schibsted-grotesk/wght-italic.css';
+
+/* Typsnitt: ett och samma i allt. */
+[data-stil="affisch"] {
+  --f-display: "Schibsted Grotesk Variable", "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body: var(--f-display);
+  --display-weight: 780; --display-track: -0.052em;
+  --f-pris: var(--f-body); --pris-track: 0;
+  --btn: 600 16px/1 var(--f-body);
+  --logo: 800 21px/1 var(--f-display); --logo-track: -0.02em; --logo-case: uppercase;
+  --ratt: 650 19px/1.25 var(--f-body);
+}
+[data-stil="affisch"] body { font-size: 17px; }
+/* Rubriken i jätteformat. Storleken följer spalten den står i (cqi), så att ett långt
+   ord får plats även bredvid en bild; ett ord som ändå är för långt bryts hellre än att
+   sticka ut. */
+[data-stil="affisch"] :is(.hero > .wrap, .hero-grid > div) { container-type: inline-size; }
+/* Med helbild är överdelen ett rutnät, där wrap annars krymper till ingenting som behållare. */
+[data-stil="affisch"] .hero > .wrap { width: 100%; }
+[data-stil="affisch"] .h1 { max-width: none; font-size: clamp(2.5rem, 10.4vw, 9.4rem); font-size: clamp(2.5rem, 14.5cqi, 9.4rem); line-height: .9; overflow-wrap: break-word; }
+[data-stil="affisch"] .h2 { max-width: 14ch; font-size: clamp(2.2rem, 6vw, 4.8rem); line-height: .94; overflow-wrap: break-word; }
+[data-stil="affisch"] .h3 { font-weight: 720; letter-spacing: -0.03em; }
+[data-stil="affisch"] :is(.h1, .h2, .h3) em { font-style: italic; font-weight: 420; color: inherit; }
+[data-stil="affisch"] .lede { max-width: 30ch; font-size: clamp(19px, 1.9vw, 25px); line-height: 1.38; color: var(--ink); }
+
+/* Etiketter: små versaler i textfärgen. */
+[data-stil="affisch"] { --lbl: 600 12px/1.35 var(--f-body); --lbl-track: .07em; --lbl-case: uppercase; --lbl-color: var(--ink); }
+[data-stil="affisch"] :is(.fakta dt, .kontaktlista dt, .fot h2) { color: var(--ink); }
+
+/* Former: runda knappar, raka bilder och tjocka linjer i textfärgen. */
+[data-stil="affisch"] { --r-btn: 999px; --r-tagg: 999px; --r-kort: 0; --r-bild: 0; }
+[data-stil="affisch"] .top { border-bottom: 2px solid var(--ink); }
+[data-stil="affisch"] .nav a { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+[data-stil="affisch"] .nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 currentColor; }
+[data-stil="affisch"] :is(.sec, .fot) { border-top: 2px solid var(--ink); }
+[data-stil="affisch"] .sec-tat { border-top: 0; }
+[data-stil="affisch"] .btn-line { box-shadow: inset 0 0 0 2px var(--ink); }
+[data-stil="affisch"] .tl { border-bottom-width: 2px; font-weight: 600; }
+[data-stil="affisch"] :is(.fakta, .tider, .ratter) { border-top: 2px solid var(--ink); }
+[data-stil="affisch"] .fakta > div + div { border-left-color: var(--ink); }
+
+/* Startsidan som en affisch: ingressen överst, rubriken stor längst ner och knappen under
+   en linje. Bara ordningen på skärmen ändras; i koden kommer rubriken först. */
+[data-stil="affisch"]:is([data-hero="text"], [data-hero="delad"]) .hero-grid > div { display: flex; flex-direction: column; }
+[data-stil="affisch"]:is([data-hero="text"], [data-hero="delad"]) .hero-grid .lede { order: -1; margin: 0 0 clamp(40px, 9vw, 120px); }
+[data-stil="affisch"]:is([data-hero="text"], [data-hero="delad"]) .hero-grid .lbl { order: -2; }
+[data-stil="affisch"] .hero-grid .actions { justify-content: space-between; margin-top: clamp(24px, 3vw, 36px); padding-top: clamp(20px, 2.4vw, 28px); border-top: 2px solid var(--ink); }
+
+/* Bilderna i svartvitt, med lodräta linjer i bakgrundsfärgen över fotot på startsidan. */
+[data-stil="affisch"] :is(.hero-media, .om-bild) img { filter: grayscale(1) contrast(1.06); }
+[data-stil="affisch"][data-hero="delad"] .hero-media { position: relative; }
+[data-stil="affisch"][data-hero="delad"] .hero-media::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 46px, var(--bg) 46px 49px); background-position: 30px 0; pointer-events: none; }
+
+/* Menyn: namn och pris i fetstil, linjer i textfärgen. */
+[data-stil="affisch"] .ratt { border-bottom-color: var(--ink); }
+[data-stil="affisch"] .ratt-pris { font-weight: 650; font-size: 17px; }
+[data-stil="affisch"] .tagg { box-shadow: inset 0 0 0 1.5px var(--ink); color: var(--ink); letter-spacing: .08em; font-weight: 600; }
+[data-stil="affisch"] .meny-nav { border-bottom: 2px solid var(--ink); }
+[data-stil="affisch"] .meny-nav a { box-shadow: inset 0 0 0 1.5px var(--ink); font-weight: 600; }
+[data-stil="affisch"] .sektion-head .h3 { font-size: clamp(1.9rem, 3.4vw, 2.8rem); }

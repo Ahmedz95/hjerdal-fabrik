@@ -24,6 +24,24 @@
       "namn": "Mjuk",
       "passar": "Kaféer, bagerier, brunch",
       "beskrivning": "Vänliga rubriker, rundade kort och bilder och etiketter som små brickor."
+    },
+    {
+      "id": "afton",
+      "namn": "Afton",
+      "passar": "Avsmakningsmenyer, fine dining, vinbarer",
+      "beskrivning": "Stora rubriker i Bodoni med kursiva ord i accentfärgen, spärrade etiketter, mycket luft och tunna linjer."
+    },
+    {
+      "id": "affisch",
+      "namn": "Affisch",
+      "passar": "Vedeldade kök, vinbarer, ställen med ett starkt namn",
+      "beskrivning": "Ett typsnitt i jätteformat, tjocka linjer, svartvita foton och etiketter som på en affisch."
+    },
+    {
+      "id": "stampel",
+      "namn": "Stämpel",
+      "passar": "Kvarterskrogar, delade rätter, kaféer med personlighet",
+      "beskrivning": "Feta versaler blandade med en mjuk serif, etiketter som tejp, lutande bilder och stämplar."
     }
   ],
   "teman": [
@@ -98,6 +116,78 @@
       "accent": "#F0B65A",
       "rubrik": "sans",
       "mork": true
+    },
+    {
+      "id": "kol",
+      "namn": "Kol",
+      "bg": "#15110E",
+      "surface": "#1F1915",
+      "ink": "#F2E9DC",
+      "muted": "#B3A594",
+      "line": "#362C24",
+      "accent": "#E07A3F",
+      "rubrik": "serif",
+      "mork": true
+    },
+    {
+      "id": "mossa",
+      "namn": "Mossa",
+      "bg": "#10201A",
+      "surface": "#172A22",
+      "ink": "#EFE8D6",
+      "muted": "#A9B5A6",
+      "line": "#284034",
+      "accent": "#CDA85E",
+      "rubrik": "serif",
+      "mork": true
+    },
+    {
+      "id": "plommon",
+      "namn": "Plommon",
+      "bg": "#26121D",
+      "surface": "#321927",
+      "ink": "#F5E9EC",
+      "muted": "#C7AEB9",
+      "line": "#4A2B3B",
+      "accent": "#D9B56C",
+      "rubrik": "serif",
+      "mork": true
+    },
+    {
+      "id": "oliv",
+      "namn": "Oliv",
+      "bg": "#F1E9D6",
+      "surface": "#E6DCC3",
+      "ink": "#1F1E14",
+      "muted": "#5A5640",
+      "line": "#CFC4A8",
+      "accent": "#7E9346",
+      "rubrik": "serif",
+      "mork": false
+    },
+    {
+      "id": "senap",
+      "namn": "Senap",
+      "bg": "#D9A21E",
+      "surface": "#E3B23A",
+      "ink": "#191C22",
+      "muted": "#3A2E0E",
+      "line": "#B8861A",
+      "accent": "#191C22",
+      "rubrik": "sans",
+      "mork": false
+    },
+    {
+      "id": "terrakotta",
+      "namn": "Terrakotta",
+      "bg": "#F7EFE6",
+      "surface": "#EFE2D3",
+      "ink": "#2A1A12",
+      "muted": "#6B5446",
+      "line": "#E2D2C0",
+      "accent": "#A84B24",
+      "rubrik": "sans",
+      "mork": false
     }
   ],
   "heros": [
@@ -132,6 +222,11 @@
       "id": "kort",
       "namn": "Kort",
       "beskrivning": "Varje rätt som ett eget kort."
+    },
+    {
+      "id": "numrerad",
+      "namn": "Numrerad",
+      "beskrivning": "Sektionerna numrerade med stora siffror, som rätterna i en avsmakningsmeny."
     }
   ],
   "namn": {
@@ -156,7 +251,10 @@
       "hjerdal": "HJERDAL",
       "klassisk": "Klassisk",
       "kvarter": "Kvarter",
-      "mjuk": "Mjuk"
+      "mjuk": "Mjuk",
+      "afton": "Afton",
+      "affisch": "Affisch",
+      "stampel": "Stämpel"
     },
     "tema": {
       "fjall": "Fjäll",
@@ -164,7 +262,13 @@
       "salvia": "Salvia",
       "ek": "Ek",
       "skiffer": "Skiffer",
-      "hav": "Hav"
+      "hav": "Hav",
+      "kol": "Kol",
+      "mossa": "Mossa",
+      "plommon": "Plommon",
+      "oliv": "Oliv",
+      "senap": "Senap",
+      "terrakotta": "Terrakotta"
     },
     "hero": {
       "text": "Stor rubrik",
@@ -174,7 +278,8 @@
     "meny": {
       "lista": "Lista",
       "kolumner": "Två kolumner",
-      "kort": "Kort"
+      "kort": "Kort",
+      "numrerad": "Numrerad"
     },
     "rubrik": {
       "sans": "Sans",
@@ -206,7 +311,7 @@
       "rubrik": {
         "type": "string",
         "minLength": 1,
-        "description": "Rubrik på startsidan|Gärna en kort mening."
+        "description": "Rubrik på startsidan|Gärna en kort mening. Ord mellan *stjärnor* framhävs, kursivt eller i accentfärgen beroende på stilen."
       },
       "ingress": {
         "type": "string",
@@ -489,7 +594,7 @@
           "rubrik": {
             "type": "string",
             "minLength": 1,
-            "description": "Rubrik"
+            "description": "Rubrik|Ord mellan *stjärnor* framhävs."
           },
           "stycken": {
             "type": "array",
@@ -742,7 +847,10 @@
               "hjerdal",
               "klassisk",
               "kvarter",
-              "mjuk"
+              "mjuk",
+              "afton",
+              "affisch",
+              "stampel"
             ],
             "default": "hjerdal",
             "description": "Stil|Typsnitt och former."
@@ -755,7 +863,13 @@
               "salvia",
               "ek",
               "skiffer",
-              "hav"
+              "hav",
+              "kol",
+              "mossa",
+              "plommon",
+              "oliv",
+              "senap",
+              "terrakotta"
             ],
             "default": "fjall",
             "description": "Färger"
@@ -791,7 +905,8 @@
             "enum": [
               "lista",
               "kolumner",
-              "kort"
+              "kort",
+              "numrerad"
             ],
             "default": "lista",
             "description": "Menyns layout"

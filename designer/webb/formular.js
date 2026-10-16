@@ -238,6 +238,9 @@ const stilTyp = {
   klassisk: { fontFamily: 'ui-serif, Georgia, serif', fontStyle: 'italic' },
   kvarter: { fontFamily: '"Avenir Next Condensed", "Arial Narrow", sans-serif', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.01em' },
   mjuk: { fontFamily: 'ui-rounded, "SF Pro Rounded", system-ui, sans-serif', fontWeight: 600 },
+  afton: { fontFamily: 'Didot, "Bodoni 72", "Bodoni MT", Georgia, serif', fontStyle: 'italic' },
+  affisch: { fontFamily: '"Helvetica Neue", Arial, sans-serif', fontWeight: 800, letterSpacing: '-0.05em' },
+  stampel: { fontFamily: '"Arial Black", "Helvetica Neue", sans-serif', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em' },
 };
 
 function kortval(s, vag, kravd, info, ctx) {

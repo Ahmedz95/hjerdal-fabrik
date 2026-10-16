@@ -48,8 +48,10 @@ bygge tar runt tio sekunder. Inget konto behövs utom för `publicera`.
 
 Stilen bestämmer typsnitt och former, temat färgerna. Varje kund ska kännas igen
 som sin egen restaurang. Det som alltid är HJERDAL är kvaliteten: snabb,
-tillgänglig, tydlig och utan onödig JavaScript. Fyra stilar, sex teman, tre
-hero och tre menylayouter ger 216 kombinationer, före accentfärg och logga.
+tillgänglig, tydlig och utan onödig JavaScript. Sju stilar, tolv teman, tre
+hero och fyra menylayouter ger 1 008 kombinationer, före accentfärg och logga.
+Afton, Affisch och Stämpel och de sex nyare temana bygger på inspirationen i
+`examples/inspiration.md`.
 
 | Stil | Passar | Känns igen på |
 | --- | --- | --- |
@@ -57,17 +59,23 @@ hero och tre menylayouter ger 216 kombinationer, före accentfärg och logga.
 | `klassisk` | vita dukar, vinbarer, gamla bistroer | Cormorant Garamond och Source Serif, centrerad startsida, raka hörn, kursiva etiketter, punktlinjer fram till priset |
 | `kvarter` | pizzerior, burgare, streetfood | smala versala rubriker i Oswald, Archivo i texten, kraftiga linjer, små hörn |
 | `mjuk` | kaféer, bagerier, brunch | Bricolage Grotesque och Figtree, rundade kort och bilder, etiketter som brickor |
+| `afton` | avsmakningsmenyer, fine dining, vinbarer | Bodoni Moda och Jost, kursiva ord i accentfärgen, spärrade etiketter efter en tunn linje, mycket luft, romerska siffror i den numrerade menyn |
+| `affisch` | vedeldade kök, vinbarer, ställen med ett starkt namn | Schibsted Grotesk i jätteformat, ingressen först och rubriken längst ner som på en affisch, tjocka linjer, svartvita foton |
+| `stampel` | kvarterskrogar, delade rätter, kaféer med personlighet | feta versaler i Archivo blandade med Fraunces, etiketter som tejp, lutande bilder med en platta i accentfärgen, det praktiska som en mörk remsa |
 
 | Fält i `design` | Val | Standard |
 | --- | --- | --- |
 | `stil` | se ovan | `hjerdal` |
-| `tema` | ljusa: `fjall` (HJERDAL:s egna färger), `linne` (varm), `salvia` (grön). Mörka: `ek` (varm), `skiffer` (kall), `hav` (blå) | `fjall` |
+| `tema` | ljusa: `fjall` (HJERDAL:s egna färger), `linne` (varm), `salvia` (grön), `oliv` (grön och varm), `terrakotta` (tegel), `senap` (gul bakgrund). Mörka: `ek` (varm), `skiffer` (kall), `hav` (blå), `kol` (glöd), `mossa` (skog och guld), `plommon` (vinrött och guld) | `fjall` |
 | `hero` | `text` (Stor rubrik), `delad` (Text och bild bredvid varandra), `bild` (Helbild med texten ovanpå) | `text` |
-| `meny` | `lista` (sektionsrubrik till vänster, rätter till höger), `kolumner` (Två kolumner), `kort` (rätterna som kort) | `lista` |
+| `meny` | `lista` (sektionsrubrik till vänster, rätter till höger), `kolumner` (Två kolumner), `kort` (rätterna som kort), `numrerad` (sektionerna med stora siffror, som en avsmakningsmeny) | `lista` |
 | `accent` | En egen färg, till exempel `#7A3B2E`. Bygget stoppar om knapptexten då får för låg kontrast. | temats |
 | `rubrik` | Bara i stilen `hjerdal`: `sans` (Albert Sans) eller `serif` (Fraunces) | temats |
 
-Utan herobild blir hero alltid `text`.
+Utan herobild blir hero alltid `text`. Ord mellan `*stjärnor*` i startsidans rubrik
+och i rubriken om restaurangen framhävs, och stilen bestämmer hur: kursivt i
+accentfärgen i Afton, i en mjuk serif i Stämpel, kursivt i Klassisk och Affisch
+och i accentfärgen i HJERDAL, Kvarter och Mjuk.
 
 ## Bilder och logga
 
@@ -295,8 +303,10 @@ strukturerad data, inga externa skript och ingen JavaScript utom på menyskärme
 Varningar, till exempel en avvikelse vars datum har passerat, stoppar inte bygget.
 
 Exempelkunden Bistro Nordvik får 100 i alla fyra Lighthouse-kategorier i mobil i
-alla fyra stilarna. Startsidan väger 49 kB i `hjerdal`, runt 70 kB i `kvarter`
-och `mjuk` och 133 kB i `klassisk`, som laddar tre typsnittsfiler. CI-jobbet
+alla sju stilarna. Startsidan väger 49 kB i `hjerdal`, runt 70 kB i `kvarter`
+och `mjuk` och 133 kB i `klassisk`, som laddar tre typsnittsfiler. En stil vars
+typsnitt annars får rubriker eller knappar att hoppa när de kommer hämtar dem direkt,
+med en `<stil>.forladda.ts` bredvid sin CSS, som `afton`. CI-jobbet
 Fabrik kör kvalitetsgrinden för varje aktiv kund, provkör egen design
 (`quality/prov_fabrik.py`) och Designer och bygger en variant i varje stil vid
 varje ändring.

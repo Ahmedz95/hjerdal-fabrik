@@ -4,6 +4,7 @@ import Bas from '../layouts/Bas.astro';
 import Hero from '../components/brand/Hero.astro';
 import MenySektion from '../components/core/MenySektion.astro';
 import Oppettider from '../components/core/Oppettider.astro';
+import Framhavd from '../components/core/Framhavd.astro';
 import { kund, url, telLank } from '../lib/kund';
 import { bild } from '../lib/bilder';
 import { restaurangLd } from '../lib/ld';
@@ -37,7 +38,7 @@ const title = `${kund.namn} | Restaurang i ${adress.ort}`;
       <div class="wrap split">
         <div>
           <p class="lbl">Om oss</p>
-          <h2 class="h2" id="om">{kund.om.rubrik}</h2>
+          <h2 class="h2" id="om"><Framhavd text={kund.om.rubrik} /></h2>
         </div>
         <div>
           {om && <div class="om-bild"><Picture src={om.src} alt={om.alt} widths={[480, 760, 1100]} sizes="(min-width: 900px) 45vw, 100vw" formats={['avif', 'webp']} /></div>}

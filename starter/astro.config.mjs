@@ -15,6 +15,9 @@ const stilFil = fileURLToPath(new URL(`./src/styles/stilar/${stil}.css`, import.
 if (!/^[a-z]+$/.test(stil) || !existsSync(stilFil)) {
   throw new Error(`Kundfilen har fel och sajten byggs inte:\n  - design.stil: stilen ${stil} finns inte i src/styles/stilar/`);
 }
+// Typsnitten stilen vill ha direkt, eller inga (src/styles/stilar/forladda.ts).
+const egenForladdning = fileURLToPath(new URL(`./src/styles/stilar/${stil}.forladda.ts`, import.meta.url));
+const forladdFil = existsSync(egenForladdning) ? egenForladdning : fileURLToPath(new URL('./src/styles/stilar/forladda.ts', import.meta.url));
 
 // En SVG-logga läggs direkt i varje sida (src/lib/bilder.ts). En tung SVG, ofta
 // en export från Canva eller Illustrator med en inbäddad bild, skulle då göra
@@ -46,7 +49,7 @@ export default defineConfig({
     }),
   ],
   vite: {
-    resolve: { alias: { '@stil': stilFil } },
+    resolve: { alias: { '@stil': stilFil, '@stil-forladda': forladdFil } },
   },
   build: { inlineStylesheets: 'always' },
   compressHTML: true,

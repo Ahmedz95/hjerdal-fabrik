@@ -3,6 +3,7 @@ import { Picture } from 'astro:assets';
 import Bas from '../layouts/Bas.astro';
 import { kund, url } from '../lib/kund';
 import { bild } from '../lib/bilder';
+import Framhavd from '../components/core/Framhavd.astro';
 
 // fabrik.py tar bort sidan när kunden inte har någon om-text.
 const om = kund.om!;
@@ -13,7 +14,7 @@ const description = om.stycken[0].length > 155 ? `${om.stycken[0].slice(0, 155).
   <section class="hero">
     <div class="wrap">
       <p class="lbl">Om {kund.namn}</p>
-      <h1 class="h1">{om.rubrik}</h1>
+      <h1 class="h1"><Framhavd text={om.rubrik} /></h1>
     </div>
   </section>
   <section class="sec">

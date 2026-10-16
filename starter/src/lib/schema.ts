@@ -108,7 +108,7 @@ export const schema = z.object({
     .min(50)
     .max(160)
     .describe('Beskrivning för Google|En mening på 50–160 tecken: vad, var och varför.|flerrad'),
-  rubrik: z.string().min(1).describe('Rubrik på startsidan|Gärna en kort mening.'),
+  rubrik: z.string().min(1).describe('Rubrik på startsidan|Gärna en kort mening. Ord mellan *stjärnor* framhävs, kursivt eller i accentfärgen beroende på stilen.'),
   ingress: z.string().min(1).describe('Ingress|Två meningar under rubriken.|flerrad'),
   kok: z.array(z.string()).default([]).describe('Kök|Till exempel Svensk eller Italiensk. Den första visas på startsidan.'),
   prisniva: z.enum(['$', '$$', '$$$', '$$$$']).optional().describe('Prisnivå'),
@@ -158,7 +158,7 @@ export const schema = z.object({
     .describe('Avvikande öppettider|Helgdagar och semester. Visas tills datumet har passerat.'),
   om: z
     .object({
-      rubrik: z.string().min(1).describe('Rubrik'),
+      rubrik: z.string().min(1).describe('Rubrik|Ord mellan *stjärnor* framhävs.'),
       stycken: z.array(z.string().min(1)).min(1).describe('Text|Ett eller flera stycken.|flerrad'),
     })
     .optional()

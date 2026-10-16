@@ -8,6 +8,7 @@ import '../styles/bas.css';
 // Stilens typsnitt och former, src/styles/stilar/<stil>.css. Sökvägen sätts i
 // astro.config.mjs efter kundfilen, så att bara den valda stilens typsnitt följer med.
 import '@stil';
+import forladda from '@stil-forladda';
 import '../styles/brand.css';
 import Seo from '../components/core/Seo.astro';
 import Sidhuvud from '../components/brand/Sidhuvud.astro';
@@ -38,6 +39,7 @@ const tema = brand.farger === 'tema' ? temaVariabler(kund.design) : undefined;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <Seo {title} {description} {sokvag} {ld} {noindex} {ogBild} temaFarg={tema?.bg ?? brand.temaFarg} />
+    {forladda.map((fil) => <link rel="preload" href={fil} as="font" type="font/woff2" crossorigin />)}
     {tema && <style is:inline set:html={tema.css}></style>}
     <slot name="head" />
   </head>

@@ -25,8 +25,9 @@ const typsnitt = {
   serif: '"Fraunces Variable", "Fraunces", Georgia, "Times New Roman", serif',
 };
 
-/** Ljus eller mörk bakgrund, för loggan och color-scheme. */
-export const arMorkt = (tema: Kund['design']['tema']) => lum(temaLista[tema].bg) < 0.5;
+/** Ljus eller mörk bakgrund, för loggan och color-scheme: mörk när texten är ljusare än
+ *  bakgrunden. Senap är mörkare än mittgrått men har svart text, och räknas som ljust. */
+export const arMorkt = (tema: Kund['design']['tema']) => lum(temaLista[tema].bg) < lum(temaLista[tema].ink);
 
 /** CSS-variablerna för kundens tema och accent, och i stilen hjerdal rubriktypsnittet. */
 export function temaVariabler(design: Kund['design']) {
@@ -58,6 +59,9 @@ export function temaVariabler(design: Kund['design']) {
     '--line': t.line,
     '--accent': accent,
     '--accent-ink': accentInk,
+    // Accenten som text, som ord i en rubrik eller en etikett: bara när den syns mot både
+    // bakgrunden och ytorna, annars textfärgen.
+    '--accent-tekst': Math.min(kontrast(accent, t.bg), kontrast(accent, t.surface)) >= 4.5 ? accent : t.ink,
   };
   // De andra stilarna har sina rubriktypsnitt i src/styles/stilar/.
   if (design.stil === 'hjerdal') {

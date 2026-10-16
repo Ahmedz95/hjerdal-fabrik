@@ -16,7 +16,12 @@
   --r-btn: 6px; --r-tagg: 4px; --r-kort: 6px; --r-bild: 6px;
 }
 /* Versala Å, Ä och Ö når högre än versalhöjden och behöver luft mot raden ovanför. */
-[data-stil="kvarter"] .h1 { max-width: 13ch; line-height: 1.22; font-size: clamp(3.1rem, 9.6vw, 7.6rem); }
+[data-stil="kvarter"] .h1 { max-width: 13ch; line-height: 1.22; font-size: clamp(3.1rem, 9.6vw, 7.6rem); font-size: min(clamp(3.1rem, 9.6vw, 7.6rem), 13cqi); overflow-wrap: break-word; }
+/* Men aldrig större än spalten rubriken står i (cqi), så att ett långt ord i versaler får
+   plats bredvid en bild och i en smal mobil. Med helbild är överdelen ett rutnät, där wrap
+   annars krymper till ingenting som behållare. */
+[data-stil="kvarter"] :is(.hero > .wrap, .hero-grid > div) { container-type: inline-size; }
+[data-stil="kvarter"] .hero > .wrap { width: 100%; }
 [data-stil="kvarter"] :is(.h2, .h3) { line-height: 1.2; }
 [data-stil="kvarter"] .lbl::before { content: ""; display: inline-block; width: .72em; height: .72em; margin-right: .6em; background: var(--accent); vertical-align: -.04em; }
 [data-stil="kvarter"] .btn-line { box-shadow: inset 0 0 0 2px var(--ink); }

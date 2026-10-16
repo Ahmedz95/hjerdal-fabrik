@@ -18,4 +18,6 @@ html {
   --logo: 500 14px/1.2 var(--f-body); --logo-track: .32em; --logo-case: uppercase; --logo-h: 34px;
   --ratt: 500 18px/1.35 var(--f-body); --ratt-case: none;
   --r-btn: 999px; --r-tagg: 999px; --r-kort: 4px; --r-bild: 2px;
+  /* Temat sätter accenten som text när den syns tillräckligt; annars textfärgen. */
+  --accent-tekst: var(--ink);
 }
