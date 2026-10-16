@@ -10,7 +10,10 @@ body { font: 400 16px/1.65 var(--f-body); overflow-x: clip; }
 :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 2px; }
 .skip { background: var(--cyan); color: var(--night); font: 600 13px/1 var(--f-hud); letter-spacing: .12em; text-transform: uppercase; }
 
-.lbl { margin: 0; text-wrap: balance; }
+/* Etiketten bryts efter punkten, inte mitt i det som står efter den. Utan
+   balance, som annars flyttar ner punkten till andra raden. */
+.lbl { margin: 0; }
+.lbl > span { white-space: nowrap; }
 a[href^="tel:"] { font-family: var(--f-hud); letter-spacing: .02em; }
 .lbl b { color: var(--cyan); font-weight: 500; }
 .h1, .h2, .h3 { font-weight: 700; letter-spacing: -.02em; }
@@ -92,8 +95,8 @@ a[href^="tel:"] { font-family: var(--f-hud); letter-spacing: .02em; }
 .cn-paus i::before { left: 7px; }
 .cn-paus i::after { right: 7px; }
 .cn-paus input:checked + i { border-color: var(--cyan); }
-.cn-paus input:checked + i::before { top: 6px; left: 8px; width: 0; height: 0; border-block: 5px solid transparent; border-left: 7px solid var(--cyan); background: none; }
-.cn-paus input:checked + i::after { display: none; }
+/* Ikryssad visar den läget, pausat, i cyan. */
+.cn-paus input:checked + i::before, .cn-paus input:checked + i::after { background: var(--cyan); }
 .cn-paus input:focus-visible + i { outline: 2px solid var(--cyan); outline-offset: 3px; }
 @media (hover: hover) { .cn-paus label:hover { color: var(--paper); } }
 html:has([data-paus]:checked) :is(.cn-neon, .cn-vskylt, .cn-punkt) { animation: none; }
@@ -192,7 +195,7 @@ html:has([data-paus]:checked) :is(.cn-neon, .cn-vskylt, .cn-punkt) { animation: 
 .cn-siffror dd { margin: 0; font: 400 clamp(34px, 4.5vw, 52px)/1 var(--f-hud); font-variant-numeric: tabular-nums; color: var(--paper); }
 .cn-siffror sup { margin-left: 3px; font-size: .4em; vertical-align: top; color: var(--broth); }
 .cn-historia .cn-foto { aspect-ratio: 4 / 3.2; }
-.cn-historia .cn-foto img { object-position: 50% 55%; }
+.cn-historia .cn-foto img { object-position: 72% 50%; filter: brightness(.82) contrast(1.08) saturate(1.05); }
 @media (min-width: 860px) {
   .cn-historia-grid { grid-template-columns: 1.1fr 1fr; }
   .cn-historia .cn-foto { aspect-ratio: 4 / 4.4; }
@@ -233,7 +236,7 @@ span.cn-rad-pris { font: 400 13px/1.4 var(--f-hud); color: var(--dim); text-alig
 .cn-snabbval button { min-height: 44px; padding: 0 14px; border: 1px solid var(--rule-strong); border-radius: var(--r-btn); background: transparent; color: var(--paper); font: 500 11px/1 var(--f-hud); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
 @media (hover: hover) { .cn-snabbval button:hover { border-color: var(--cyan); } }
 .cn-utan-js { padding: 0 18px 18px; font-size: 14px; color: var(--dim); }
-.cn-pris-fel { padding: 12px 18px 0; font-size: 14px; color: var(--sakura); }
+.cn-pris-fel { padding: 8px 18px 10px; border-bottom: 1px solid var(--rule); font-size: 14px; color: var(--sakura); }
 .cn-pris-fel[hidden] { display: none; }
 input.cn-rad-pris[aria-invalid] { border-color: var(--sakura); }
 
@@ -289,7 +292,8 @@ input.cn-rad-pris[aria-invalid] { border-color: var(--sakura); }
 .cn-toast.on { transform: translate(-50%, 0); visibility: visible; transition: transform .45s var(--ease); }
 @media (min-width: 620px) { .cn-skarmar { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: clamp(16px, 2.5vw, 28px); } }
 @media (min-width: 760px) { .cn-bevis { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 980px) { .cn-studio { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); } }
+/* I dator följer skärmen och QR-menyn med när panelen scrollar, så att samtidigheten alltid syns. */
+@media (min-width: 980px) { .cn-studio { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; } .cn-utdata { position: sticky; top: 88px; } }
 
 /* ---------- Hitta hit och boka ---------- */
 .cn-boka-grid { display: grid; gap: clamp(36px, 6vw, 80px); align-items: start; }
@@ -348,6 +352,10 @@ input.cn-rad-pris[aria-invalid] { border-color: var(--sakura); }
 @media (hover: hover) { .cn-fot a:hover { text-decoration: underline; text-decoration-color: var(--sakura); } }
 @media (min-width: 700px) { .cn-fot-grid { grid-template-columns: 1.2fr 1fr 1fr; } }
 
+/* ---------- QR-skylten, starterns /qr/ ---------- */
+.qr .logo { font: 800 clamp(30px, 7vw, 44px)/1 var(--f-display); color: var(--sakura); text-shadow: 0 0 6px color-mix(in srgb, var(--sakura) 80%, transparent), 0 0 26px color-mix(in srgb, var(--sakura) 45%, transparent); }
+@media print { .qr .logo { text-shadow: none; } }
+
 /* ---------- 404: fel gränd ---------- */
 .cn-fel {
   position: relative; overflow: hidden; display: grid; align-items: center; min-height: min(78vh, 720px); border-bottom: 1px solid var(--rule);
@@ -358,7 +366,7 @@ input.cn-rad-pris[aria-invalid] { border-color: var(--sakura); }
 }
 .cn-fel-skylt { position: absolute; right: -2vw; bottom: -4vw; margin: 0; color: transparent; font: 800 clamp(160px, 38vw, 460px)/1 var(--f-display); -webkit-text-stroke: 1px #3A3A52; pointer-events: none; }
 .cn-fel .cn-neon { animation: none; }
-.cn-fel-text { position: relative; display: grid; gap: 24px; justify-items: start; padding-block: clamp(56px, 10vw, 120px); }
+.cn-fel-text { position: relative; width: 100%; display: grid; gap: 24px; justify-items: start; padding-block: clamp(56px, 10vw, 120px); }
 
 /* ---------- Skärmen ovanför baren, /skarm/ ---------- */
 .cn-skarm { position: relative; display: flex; flex-direction: column; gap: 2.6vw; min-height: 100vh; padding: 3vw 4vw; background: #050508; }

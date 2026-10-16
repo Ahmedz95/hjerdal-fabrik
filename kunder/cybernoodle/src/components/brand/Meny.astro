@@ -19,7 +19,7 @@ const uppraknat = (a: string[]) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}
 <section class="cn-meny cn-sektion-yta" id="meny" aria-labelledby="cn-meny-rubrik">
   <div class="wrap">
     <div class="cn-head">
-      <p class="lbl"><b>Kvällens meny</b> · Samma meny som i köket</p>
+      <p class="lbl"><b>Kvällens meny</b> · <span>Samma meny som i köket</span></p>
       <Rubrik class="h2" id="cn-meny-rubrik">{menyRubrik()}</Rubrik>
       {kund.meny.text && <p>{kund.meny.text}</p>}
     </div>

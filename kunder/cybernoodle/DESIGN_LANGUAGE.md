@@ -68,9 +68,10 @@ gott om luft mellan dem. Sidhuvudet ligger fast överst, och Boka bord finns all
 ## Bilder
 
 Två ramenfoton från Unsplash under Unsplash-licensen: en shoyu-ramen i en blåmönstrad skål
-i första skärmen och en tonkotsu i en svart skål i Historia. Beskurna stående i dator och
-liggande i mobilen, med ett rosa och blått neonskimmer och ånga ovanpå. Sidfoten säger
-"Foton: Unsplash". Riktiga kunder har egna foton.
+i första skärmen och en tonkotsu i en svart skål i Historia. Tonkotsun är beskuren upptill i
+filen, så att skålens röda tryck från en annan restaurang inte syns. På sidan står fotona
+stående i dator och liggande i mobilen, med ett rosa och blått neonskimmer och ånga ovanpå.
+Sidfoten säger "Foton: Unsplash". Riktiga kunder har egna foton.
 
 ## Rörelse
 

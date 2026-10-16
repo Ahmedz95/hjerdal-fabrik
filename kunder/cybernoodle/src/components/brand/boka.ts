@@ -91,7 +91,7 @@ export function startaBokning() {
     const ruta = document.createElement('div');
     ruta.className = 'cn-bekraftelse-ruta';
     const b = document.createElement('b');
-    b.textContent = `${namn ? `${namn}, b` : 'B'}ord för ${gaster} ${dagLang[dag.getDay()]} ${dag.getDate()} ${manad[dag.getMonth()]} kl. ${tid}. Vi ses under neonet.`;
+    b.textContent = `${namn ? `${namn}, b` : 'B'}ord för ${gaster} ${dagLang[dag.getDay()]} ${dag.getDate()} ${manad[dag.getMonth()]} kl.\u00a0${tid}. Vi ses under neonet.`;
     const p = document.createElement('p');
     p.textContent = 'Det här är en demo, så ingen bokning har skickats.';
     ruta.append(b, p);

@@ -106,7 +106,10 @@ export function startaKulisser() {
       el.setAttribute('aria-invalid', 'true');
       el.setAttribute('aria-describedby', prisFel.id);
     }
-    prisFel.hidden = !panel!.querySelector('[data-falt="pris"][aria-invalid]');
+    // Felet står under raden som är fel, eller under den första om flera är det.
+    const fel = panel!.querySelector('[data-falt="pris"][aria-invalid]');
+    if (fel) fel.closest('.cn-rad')!.after(prisFel);
+    prisFel.hidden = !fel;
   }
   const prisTimers = new Map<string, number>();
   function sattPris(el: HTMLInputElement) {
