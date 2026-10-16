@@ -1,0 +1,13 @@
+---
+// Remsan under första skärmen: korta ord om det stället har (kundfilens remsa). Den står
+// still, så att allt går att läsa utan JavaScript och inget rör sig av sig självt.
+// Formerna avgör hur den ser ut: ett band i accentfärgen, med tunna linjer i Tunna.
+import { kund } from '../../lib/kund';
+---
+{kund.remsa.length > 0 && (
+  <div class="remsa">
+    <ul class="wrap">
+      {kund.remsa.map((ord) => <li>{ord}</li>)}
+    </ul>
+  </div>
+)}

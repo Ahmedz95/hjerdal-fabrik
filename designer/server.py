@@ -140,7 +140,17 @@ def las(kund: str) -> dict:
         data = json.loads(fil.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
         raise ApiFel(400, f"kund.json är inte giltig JSON: rad {e.lineno}, kolumn {e.colno}: {e.msg}") from e
-    return {"kund": kund, "data": data, "andrad": andrad(kund), "arkiv": arkivinfo(kund)}
+    return {"kund": kund, "data": data, "andrad": andrad(kund), "arkiv": arkivinfo(kund), "likhet": likhet(kund, data)}
+
+
+def likhet(kund: str, data: dict) -> list[dict]:
+    """De andra kunderna från mallen som designen ligger för nära, med valen de har gemensamt i ord."""
+    try:
+        return [{"kund": mapp, "namn": namn, "lika": [fabrik.LIKHET_NAMN[k] for k in lika], "rad": fabrik.likhet_rad(lika)}
+                for mapp, namn, lika in fabrik.lika_kunder(kund, data)]
+    except (KeyError, TypeError, AttributeError):
+        # En kundfil mitt i ändringen kan ha val som inte finns. Det säger kontrollen av fälten.
+        return []
 
 
 def problem(data: dict) -> list[tuple[str, str]]:
@@ -181,13 +191,19 @@ def schemafel(s: dict, v, vag: str = "", kravd: bool = True) -> list[tuple[str, 
     elif typ in ("number", "integer"):
         if isinstance(v, bool) or not isinstance(v, (int, float)):
             return [(vag, "ska vara ett tal")]
+        if typ == "integer" and not float(v).is_integer():
+            return [(vag, "ska vara ett heltal")]
         if "minimum" in s and v < s["minimum"]:
             return [(vag, f"får inte vara mindre än {s['minimum']}")]
+        if "maximum" in s and v > s["maximum"]:
+            return [(vag, f"får inte vara större än {s['maximum']}")]
     elif typ == "array":
         if not isinstance(v, list):
             return [(vag, "ska vara en lista")]
         if s.get("minItems") and len(v) < s["minItems"]:
             return [(vag, "behöver minst en" if s["minItems"] == 1 else f"behöver minst {s['minItems']}")]
+        if "maxItems" in s and len(v) > s["maxItems"]:
+            return [(vag, f"får ha högst {s['maxItems']}")]
         delar = s.get("items")
         return [f for i, x in enumerate(v)
                 for f in schemafel((delar[i] if i < len(delar) else {}) if isinstance(delar, list) else delar or {}, x, under(i))]
@@ -212,7 +228,7 @@ def spara(kund: str, data: dict, forra: float | None = None) -> dict:
     tmp = fil.with_suffix(".json.tmp")
     tmp.write_text(fabrik.json_text(data), encoding="utf-8")
     tmp.replace(fil)
-    return {"andrad": andrad(kund), "problem": problem(data)}
+    return {"andrad": andrad(kund), "problem": problem(data), "likhet": likhet(kund, data)}
 
 
 def utan_platshallare(varde):

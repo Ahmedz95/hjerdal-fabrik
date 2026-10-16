@@ -1,0 +1,10 @@
+/* Formerna mjuka: rundade knappar, kort, bilder och band, och streckade linjer mellan
+   rätterna. */
+[data-former="mjuka"] { --r-btn: 999px; --r-tagg: 999px; --r-kort: 22px; --r-bild: 28px; }
+[data-former="mjuka"] .ratter { border-top: 0; }
+[data-former="mjuka"] .ratt { border-bottom: 1px dashed var(--line); }
+[data-former="mjuka"] .band { margin: 0 max(0px, calc(var(--gut) - 8px)) clamp(24px, 4vw, 48px); border-radius: var(--r-kort); }
+[data-former="mjuka"] .sec-surface { border-radius: var(--r-kort); }
+[data-former="mjuka"] .remsa { margin-inline: max(0px, calc(var(--gut) - 8px)); border-radius: var(--r-kort); }
+[data-former="mjuka"] .fragor { border-top: 0; }
+[data-former="mjuka"] .fraga { border-bottom: 1px dashed var(--line); }

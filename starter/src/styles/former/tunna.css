@@ -1,0 +1,7 @@
+/* Formerna tunna: raka hörn, hårfina linjer och mer luft mellan avsnitten och rätterna. */
+[data-former="tunna"] { --r-btn: 0; --r-tagg: 0; --r-kort: 0; --r-bild: 0; }
+[data-former="tunna"] .sec { padding-block: clamp(80px, 13vw, 176px); }
+[data-former="tunna"] .btn-line { box-shadow: inset 0 0 0 1px var(--muted); }
+[data-former="tunna"] .ratt { padding-block: 22px; }
+[data-former="tunna"] .remsa { border-block: 1px solid var(--line); background: none; color: var(--ink); }
+[data-former="tunna"] .remsa li::before { background: var(--accent); }

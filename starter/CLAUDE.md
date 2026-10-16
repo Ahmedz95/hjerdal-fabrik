@@ -13,8 +13,12 @@ kunds egen design (`kunder/<kund>/src/` och `public/`) ovanpå, och bygger.
 | Utseendet | `src/components/brand/`, `src/pages/`, `src/styles/tokens.css`, `src/styles/brand.css`, `src/config/brand.json` | Kunden med egen design, i `kunder/<kund>/` |
 
 CSS:en läggs i den här ordningen i `src/layouts/Bas.astro`: `tokens.css`
-(standardvärden), `bas.css` (starterns grund), stilen (`src/styles/stilar/<stil>.css`)
-och sist `brand.css` (kundens egen, tom här). Det som står senare vinner.
+(standardvärden), `bas.css` (starterns grund), delarna (`src/styles/typsnitt/`,
+`former/`, `etiketter/` och `foton/`, en fil per val), stilens egna grepp
+(`src/styles/stilar/<stil>.css`) och sist `brand.css` (kundens egen, tom här). Det som
+står senare vinner. Vilka filer det blir avgör `astro.config.mjs` från kundfilen
+(`valdaDelar()` i `src/lib/designval.ts`), och en del märker sina regler med sitt
+attribut på `<html>`, som `[data-typsnitt="bodoni"]`.
 
 `src/config/brand.json` säger hur kundens design tar över:
 

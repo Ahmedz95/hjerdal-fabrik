@@ -7,14 +7,31 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import kund from './src/data/kund.json' with { type: 'json' };
+import { valdaDelar } from './src/lib/designval';
 
-// Stilen väljer typsnitt och former (src/styles/stilar/<stil>.css). Bara den valda
-// stilens fil, och därmed dess typsnitt, kommer med i bygget.
-const stil = /** @type {{ stil?: string }} */ (kund.design ?? {}).stil ?? 'hjerdal';
-const stilFil = fileURLToPath(new URL(`./src/styles/stilar/${stil}.css`, import.meta.url));
-if (!/^[a-z]+$/.test(stil) || !existsSync(stilFil)) {
-  throw new Error(`Kundfilen har fel och sajten byggs inte:\n  - design.stil: stilen ${stil} finns inte i src/styles/stilar/`);
+// Stilen och delarna den väljer, eller som kundfilen byter: en CSS-fil var i
+// src/styles/<mapp>/<val>.css. Bara de valda filerna, och därmed bara de valda
+// typsnitten, kommer med i bygget.
+const design = /** @type {any} */ (kund.design ?? {});
+const stil = design.stil ?? 'hjerdal';
+const fil = (/** @type {string} */ vag) => fileURLToPath(new URL(`./src/styles/${vag}`, import.meta.url));
+/** @type {Record<string, [string, string]>} */
+const val = { stil: ['stilar', stil] };
+try {
+  for (const [falt, id] of Object.entries(valdaDelar(design))) val[falt] = [falt, id];
+} catch {
+  // En stil som inte finns får ingen förinställning; felet kommer nedan.
 }
+const alias = /** @type {Record<string, string>} */ ({});
+for (const [falt, [mapp, id]] of Object.entries(val)) {
+  if (!/^[a-z]+$/.test(id) || !existsSync(fil(`${mapp}/${id}.css`))) {
+    throw new Error(`Kundfilen har fel och sajten byggs inte:\n  - design.${falt}: ${id} finns inte i src/styles/${mapp}/`);
+  }
+  alias[`@${falt}`] = fil(`${mapp}/${id}.css`);
+}
+// Typsnittsfilerna som hämtas direkt, eller inga (src/styles/typsnitt/forladda.ts).
+const egen = fil(`typsnitt/${val.typsnitt[1]}.forladda.ts`);
+alias['@typsnitt-forladda'] = existsSync(egen) ? egen : fil('typsnitt/forladda.ts');
 
 // En SVG-logga läggs direkt i varje sida (src/lib/bilder.ts). En tung SVG, ofta
 // en export från Canva eller Illustrator med en inbäddad bild, skulle då göra
@@ -46,7 +63,7 @@ export default defineConfig({
     }),
   ],
   vite: {
-    resolve: { alias: { '@stil': stilFil } },
+    resolve: { alias },
   },
   build: { inlineStylesheets: 'always' },
   compressHTML: true,

@@ -1,0 +1,8 @@
+/* Formerna kantiga: små hörn, tydliga block och kraftiga linjer i textfärgen mellan
+   avsnitten och över menyn. */
+[data-former="kantiga"] { --r-btn: 6px; --r-tagg: 4px; --r-kort: 6px; --r-bild: 6px; }
+[data-former="kantiga"] .btn-line { box-shadow: inset 0 0 0 2px var(--ink); }
+[data-former="kantiga"] :is(.sec, .fot) { border-top: 2px solid var(--ink); }
+[data-former="kantiga"] :is(.sec-tat, .sec-surface) { border-top: 0; }
+[data-former="kantiga"] :is(.ratter, .fragor) { border-top: 2px solid var(--ink); }
+[data-former="kantiga"] .stampelkort-kort { box-shadow: inset 0 0 0 2px var(--ink); }

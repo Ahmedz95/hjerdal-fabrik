@@ -5,6 +5,7 @@ import { Picture } from 'astro:assets';
 import { kund, url, telLank } from '../../lib/kund';
 import { dagText, tidText } from '../../lib/format';
 import { bild } from '../../lib/bilder';
+import Framhavd from '../core/Framhavd.astro';
 
 const hero = bild('hero');
 // Delad hero och bildhero kräver en bild; utan bild blir det texthero.
@@ -20,7 +21,7 @@ const vardag = kund.oppettider[0];
     <div class="hero-grid">
       <div>
         <p class="lbl">{kund.kok[0] ?? 'Restaurang'} · {adress.ort}</p>
-        <h1 class="h1">{kund.rubrik}</h1>
+        <h1 class="h1"><Framhavd text={kund.rubrik} /></h1>
         <p class="lede">{kund.ingress}</p>
         <div class="actions">
           {kund.boka && <a class="btn btn-accent" href={kund.boka.url}>{kund.boka.text} <span aria-hidden="true">→</span></a>}

@@ -1,0 +1,7 @@
+/* Etiketterna brickor: små runda brickor på ytfärgen, utan versaler, och märkningen i
+   menyn likadan. */
+[data-etiketter="brickor"] { --lbl: 600 14px/1.3 var(--f-body); --lbl-track: 0; --lbl-case: none; --lbl-color: var(--ink); }
+[data-etiketter="brickor"] .lbl { display: inline-block; padding: 7px 14px; border-radius: 999px; background: var(--surface); }
+[data-etiketter="brickor"] .fakta dt, [data-etiketter="brickor"] .kontaktlista dt, [data-etiketter="brickor"] .fot h2 { font-weight: 700; }
+[data-etiketter="brickor"] .tagg { box-shadow: none; background: var(--surface); color: var(--ink); letter-spacing: .02em; text-transform: none; font-size: 12px; }
+[data-etiketter="brickor"][data-hero="bild"] .hero .lbl { background: rgba(245, 246, 244, .16); }

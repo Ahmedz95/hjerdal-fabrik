@@ -5,25 +5,255 @@
       "id": "hjerdal",
       "namn": "HJERDAL",
       "passar": "Det mesta",
-      "beskrivning": "Vårt eget formspråk: lätta stora rubriker, spärrade versala etiketter, runda knappar och priser i mono."
+      "beskrivning": "Vårt eget formspråk: lätta stora rubriker, spärrade versala etiketter, runda knappar och priser i mono.",
+      "delar": {
+        "typsnitt": "albert",
+        "former": "runda",
+        "etiketter": "sparrade",
+        "foton": "naturliga"
+      },
+      "teman": [
+        "fjall",
+        "hav",
+        "skiffer",
+        "linne"
+      ]
     },
     {
       "id": "klassisk",
       "namn": "Klassisk",
       "passar": "Vita dukar, vinbarer, gamla bistroer",
-      "beskrivning": "Serif i rubriker och text, centrerad startsida, raka hörn, kursiva etiketter och punktlinjer fram till priset."
+      "beskrivning": "Serif i rubriker och text, centrerad startsida, raka hörn, kursiva etiketter och punktlinjer fram till priset.",
+      "delar": {
+        "typsnitt": "garamond",
+        "former": "raka",
+        "etiketter": "kursiva",
+        "foton": "naturliga"
+      },
+      "teman": [
+        "linne",
+        "ek",
+        "plommon",
+        "mossa"
+      ]
     },
     {
       "id": "kvarter",
       "namn": "Kvarter",
       "passar": "Pizzerior, burgare, streetfood",
-      "beskrivning": "Smala versala rubriker, kraftiga linjer, små hörn och tydliga block."
+      "beskrivning": "Smala versala rubriker, kraftiga linjer, små hörn och tydliga block.",
+      "delar": {
+        "typsnitt": "oswald",
+        "former": "kantiga",
+        "etiketter": "ruta",
+        "foton": "naturliga"
+      },
+      "teman": [
+        "skiffer",
+        "senap",
+        "kol",
+        "fjall"
+      ]
     },
     {
       "id": "mjuk",
       "namn": "Mjuk",
       "passar": "Kaféer, bagerier, brunch",
-      "beskrivning": "Vänliga rubriker, rundade kort och bilder och etiketter som små brickor."
+      "beskrivning": "Vänliga rubriker, rundade kort och bilder och etiketter som små brickor.",
+      "delar": {
+        "typsnitt": "bricolage",
+        "former": "mjuka",
+        "etiketter": "brickor",
+        "foton": "naturliga"
+      },
+      "teman": [
+        "salvia",
+        "terrakotta",
+        "linne",
+        "oliv"
+      ]
+    },
+    {
+      "id": "afton",
+      "namn": "Afton",
+      "passar": "Avsmakningsmenyer, fine dining, vinbarer",
+      "beskrivning": "Stora rubriker i Bodoni med kursiva ord i accentfärgen, spärrade etiketter, mycket luft och tunna linjer.",
+      "delar": {
+        "typsnitt": "bodoni",
+        "former": "tunna",
+        "etiketter": "linje",
+        "foton": "naturliga"
+      },
+      "teman": [
+        "kol",
+        "mossa",
+        "plommon",
+        "ek"
+      ]
+    },
+    {
+      "id": "affisch",
+      "namn": "Affisch",
+      "passar": "Vedeldade kök, vinbarer, ställen med ett starkt namn",
+      "beskrivning": "Ett typsnitt i jätteformat, tjocka linjer, svartvita foton och etiketter som på en affisch.",
+      "delar": {
+        "typsnitt": "schibsted",
+        "former": "tjocka",
+        "etiketter": "versaler",
+        "foton": "svartvita"
+      },
+      "teman": [
+        "senap",
+        "fjall",
+        "ek",
+        "kol"
+      ]
+    },
+    {
+      "id": "stampel",
+      "namn": "Stämpel",
+      "passar": "Kvarterskrogar, delade rätter, kaféer med personlighet",
+      "beskrivning": "Feta versaler blandade med en mjuk serif, etiketter som tejp, lutande bilder och stämplar.",
+      "delar": {
+        "typsnitt": "archivo",
+        "former": "klistermarken",
+        "etiketter": "tejp",
+        "foton": "lutande"
+      },
+      "teman": [
+        "oliv",
+        "terrakotta",
+        "linne",
+        "plommon"
+      ]
+    }
+  ],
+  "typsnitt": [
+    {
+      "id": "albert",
+      "namn": "Albert Sans",
+      "beskrivning": "Lätta stora rubriker och priser i mono. Fraunces i rubrikerna i teman med serif."
+    },
+    {
+      "id": "garamond",
+      "namn": "Cormorant och Source Serif",
+      "beskrivning": "Serif i rubriker och text, som en tryckt meny."
+    },
+    {
+      "id": "oswald",
+      "namn": "Oswald och Archivo",
+      "beskrivning": "Smala versala rubriker och en tydlig grotesk."
+    },
+    {
+      "id": "bricolage",
+      "namn": "Bricolage och Figtree",
+      "beskrivning": "Vänliga, lite egensinniga rubriker och en mjuk grotesk."
+    },
+    {
+      "id": "bodoni",
+      "namn": "Bodoni och Jost",
+      "beskrivning": "Bodoni med kursiva ord, spärrade knappar och en geometrisk grotesk."
+    },
+    {
+      "id": "schibsted",
+      "namn": "Schibsted Grotesk",
+      "beskrivning": "Ett typsnitt i allt, fett och tätt i jätteformat."
+    },
+    {
+      "id": "archivo",
+      "namn": "Archivo och Fraunces",
+      "beskrivning": "Feta versaler blandade med en mjuk och rund serif."
+    }
+  ],
+  "former": [
+    {
+      "id": "runda",
+      "namn": "Runda",
+      "beskrivning": "Runda knappar, tunna linjer och inga skuggor."
+    },
+    {
+      "id": "raka",
+      "namn": "Raka",
+      "beskrivning": "Raka hörn och tunna linjer."
+    },
+    {
+      "id": "kantiga",
+      "namn": "Kantiga",
+      "beskrivning": "Små hörn och kraftiga linjer mellan avsnitten."
+    },
+    {
+      "id": "mjuka",
+      "namn": "Mjuka",
+      "beskrivning": "Rundade kort, bilder och band."
+    },
+    {
+      "id": "tunna",
+      "namn": "Tunna",
+      "beskrivning": "Raka hörn, hårfina linjer och mer luft mellan avsnitten."
+    },
+    {
+      "id": "tjocka",
+      "namn": "Tjocka",
+      "beskrivning": "Tjocka linjer i textfärgen och runda knappar."
+    },
+    {
+      "id": "klistermarken",
+      "namn": "Klistermärken",
+      "beskrivning": "Kraftiga linjer, knappar och kort med en förskjuten skugga."
+    }
+  ],
+  "etiketter": [
+    {
+      "id": "sparrade",
+      "namn": "Spärrade",
+      "beskrivning": "Små spärrade versaler i grått."
+    },
+    {
+      "id": "kursiva",
+      "namn": "Kursiva",
+      "beskrivning": "En kursiv rad i rubrikernas typsnitt."
+    },
+    {
+      "id": "ruta",
+      "namn": "Med ruta",
+      "beskrivning": "Feta versaler efter en liten ruta i accentfärgen."
+    },
+    {
+      "id": "brickor",
+      "namn": "Brickor",
+      "beskrivning": "Små runda brickor."
+    },
+    {
+      "id": "linje",
+      "namn": "Med linje",
+      "beskrivning": "Spärrade versaler i accentfärgen efter en tunn linje."
+    },
+    {
+      "id": "versaler",
+      "namn": "Versaler",
+      "beskrivning": "Små versaler i textfärgen, som på en affisch."
+    },
+    {
+      "id": "tejp",
+      "namn": "Tejp",
+      "beskrivning": "Versaler på en remsa tejp, lite snett, och märkningen som stämplar."
+    }
+  ],
+  "foton": [
+    {
+      "id": "naturliga",
+      "namn": "Som de är",
+      "beskrivning": "I färg, utan effekter."
+    },
+    {
+      "id": "svartvita",
+      "namn": "Svartvita",
+      "beskrivning": "I svartvitt, med lodräta linjer över bilden bredvid rubriken."
+    },
+    {
+      "id": "lutande",
+      "namn": "Lutande",
+      "beskrivning": "Lite snett, med en ram och en platta i accentfärgen bakom."
     }
   ],
   "teman": [
@@ -98,6 +328,78 @@
       "accent": "#F0B65A",
       "rubrik": "sans",
       "mork": true
+    },
+    {
+      "id": "kol",
+      "namn": "Kol",
+      "bg": "#15110E",
+      "surface": "#1F1915",
+      "ink": "#F2E9DC",
+      "muted": "#B3A594",
+      "line": "#362C24",
+      "accent": "#E07A3F",
+      "rubrik": "serif",
+      "mork": true
+    },
+    {
+      "id": "mossa",
+      "namn": "Mossa",
+      "bg": "#10201A",
+      "surface": "#172A22",
+      "ink": "#EFE8D6",
+      "muted": "#A9B5A6",
+      "line": "#284034",
+      "accent": "#CDA85E",
+      "rubrik": "serif",
+      "mork": true
+    },
+    {
+      "id": "plommon",
+      "namn": "Plommon",
+      "bg": "#26121D",
+      "surface": "#321927",
+      "ink": "#F5E9EC",
+      "muted": "#C7AEB9",
+      "line": "#4A2B3B",
+      "accent": "#D9B56C",
+      "rubrik": "serif",
+      "mork": true
+    },
+    {
+      "id": "oliv",
+      "namn": "Oliv",
+      "bg": "#F1E9D6",
+      "surface": "#E6DCC3",
+      "ink": "#1F1E14",
+      "muted": "#5A5640",
+      "line": "#CFC4A8",
+      "accent": "#7E9346",
+      "rubrik": "serif",
+      "mork": false
+    },
+    {
+      "id": "senap",
+      "namn": "Senap",
+      "bg": "#D9A21E",
+      "surface": "#E3B23A",
+      "ink": "#191C22",
+      "muted": "#3A2E0E",
+      "line": "#B8861A",
+      "accent": "#191C22",
+      "rubrik": "sans",
+      "mork": false
+    },
+    {
+      "id": "terrakotta",
+      "namn": "Terrakotta",
+      "bg": "#F7EFE6",
+      "surface": "#EFE2D3",
+      "ink": "#2A1A12",
+      "muted": "#6B5446",
+      "line": "#E2D2C0",
+      "accent": "#A84B24",
+      "rubrik": "sans",
+      "mork": false
     }
   ],
   "heros": [
@@ -132,6 +434,11 @@
       "id": "kort",
       "namn": "Kort",
       "beskrivning": "Varje rätt som ett eget kort."
+    },
+    {
+      "id": "numrerad",
+      "namn": "Numrerad",
+      "beskrivning": "Sektionerna numrerade med stora siffror, som rätterna i en avsmakningsmeny."
     }
   ],
   "namn": {
@@ -156,7 +463,42 @@
       "hjerdal": "HJERDAL",
       "klassisk": "Klassisk",
       "kvarter": "Kvarter",
-      "mjuk": "Mjuk"
+      "mjuk": "Mjuk",
+      "afton": "Afton",
+      "affisch": "Affisch",
+      "stampel": "Stämpel"
+    },
+    "typsnitt": {
+      "albert": "Albert Sans",
+      "garamond": "Cormorant och Source Serif",
+      "oswald": "Oswald och Archivo",
+      "bricolage": "Bricolage och Figtree",
+      "bodoni": "Bodoni och Jost",
+      "schibsted": "Schibsted Grotesk",
+      "archivo": "Archivo och Fraunces"
+    },
+    "former": {
+      "runda": "Runda",
+      "raka": "Raka",
+      "kantiga": "Kantiga",
+      "mjuka": "Mjuka",
+      "tunna": "Tunna",
+      "tjocka": "Tjocka",
+      "klistermarken": "Klistermärken"
+    },
+    "etiketter": {
+      "sparrade": "Spärrade",
+      "kursiva": "Kursiva",
+      "ruta": "Med ruta",
+      "brickor": "Brickor",
+      "linje": "Med linje",
+      "versaler": "Versaler",
+      "tejp": "Tejp"
+    },
+    "foton": {
+      "naturliga": "Som de är",
+      "svartvita": "Svartvita",
+      "lutande": "Lutande"
     },
     "tema": {
       "fjall": "Fjäll",
@@ -164,7 +506,13 @@
       "salvia": "Salvia",
       "ek": "Ek",
       "skiffer": "Skiffer",
-      "hav": "Hav"
+      "hav": "Hav",
+      "kol": "Kol",
+      "mossa": "Mossa",
+      "plommon": "Plommon",
+      "oliv": "Oliv",
+      "senap": "Senap",
+      "terrakotta": "Terrakotta"
     },
     "hero": {
       "text": "Stor rubrik",
@@ -174,7 +522,8 @@
     "meny": {
       "lista": "Lista",
       "kolumner": "Två kolumner",
-      "kort": "Kort"
+      "kort": "Kort",
+      "numrerad": "Numrerad"
     },
     "rubrik": {
       "sans": "Sans",
@@ -206,12 +555,23 @@
       "rubrik": {
         "type": "string",
         "minLength": 1,
-        "description": "Rubrik på startsidan|Gärna en kort mening."
+        "description": "Rubrik på startsidan|Gärna en kort mening. Ord mellan *stjärnor* framhävs, kursivt eller i accentfärgen beroende på stilen."
       },
       "ingress": {
         "type": "string",
         "minLength": 1,
         "description": "Ingress|Två meningar under rubriken.|flerrad"
+      },
+      "remsa": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "maxItems": 8,
+        "default": [],
+        "description": "Remsa|Korta ord om det ni har, till exempel Naturvin, Surdeg från eget bageri eller Uteservering. Visas som en remsa under första skärmen på startsidan."
       },
       "kok": {
         "type": "array",
@@ -489,7 +849,7 @@
           "rubrik": {
             "type": "string",
             "minLength": 1,
-            "description": "Rubrik"
+            "description": "Rubrik|Ord mellan *stjärnor* framhävs."
           },
           "stycken": {
             "type": "array",
@@ -499,6 +859,34 @@
             },
             "minItems": 1,
             "description": "Text|Ett eller flera stycken.|flerrad"
+          },
+          "historia": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nar": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24,
+                  "description": "När|Ett år eller en tid, till exempel 2014 eller Våren 2019."
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Vad hände||flerrad"
+                }
+              },
+              "required": [
+                "nar",
+                "text"
+              ],
+              "additionalProperties": false,
+              "description": "Händelse"
+            },
+            "maxItems": 12,
+            "default": [],
+            "description": "Historien|Viktiga händelser för stället, den första först. Visas som en tidslinje på sidan Om oss."
           }
         },
         "required": [
@@ -655,6 +1043,61 @@
         "additionalProperties": false,
         "description": "Meny"
       },
+      "fragor": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "fraga": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Fråga|Till exempel Behöver vi boka bord?"
+            },
+            "svar": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Svar||flerrad"
+            }
+          },
+          "required": [
+            "fraga",
+            "svar"
+          ],
+          "additionalProperties": false,
+          "description": "Fråga"
+        },
+        "maxItems": 10,
+        "default": [],
+        "description": "Frågor före besöket|Det gästerna brukar undra över, som bokning, barn, hund, allergier eller parkering. Visas på startsidan."
+      },
+      "stampelkort": {
+        "type": "object",
+        "properties": {
+          "rubrik": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Rubrik|Till exempel Kaffekortet. Ord mellan *stjärnor* framhävs."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Erbjudandet|Till exempel Köp nio kaffe, det tionde bjuder vi på. Skriv bara det ni verkligen erbjuder.|flerrad"
+          },
+          "antal": {
+            "type": "integer",
+            "minimum": 4,
+            "maximum": 12,
+            "default": 10,
+            "description": "Rutor på kortet|Från 4 till 12. Den sista är det som bjuds."
+          }
+        },
+        "required": [
+          "rubrik",
+          "text"
+        ],
+        "additionalProperties": false,
+        "description": "Stämpelkort|Om ni har ett stämpelkort i kassan. Visas som ett kort på startsidan."
+      },
       "bilder": {
         "type": "object",
         "properties": {
@@ -742,10 +1185,61 @@
               "hjerdal",
               "klassisk",
               "kvarter",
-              "mjuk"
+              "mjuk",
+              "afton",
+              "affisch",
+              "stampel"
             ],
             "default": "hjerdal",
-            "description": "Stil|Typsnitt och former."
+            "description": "Stil|Utgångspunkten: typsnitt, former, etiketter och foton. Varje del kan bytas nedan."
+          },
+          "typsnitt": {
+            "type": "string",
+            "enum": [
+              "albert",
+              "garamond",
+              "oswald",
+              "bricolage",
+              "bodoni",
+              "schibsted",
+              "archivo"
+            ],
+            "description": "Typsnitt|Utan val används stilens.|stilens"
+          },
+          "former": {
+            "type": "string",
+            "enum": [
+              "runda",
+              "raka",
+              "kantiga",
+              "mjuka",
+              "tunna",
+              "tjocka",
+              "klistermarken"
+            ],
+            "description": "Former|Hörn, linjer och knappar. Utan val används stilens.|stilens, kompakt"
+          },
+          "etiketter": {
+            "type": "string",
+            "enum": [
+              "sparrade",
+              "kursiva",
+              "ruta",
+              "brickor",
+              "linje",
+              "versaler",
+              "tejp"
+            ],
+            "description": "Etiketter|Raden ovanför rubrikerna och märkningen i menyn. Utan val används stilens.|stilens, kompakt"
+          },
+          "foton": {
+            "type": "string",
+            "enum": [
+              "naturliga",
+              "svartvita",
+              "lutande"
+            ],
+            "description": "Foton|Utan val används stilens.|stilens, kompakt"
           },
           "tema": {
             "type": "string",
@@ -755,7 +1249,13 @@
               "salvia",
               "ek",
               "skiffer",
-              "hav"
+              "hav",
+              "kol",
+              "mossa",
+              "plommon",
+              "oliv",
+              "senap",
+              "terrakotta"
             ],
             "default": "fjall",
             "description": "Färger"
@@ -766,7 +1266,7 @@
               "sans",
               "serif"
             ],
-            "description": "Rubriktypsnitt|Bara i stilen HJERDAL. Utan val används temats."
+            "description": "Rubriktypsnitt|Bara med typsnittet Albert Sans. Utan val används temats."
           },
           "accent": {
             "type": "string",
@@ -791,7 +1291,8 @@
             "enum": [
               "lista",
               "kolumner",
-              "kort"
+              "kort",
+              "numrerad"
             ],
             "default": "lista",
             "description": "Menyns layout"

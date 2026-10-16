@@ -1,0 +1,17 @@
+/* Formerna tjocka: runda knappar, raka bilder och tjocka linjer i textfärgen överallt,
+   som på en affisch. */
+[data-former="tjocka"] { --r-btn: 999px; --r-tagg: 999px; --r-kort: 0; --r-bild: 0; }
+[data-former="tjocka"] .top { border-bottom: 2px solid var(--ink); }
+[data-former="tjocka"] .nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 currentColor; }
+[data-former="tjocka"] :is(.sec, .fot) { border-top: 2px solid var(--ink); }
+[data-former="tjocka"] .sec-tat { border-top: 0; }
+[data-former="tjocka"] .btn-line { box-shadow: inset 0 0 0 2px var(--ink); }
+[data-former="tjocka"] .tl { border-bottom-width: 2px; font-weight: 600; }
+[data-former="tjocka"] :is(.fakta, .tider, .ratter, .fragor) { border-top: 2px solid var(--ink); }
+[data-former="tjocka"] .fakta > div + div { border-left-color: var(--ink); }
+[data-former="tjocka"] :is(.ratt, .fraga) { border-bottom-color: var(--ink); }
+[data-former="tjocka"] .meny-nav { border-bottom: 2px solid var(--ink); }
+[data-former="tjocka"] .meny-nav a { box-shadow: inset 0 0 0 1.5px var(--ink); }
+[data-former="tjocka"] .remsa { border-block: 2px solid var(--ink); }
+[data-former="tjocka"] .stampelkort-kort { box-shadow: inset 0 0 0 2px var(--ink); }
+[data-former="tjocka"] .tidslinje li::after { width: 2px; left: 5px; background: var(--ink); }

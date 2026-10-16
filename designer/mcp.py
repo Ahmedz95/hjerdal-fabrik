@@ -91,7 +91,9 @@ VERKTYG = [
     {
         "name": "skapa_forslag",
         "description": "Bygger kunden i flera stilar att visa kunden, ungefär 15 sekunder per förslag. Utan varianter "
-                       "blir det fyra olika stilar. En variant skrivs stil:tema:hero:meny i valfri ordning, till exempel mjuk:salvia:delad.",
+                       "blir det fyra olika stilar som passar stället och inte liknar någon annan kund. En variant skrivs "
+                       "stil:tema:hero:meny i valfri ordning, till exempel mjuk:salvia:delad, och kan också byta typsnitt, "
+                       "former, etiketter eller foton, till exempel afton:kol:garamond:tejp.",
         "inputSchema": {"type": "object", "properties": {
             "kund": {"type": "string"},
             "varianter": {"type": "array", "items": {"type": "string"}},
@@ -206,10 +208,16 @@ def satt(data: dict, vag: str, varde) -> None:
         raise Fel(f"{vag}: {'.'.join(map(str, delar))} finns inte.")
 
 
-def problemtext(problem: list) -> str:
+def problemtext(svar: dict) -> str:
+    problem = svar.get("problem") or []
     if problem:
-        return "Sparad, men det här behöver fyllas i eller rättas:\n" + "\n".join(f"- {f}: {m}" for f, m in problem)
-    return "Sparad. Bygg förhandsvisningen för att kontrollera resten."
+        text = "Sparad, men det här behöver fyllas i eller rättas:\n" + "\n".join(f"- {f}: {m}" for f, m in problem)
+    else:
+        text = "Sparad. Bygg förhandsvisningen för att kontrollera resten."
+    for x in svar.get("likhet") or []:
+        text += (f"\nDesignen ligger för nära {x['namn']} (samma {', '.join(x['lika'])}). {x['rad']} "
+                 "Eller använd skapa_forslag, som bara föreslår designer ingen annan kund har. Fabriken publicerar inte en för lik sajt.")
+    return text
 
 
 def kor(namn: str, arg: dict) -> str:
@@ -231,7 +239,7 @@ def kor(namn: str, arg: dict) -> str:
         return json.dumps({"kund": svar["kund"], "kundfil": svar["data"],
                            "nasta": "Fyll i kundfilen och spara den med spara_kundfil."}, ensure_ascii=False)
     if namn == "spara_kundfil":
-        return problemtext(api("PUT", f"kunder/{kund}", {"data": arg.get("kundfil")})["problem"])
+        return problemtext(api("PUT", f"kunder/{kund}", {"data": arg.get("kundfil")}))
     if namn == "andra_falt":
         falt = arg.get("falt")
         if not isinstance(falt, dict) or not falt:
@@ -243,7 +251,7 @@ def kor(namn: str, arg: dict) -> str:
                 satt(data, vag, varde)
             try:
                 # Med andrad stoppar Designer sparningen om säljaren hann ändra i formuläret; då läses filen om.
-                return problemtext(api("PUT", f"kunder/{kund}", {"data": data, "andrad": nu["andrad"]})["problem"])
+                return problemtext(api("PUT", f"kunder/{kund}", {"data": data, "andrad": nu["andrad"]}))
             except Fel as e:
                 if e.status != 409 or forsok == 2:
                     raise
@@ -256,7 +264,7 @@ def kor(namn: str, arg: dict) -> str:
     if namn == "skapa_forslag":
         svar = api("POST", f"kunder/{kund}/forslag", {"varianter": arg.get("varianter") or []})
         rader = [f"Förslagen: {adress()}{svar['url']}"]
-        rader += [f"- {v['stil']}:{v['tema']}:{v['hero']}:{v['meny']} {adress()}{svar['url']}{v['mapp']}/" for v in svar["varianter"]]
+        rader += [f"- {v.get('variant') or v['mapp']} {adress()}{svar['url']}{v['mapp']}/" for v in svar["varianter"]]
         return "\n".join(rader)
     if namn == "hamta_bild":
         svar = api("POST", f"kunder/{kund}/hamta-bild", {"url": arg.get("url", ""), "namn": arg.get("namn")})

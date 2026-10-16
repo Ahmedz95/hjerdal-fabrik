@@ -1,0 +1,25 @@
+/* Typsnittet archivo: feta versaler i Archivo, i rubrikerna och texten, och Fraunces, mjuk
+   och fet, i ord mellan *stjärnor* i rubrikerna, i loggan, rätterna och priserna. */
+@import '@fontsource-variable/archivo/wght.css';
+@import '@fontsource-variable/fraunces/soft.css';
+
+[data-typsnitt="archivo"] {
+  --f-display: "Archivo Variable", "Archivo", "Arial Black", system-ui, sans-serif;
+  --f-body: "Archivo Variable", "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-serif: "Fraunces Variable", "Fraunces", Georgia, serif;
+  --display-weight: 800; --display-track: -0.022em; --display-case: uppercase;
+  --f-pris: var(--f-serif); --pris-track: 0;
+  --btn: 700 13.5px/1 var(--f-body); --btn-track: .07em; --btn-case: uppercase;
+  --logo: 800 25px/1 var(--f-serif); --logo-track: -0.02em; --logo-case: none;
+  --ratt: 620 20px/1.22 var(--f-serif); --ratt-case: none;
+}
+/* Fraunces mjukaste variant, som en rund trycksvärta. */
+[data-typsnitt="archivo"] :is(.logo, .ratt-namn, .ratt-pris, :is(.h1, .h2, .h3) em) { font-variation-settings: "SOFT" 100; }
+/* Storleken följer spalten rubriken står i (cqi), så att ett långt ord i versaler får
+   plats även bredvid en bild; ett ord som ändå är för långt bryts hellre än att sticka ut. */
+[data-typsnitt="archivo"] .h1 { max-width: none; font-size: clamp(1.9rem, 7.8vw, 6.9rem); font-size: clamp(1.9rem, 9.6cqi, 6.9rem); line-height: .94; overflow-wrap: break-word; }
+[data-typsnitt="archivo"] :is(.h2, .h3) { line-height: 1; }
+[data-typsnitt="archivo"] :is(.h1, .h2, .h3) em { font-family: var(--f-serif); font-style: normal; font-weight: 640; text-transform: none; letter-spacing: -0.03em; color: inherit; }
+[data-typsnitt="archivo"] .ratt-pris { font-size: 18px; font-weight: 600; }
+[data-typsnitt="archivo"] .nav a { font-size: 13px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink); }
+[data-typsnitt="archivo"] .meny-nav a { font-weight: 700; text-transform: uppercase; letter-spacing: .05em; font-size: 13px; }

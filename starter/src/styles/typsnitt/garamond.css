@@ -1,0 +1,19 @@
+/* Typsnittet garamond: Cormorant Garamond i rubrikerna och Source Serif i brödtexten,
+   som en tryckt meny. Ord mellan *stjärnor* i en rubrik blir kursiva. */
+@import '@fontsource-variable/cormorant-garamond/wght.css';
+@import '@fontsource-variable/cormorant-garamond/wght-italic.css';
+@import '@fontsource-variable/source-serif-4/wght.css';
+
+[data-typsnitt="garamond"] {
+  --f-display: "Cormorant Garamond Variable", "Cormorant Garamond", Garamond, Georgia, serif;
+  --f-body: "Source Serif 4 Variable", "Source Serif 4", Georgia, "Times New Roman", serif;
+  --display-weight: 500; --display-track: -0.012em;
+  --f-pris: var(--f-body); --pris-track: 0;
+  --btn: 600 12.5px/1 var(--f-body); --btn-track: .16em; --btn-case: uppercase;
+  --logo: 500 27px/1 var(--f-display); --logo-track: .01em; --logo-case: none;
+  --ratt: 600 17px/1.35 var(--f-body);
+}
+[data-typsnitt="garamond"] body { line-height: 1.65; }
+[data-typsnitt="garamond"] .h1 { line-height: 1; font-size: clamp(2.9rem, 7.6vw, 6.3rem); }
+[data-typsnitt="garamond"] :is(.h1, .h2, .h3) em { font-style: italic; color: inherit; }
+[data-typsnitt="garamond"] .sektion-head .h3 { font-size: clamp(1.8rem, 3vw, 2.5rem); }

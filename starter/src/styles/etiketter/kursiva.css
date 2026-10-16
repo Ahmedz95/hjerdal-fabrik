@@ -1,0 +1,5 @@
+/* Etiketterna kursiva: en kursiv rad i rubrikernas typsnitt, och märkningen i menyn som
+   spärrad text med punkter emellan. */
+[data-etiketter="kursiva"] { --lbl: italic 400 20px/1.3 var(--f-display); --lbl-track: .01em; --lbl-case: none; }
+[data-etiketter="kursiva"] .tagg { box-shadow: none; padding: 0; letter-spacing: .12em; }
+[data-etiketter="kursiva"] .tagg + .tagg::before { content: "· "; }

@@ -1,0 +1,11 @@
+/* Typsnittet albert: HJERDAL:s eget (design/tokens.md i repot hjerdal-se). Lätta stora
+   rubriker i Albert Sans, eller Fraunces i de teman som har serif (src/lib/tema.ts), och
+   priser i Azeret Mono. Värdena är standardvärdena i tokens.css och bas.css; här laddas
+   typsnitten, och rubriken hålls inom sin spalt. */
+@import '@fontsource-variable/albert-sans';
+@import '@fontsource-variable/fraunces';
+@import '@fontsource/azeret-mono/400.css';
+
+/* Aldrig större än spalten rubriken står i (cqi), så att ett långt ord får plats bredvid
+   bilden i den delade överdelen. I hela bredden ändrar det inget. */
+[data-typsnitt="albert"] .h1 { font-size: min(clamp(2.6rem, 7vw, 5.8rem), 14cqi); }

@@ -1,0 +1,17 @@
+/* Typsnittet bricolage: vänliga rubriker i Bricolage Grotesque och Figtree i brödtexten. */
+@import '@fontsource-variable/bricolage-grotesque/wght.css';
+@import '@fontsource-variable/figtree';
+
+[data-typsnitt="bricolage"] {
+  --f-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-body: "Figtree Variable", "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display-weight: 620; --display-track: -0.035em;
+  --f-pris: var(--f-body); --pris-track: 0;
+  --btn: 600 16px/1 var(--f-body);
+  --logo: 700 23px/1 var(--f-display); --logo-track: -0.02em; --logo-case: none;
+  --ratt: 600 18px/1.35 var(--f-body);
+}
+/* Aldrig större än spalten rubriken står i (cqi), så att ett långt ord får plats bredvid
+   bilden i den delade överdelen. I hela bredden ändrar det inget. */
+[data-typsnitt="bricolage"] .h1 { font-size: min(clamp(2.6rem, 7vw, 5.8rem), 14cqi); line-height: .98; }
+[data-typsnitt="bricolage"] .ratt-pris { font-weight: 600; }

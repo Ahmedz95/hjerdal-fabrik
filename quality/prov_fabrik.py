@@ -57,6 +57,42 @@ def main() -> int:
         prov("ett fält som inte finns stoppas", ("okant", "finns inte i schemat") in fabrik.schemafel({"okant": 1}, schema))
         prov("WCAG-kontrasten räknas som i temat", abs(fabrik.wcag_kontrast("#000000", "#FFFFFF") - 21) < 0.01)
 
+        fabrik.rubrik("Delar, unik design och förslag")
+        data = fabrik.las_kund(kund)
+        prov("en variant kan byta en del", fabrik.tolka_variant("afton:kol:tejp") == {"stil": "afton", "tema": "kol", "etiketter": "tejp"})
+        prov("en del som inte finns stoppas", "finns inte" in stoppar(fabrik.tolka_variant, "afton:komiska"))
+        d = fabrik.design_med_standard(fabrik.med_design(fabrik.med_design(data, stil="hjerdal", typsnitt="garamond"), stil="afton"))
+        prov("en annan stil kommer med sina egna delar", d["typsnitt"] == "bodoni" and d["etiketter"] == "linje", str(d))
+        d = fabrik.design_med_standard(fabrik.med_design(data, stil="mjuk", foton="svartvita"))
+        prov("en vald del går före stilens", d["foton"] == "svartvita" and d["former"] == "mjuka", str(d))
+        prov("variantens mapp har delarna som inte är stilens", fabrik.variantnamn(d) == f"mjuk-{d['tema']}-{d['hero']}-{d['meny']}-svartvita")
+        tvilling = fabrik.KUNDER / "prov-tvilling"
+        tvilling.mkdir(parents=True)
+        skriv(tvilling / "kund.json", json.dumps({**data, "namn": "Tvillingen"}, ensure_ascii=False))
+        lika = fabrik.lika_kunder(kund, data)
+        prov("samma design som en annan kund märks", [n for _, n, _ in lika] == ["Tvillingen"], str(lika))
+        prov("rådet säger vad som behöver bytas", fabrik.likhet_rad(lika[0][2]) == "Byt typsnitt eller färger och två val till." if lika else False)
+        prov("en egen accent räcker inte", bool(fabrik.lika_kunder(kund, fabrik.med_design(data, accent="#7A3B2E"))))
+        prov("en annan stil räcker", not fabrik.lika_kunder(kund, fabrik.med_design(data, stil="stampel")))
+        prov("samma typsnitt och färger är för lika, även med annan layout", bool(fabrik.lika_kunder(kund, fabrik.med_design(
+            data, former="tjocka", etiketter="tejp", foton="lutande", meny="numrerad"))))
+        skriv(tvilling / "arkiv.json", "{}")
+        prov("en arkiverad kund räknas inte", not fabrik.lika_kunder(kund, data))
+        (tvilling / "arkiv.json").unlink()
+        skriv(tvilling / "design.json", "{}")
+        prov("en kund med egen design räknas inte", not fabrik.lika_kunder(kund, data))
+        (tvilling / "design.json").unlink()
+        forslag = fabrik.forslag(kund, data)
+        valda = [fabrik.designavtryck(fabrik.med_design(data, **fabrik.tolka_variant(v))) for v in forslag]
+        prov("förslagen är fyra olika stilar", len({d["stil"] for d in valda}) == 4, str(forslag))
+        prov("förslagen har fyra olika teman", len({d["tema"] for d in valda}) == 4, str(forslag))
+        prov("inget förslag är för likt en annan kund", not any(fabrik.lika_kunder(kund, fabrik.med_design(data, **fabrik.tolka_variant(v)))
+                                                               for v in forslag), str(forslag))
+        prov("förslagen är inte för lika varandra", all(fabrik.for_lik(a, b) is None for i, a in enumerate(valda) for b in valda[i + 1:]))
+        prov("samma kund får samma förslag", fabrik.forslag(kund, data) == forslag)
+        prov("ett kafé får Mjuk först", fabrik.forslag(kund, {**data, "kok": ["Kafé", "Bageri"]})[0].startswith("mjuk:"))
+        shutil.rmtree(tvilling)
+
         fabrik.rubrik("Brief och designspec")
         shutil.copy2(fabrik.SCHEMAN / "mallar" / "brief.json", mapp / "brief.json")
         prov("en brief från mallen stoppas tills den är ifylld", "är inte ifyllt" in stoppar(fabrik.granska_underlag, kund))
@@ -95,6 +131,13 @@ def main() -> int:
         (mapp / "src/styles/bas.css").unlink()
 
         fabrik.rubrik("Egen design ovanpå startern")
+        # Kännetecknen från inspirationen syns när de är ifyllda, också med en egen design.
+        data = json.loads((mapp / "kund.json").read_text(encoding="utf-8"))
+        data["remsa"] = ["Surdeg", "Naturvin", "Uteservering"]
+        data["stampelkort"] = {"rubrik": "Kaffe*kortet*", "text": "Köp nio kaffe, det tionde bjuder vi på.", "antal": 10}
+        data["fragor"] = [{"fraga": "Behöver vi boka?", "svar": "Till middag, ja."}, {"fraga": "Får hunden följa med?", "svar": "Ja, ute."}]
+        data["om"]["historia"] = [{"nar": "2009", "text": "Vi öppnar vid hamnen."}, {"nar": "I dag", "text": "Samma kök."}]
+        skriv(mapp / "kund.json", json.dumps(data, ensure_ascii=False, indent=2))
         skriv(mapp / "src/config/brand.json", json.dumps({"farger": "egna", "temaFarg": "#0A0B10", "skript": True}))
         tokens = (fabrik.STARTER / "src/styles/tokens.css").read_text(encoding="utf-8")
         skriv(mapp / "src/styles/tokens.css", tokens.replace("html {\n", "html {\n  --bg: #0A0B10; --surface: #15171F; --ink: #F2EEE6; --muted: #B9B2A6;"
@@ -115,6 +158,12 @@ def main() -> int:
         prov("egen JavaScript är tillåten med skript i brand.json", "dataset.js" in start or any(
             "dataset.js" in f.read_text(encoding="utf-8") for f in (ut / "dist").rglob("*.js")))
         prov("kundens public/ kommer med", (ut / "dist/prov.txt").exists())
+        om_oss = (ut / "dist/om-oss/index.html").read_text(encoding="utf-8")
+        prov("remsan står under första skärmen", "<li>Naturvin</li>" in start and start.index('class="remsa"') < start.index('id="fran-menyn"'))
+        prov("stämpelkortet har tio rutor och den sista bjuds", start.count('class="stampelkort-ruta') == 10
+             and start.count('stampelkort-ruta bjuds"') == 1 and "Kaffe<em>kortet</em>" in start)
+        prov("frågorna går att öppna utan JavaScript", start.count('<details class="fraga">') == 2)
+        prov("historien är en tidslinje på Om oss", om_oss.count('class="tidslinje-nar"') == 2 and 'class="tidslinje-nar"' not in start)
         prov("kundens filer stannar i ut/, inte i startern", not (fabrik.STARTER / "public/prov.txt").exists())
 
         fabrik.rubrik("Utan brand.json gäller starterns regler")

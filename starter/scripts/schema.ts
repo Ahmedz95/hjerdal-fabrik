@@ -7,14 +7,26 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { schema, dagNamn, taggar } from '../src/lib/schema';
-import { heroInfo, menyInfo, stilInfo, temaInfo } from '../src/lib/designval';
+import { etiketterInfo, formerInfo, fotonInfo, heroInfo, menyInfo, stilInfo, temaInfo, typsnittInfo } from '../src/lib/designval';
 import { arMorkt } from '../src/lib/tema';
 
 const paket = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8'));
 
+// En stil får bara föreslå teman som finns.
+for (const [id, s] of Object.entries(stilInfo)) {
+  const okanda = s.teman.filter((t) => !(t in temaInfo));
+  if (okanda.length) throw new Error(`Stilen ${id} föreslår teman som inte finns: ${okanda.join(', ')}`);
+}
+const lista = <T extends object>(info: Record<string, T>) => Object.entries(info).map(([id, x]) => ({ id, ...x }));
+const namn = (info: Record<string, { namn: string }>) => Object.fromEntries(Object.entries(info).map(([id, x]) => [id, x.namn]));
+
 const ut = {
   starter: paket.version as string,
-  stilar: Object.entries(stilInfo).map(([id, s]) => ({ id, ...s })),
+  stilar: lista(stilInfo),
+  typsnitt: lista(typsnittInfo),
+  former: lista(formerInfo),
+  etiketter: lista(etiketterInfo),
+  foton: lista(fotonInfo),
   teman: Object.entries(temaInfo).map(([id, t]) => ({ id, ...t, mork: arMorkt(id as keyof typeof temaInfo) })),
   heros: Object.entries(heroInfo).map(([id, h]) => ({ id, ...h })),
   menyer: Object.entries(menyInfo).map(([id, m]) => ({ id, ...m })),
@@ -23,7 +35,11 @@ const ut = {
   namn: {
     dag: dagNamn,
     tagg: taggar,
-    stil: Object.fromEntries(Object.entries(stilInfo).map(([id, s]) => [id, s.namn])),
+    stil: namn(stilInfo),
+    typsnitt: namn(typsnittInfo),
+    former: namn(formerInfo),
+    etiketter: namn(etiketterInfo),
+    foton: namn(fotonInfo),
     tema: Object.fromEntries(Object.entries(temaInfo).map(([id, t]) => [id, t.namn])),
     hero: Object.fromEntries(Object.entries(heroInfo).map(([id, h]) => [id, h.namn])),
     meny: Object.fromEntries(Object.entries(menyInfo).map(([id, m]) => [id, m.namn])),

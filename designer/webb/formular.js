@@ -67,6 +67,7 @@ const godtar = (s, ...prov) => {
   const re = new RegExp(s.pattern);
   return prov.every((p) => (p.startsWith('!') ? !re.test(p.slice(1)) : re.test(p)));
 };
+const arTal = (s) => s.type === 'number' || s.type === 'integer';
 const arTid = (s) => godtar(s, '11:00', '!1100');
 const arDatum = (s) => godtar(s, '2026-12-24');
 const arFarg = (s) => godtar(s, '#1E1B16', '!1E1B16');
@@ -88,12 +89,15 @@ export function validera(s, v, kravd) {
     if (s.format === 'email' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return em.format ?? 'skrivs som namn@exempel.se';
     if (s.format === 'uri' && !/^https?:\/\/[^\s/]+\.[^\s]+$/.test(v)) return em.format ?? 'måste börja med https://';
   }
-  if (s.type === 'number') {
+  if (s.type === 'number' || s.type === 'integer') {
     if (typeof v !== 'number' || Number.isNaN(v)) return 'ska vara ett tal';
+    if (s.type === 'integer' && !Number.isInteger(v)) return 'ska vara ett heltal';
     if (s.minimum !== undefined && v < s.minimum) return `får inte vara mindre än ${s.minimum}`;
+    if (s.maximum !== undefined && v > s.maximum) return `får inte vara större än ${s.maximum}`;
   }
-  if (s.type === 'array' && Array.isArray(v) && s.minItems && v.length < s.minItems) {
-    return s.minItems === 1 ? 'behöver minst en' : `behöver minst ${s.minItems}`;
+  if (s.type === 'array' && Array.isArray(v)) {
+    if (s.minItems && v.length < s.minItems) return s.minItems === 1 ? 'behöver minst en' : `behöver minst ${s.minItems}`;
+    if (s.maxItems !== undefined && v.length > s.maxItems) return `får ha högst ${s.maxItems}`;
   }
   return null;
 }
@@ -161,7 +165,7 @@ function falt(s, vag, kravd, ctx, opt = {}) {
   if (s.type === 'boolean') return vaxel(s, vag, ctx);
   if (s.enum) {
     const info = valInfo(s.enum, ctx);
-    return ram(s, vag, kravd, info ? kortval(s, vag, kravd, info, ctx) : segment(s, vag, kravd, ctx));
+    return ram(s, vag, kravd, info && !etikett(s).tips.includes('kompakt') ? kortval(s, vag, kravd, info, ctx) : segment(s, vag, kravd, ctx));
   }
   if (s.type === 'string' && bildtyper(s).length) return ram(s, vag, kravd, bildval(s, vag, kravd, ctx));
   if (s.type === 'string' && arFarg(s)) return ram(s, vag, kravd, farg(s, vag, ctx));
@@ -173,7 +177,7 @@ function ram(s, vag, kravd, kontroll, opt = {}) {
   const { namn, hjalp } = etikett(s);
   const id = `f-${vag.join('-')}`;
   const forsta = kontroll.id === id || kontroll.querySelector?.(`[id="${id}"]`);
-  return h('div', { class: `falt${s.type === 'number' || arTid(s) || arDatum(s) ? ' smal' : ''}`, 'data-vag': vag.join('.') },
+  return h('div', { class: `falt${arTal(s) || arTid(s) || arDatum(s) ? ' smal' : ''}`, 'data-vag': vag.join('.') },
     !opt.utanEtikett && namn && h(forsta ? 'label' : 'p', { class: 'etikett', for: forsta ? id : null }, namn, !kravd && s.default === undefined && h('span', { class: 'valfri' }, 'valfritt')),
     !opt.utanEtikett && hjalp && h('p', { class: 'hjalp' }, hjalp),
     kontroll,
@@ -183,11 +187,12 @@ function ram(s, vag, kravd, kontroll, opt = {}) {
 function inmatning(s, vag, kravd, ctx) {
   const v = hamta(ctx.data, vag);
   const flerrad = etikett(s).tips.includes('flerrad');
-  const typ = s.type === 'number' ? 'number' : arTid(s) ? 'time' : arDatum(s) ? 'date'
+  const typ = arTal(s) ? 'number' : arTid(s) ? 'time' : arDatum(s) ? 'date'
     : s.format === 'email' ? 'email' : s.format === 'uri' ? 'url' : 'text';
   const el = flerrad
     ? h('textarea', { rows: s.maxLength && s.maxLength <= 200 ? 2 : 3, placeholder: s.default ?? '' })
-    : h('input', { type: typ, inputmode: typ === 'number' ? 'decimal' : null, min: s.minimum, step: typ === 'number' ? 'any' : null,
+    : h('input', { type: typ, inputmode: typ === 'number' ? (s.type === 'integer' ? 'numeric' : 'decimal') : null, min: s.minimum, max: s.maximum,
+      step: typ === 'number' ? (s.type === 'integer' ? 1 : 'any') : null,
       placeholder: s.format === 'uri' ? 'https://' : s.default ?? '', autocomplete: 'off', spellcheck: typ === 'text' });
   if (typ === 'text' && s.errorMessage?.pattern?.startsWith('skrivs som ')) el.placeholder = s.errorMessage.pattern.slice(11);
   el.id = `f-${vag.join('-')}`;
@@ -225,12 +230,24 @@ function valInfo(varden, ctx) {
   return Object.values(ctx.schemafil).find((l) => Array.isArray(l) && l[0]?.id && l.length === varden.length && varden.every((v) => l.some((x) => x.id === v)));
 }
 
+/** Det stilen väljer för en av stilens delar (design.typsnitt, former, etiketter eller foton),
+ *  som id, när fältet har tipset stilens. Visas som valet "Som stilen". */
+function stilensDel(s, vag, ctx) {
+  if (!etikett(s).tips.includes('stilens')) return undefined;
+  const stil = hamta(ctx.data, [...vag.slice(0, -1), 'stil']) ?? 'hjerdal';
+  return ctx.schemafil.stilar?.find((x) => x.id === stil)?.delar?.[vag.at(-1)] ?? null;
+}
+
 function segment(s, vag, kravd, ctx) {
   const v = hamta(ctx.data, vag) ?? s.default;
   const namn = valNamn(s.enum, ctx);
-  const val = [...(kravd || s.default !== undefined ? [] : [[undefined, 'Inget val']]), ...s.enum.map((x) => [x, namn(x)])];
+  const info = valInfo(s.enum, ctx);
+  const stilens = stilensDel(s, vag, ctx);
+  const tom = stilens === undefined ? 'Inget val' : `Som stilen${stilens ? ` (${namn(stilens)})` : ''}`;
+  const val = [...(kravd || s.default !== undefined ? [] : [[undefined, tom]]), ...s.enum.map((x) => [x, namn(x)])];
   return h('div', { class: 'segment', role: 'radiogroup' }, val.map(([x, text]) =>
-    h('button', { type: 'button', role: 'radio', 'aria-checked': String(v === x), onclick: () => { ctx.andra(vag, x); ctx.ritaOm(); } }, text)));
+    h('button', { type: 'button', role: 'radio', title: info?.find((i) => i.id === x)?.beskrivning ?? null, 'aria-checked': String(v === x),
+      onclick: () => { ctx.andra(vag, x); ctx.ritaOm(); } }, text)));
 }
 
 const stilTyp = {
@@ -238,15 +255,25 @@ const stilTyp = {
   klassisk: { fontFamily: 'ui-serif, Georgia, serif', fontStyle: 'italic' },
   kvarter: { fontFamily: '"Avenir Next Condensed", "Arial Narrow", sans-serif', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.01em' },
   mjuk: { fontFamily: 'ui-rounded, "SF Pro Rounded", system-ui, sans-serif', fontWeight: 600 },
+  afton: { fontFamily: 'Didot, "Bodoni 72", "Bodoni MT", Georgia, serif', fontStyle: 'italic' },
+  affisch: { fontFamily: '"Helvetica Neue", Arial, sans-serif', fontWeight: 800, letterSpacing: '-0.05em' },
+  stampel: { fontFamily: '"Arial Black", "Helvetica Neue", sans-serif', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em' },
 };
+// Typsnitten ser ut som stilarna de kommer från.
+Object.assign(stilTyp, { albert: stilTyp.hjerdal, garamond: stilTyp.klassisk, oswald: stilTyp.kvarter, bricolage: stilTyp.mjuk,
+  bodoni: stilTyp.afton, schibsted: stilTyp.affisch, archivo: stilTyp.stampel });
 
 function kortval(s, vag, kravd, info, ctx) {
   const v = hamta(ctx.data, vag) ?? s.default;
-  return h('div', { class: 'kortval', role: 'radiogroup' }, info.map((x) => {
+  // Ett valfritt fält som följer stilen börjar med valet "Som stilen", i stilens typsnitt.
+  const stilens = stilensDel(s, vag, ctx);
+  const lista = stilens === undefined || kravd ? info
+    : [{ id: undefined, namn: 'Som stilen', beskrivning: info.find((x) => x.id === stilens)?.namn, typ: stilens }, ...info];
+  return h('div', { class: 'kortval', role: 'radiogroup' }, lista.map((x) => {
     const farg = x.bg && { background: x.bg, color: x.ink, '--accent': x.accent, '--linje': x.line };
     return h('button', { type: 'button', role: 'radio', class: farg ? 'tema' : 'val', style: farg || null, 'aria-checked': String(v === x.id),
       onclick: () => { ctx.andra(vag, x.id); ctx.ritaOm(); } },
-      h('span', { class: 'val-namn', style: stilTyp[x.id] ?? null }, x.namn),
+      h('span', { class: 'val-namn', style: stilTyp[x.typ ?? x.id] ?? null }, x.namn),
       farg ? h('span', { class: 'prov' }, h('span', { class: 'prick' }), x.mork ? 'Mörkt' : 'Ljust')
         : [x.passar && h('span', { class: 'val-passar' }, x.passar), x.beskrivning && h('span', { class: 'val-text' }, x.beskrivning)]);
   }));

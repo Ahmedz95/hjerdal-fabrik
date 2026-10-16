@@ -53,15 +53,18 @@ MALL = SCHEMAN / "mallar" / "kund.json"
 MANIFEST = STARTER / "cms.manifest.json"
 SCHEMA = json.loads(MANIFEST.read_text(encoding="utf-8"))
 _design = SCHEMA["schema"]["properties"]["design"]["properties"]
-DESIGNVAL = {falt: tuple(_design[falt]["enum"]) for falt in ("stil", "tema", "hero", "meny")}
-STILAR, TEMAN, HEROS, MENYER = DESIGNVAL.values()
+# Stilens delar, som kundfilen kan byta var för sig. Utan val gäller stilens (STIL_DELAR).
+DELAR = ("typsnitt", "former", "etiketter", "foton")
+DESIGNVAL = {falt: tuple(_design[falt]["enum"]) for falt in ("stil", *DELAR, "tema", "hero", "meny")}
+STILAR, TEMAN, HEROS, MENYER = (DESIGNVAL[k] for k in ("stil", "tema", "hero", "meny"))
+STIL_DELAR = {s["id"]: s["delar"] for s in SCHEMA["stilar"]}
+STIL_TEMAN = {s["id"]: tuple(s["teman"]) for s in SCHEMA["stilar"]}
+NAMN = SCHEMA["namn"]
 STIL_NAMN = SCHEMA["namn"]["stil"]
 TEMA_NAMN = SCHEMA["namn"]["tema"]
 HERO_NAMN = SCHEMA["namn"]["hero"]
 MENY_NAMN = SCHEMA["namn"]["meny"]
 TEMA_FARG = {t["id"]: (t["bg"], t["ink"]) for t in SCHEMA["teman"]}
-# Förslagen när varianter körs utan argument: fyra stilar som skiljer sig så mycket som möjligt.
-STANDARDVARIANTER = ("klassisk:linne:delad:lista", "kvarter:skiffer:bild:kort", "mjuk:salvia:delad:kort", "hjerdal:hav:text:kolumner")
 # Sidor som kan stängas av i kundfilen, och vilken flagga som styr dem.
 VALBARA_SIDOR = {"om-oss.astro": "omOss", "skarm.astro": "skarm", "qr.astro": "qr"}
 # Det som aldrig kopieras från startern till en kund.
@@ -187,16 +190,38 @@ def json_text(data) -> str:
 
 
 def med_design(data: dict, **val: str | None) -> dict:
-    """En kopia av kundfilen med andra designval, till exempel stil="klassisk"."""
+    """En kopia av kundfilen med andra designval, till exempel stil="klassisk". En annan stil
+    kommer med sina egna delar, så kundfilens typsnitt, former, etiketter och foton gäller
+    bara om de anges igen."""
     ny = json.loads(json.dumps(data))
     design = ny.setdefault("design", {})
-    design.update({k: v for k, v in val.items() if v})
+    val = {k: v for k, v in val.items() if v}
+    if val.get("stil") and val["stil"] != design.get("stil", "hjerdal"):
+        for k in DELAR:
+            design.pop(k, None)
+    design.update(val)
     return ny
 
 
 def design_med_standard(data: dict) -> dict:
+    """Alla designval med standardvärdena, och delarna från stilen där kundfilen inte väljer."""
     d = data.get("design", {})
-    return {"stil": d.get("stil", "hjerdal"), "tema": d.get("tema", "fjall"), "hero": d.get("hero", "text"), "meny": d.get("meny", "lista")}
+    stil = d.get("stil", "hjerdal")
+    forval = STIL_DELAR.get(stil, STIL_DELAR["hjerdal"])
+    return {"stil": stil, **{k: d.get(k) or forval[k] for k in DELAR},
+            "tema": d.get("tema", "fjall"), "hero": d.get("hero", "text"), "meny": d.get("meny", "lista")}
+
+
+def varianttext(d: dict) -> str:
+    """Designvalen som en variant till varianter: stil, tema, hero och meny, och de delar som
+    inte är stilens, som 'afton:kol:bild:numrerad:garamond'."""
+    forval = STIL_DELAR[d["stil"]]
+    return ":".join([d["stil"], d["tema"], d["hero"], d["meny"], *(d[k] for k in DELAR if d[k] != forval[k])])
+
+
+def variantnamn(d: dict) -> str:
+    """Mappen en variant byggs till, som 'afton-kol-bild-numrerad-garamond'."""
+    return varianttext(d).replace(":", "-")
 
 
 # --- Underlaget: brief och designspec ----------------------------------------
@@ -446,7 +471,11 @@ def bygg(kund: str, ut: Path | None = None, design: dict | None = None, kontroll
     synka_starter(ut, kund)
     skriv_kund(ut, kund, data)
     d = design_med_standard(data)
-    info(f"Design: stil {d['stil']}, tema {d['tema']}, hero {d['hero']}, meny {d['meny']}")
+    info(f"Design: stil {d['stil']} (typsnitt {d['typsnitt']}, former {d['former']}, etiketter {d['etiketter']}, "
+         f"foton {d['foton']}), tema {d['tema']}, hero {d['hero']}, meny {d['meny']}")
+    for _, namn, lika in lika_kunder(kund, data):
+        info(f"Obs: designen ligger för nära {namn}, med samma {lista_text([LIKHET_NAMN[k] for k in lika])}. "
+             f"{likhet_rad(lika)} Annars publiceras den inte.")
     npm_install(ut)
     info("Astro: kontrollerar kundfil och typer, bygger sidorna")
     env = {"FABRIK_BASE": base, "PUBLIC_FORHANDSVISNING": "1" if forhandsvisning else ""}
@@ -674,8 +703,9 @@ def validera(kund: str) -> None:
 # --- Varianter --------------------------------------------------------------
 
 def tolka_variant(text: str) -> dict:
-    """'klassisk:linne:bild:kort' blir stil, tema, hero och meny. Ordningen spelar ingen roll,
-    och det som inte anges tas från kundfilen."""
+    """'klassisk:linne:bild:kort' blir stil, tema, hero och meny, och 'afton:kol:garamond' byter
+    också typsnittet. Ordningen spelar ingen roll, och det som inte anges tas från kundfilen
+    (delarna från stilen, när varianten byter stil)."""
     design: dict = {}
     for del_ in filter(None, text.split(":")):
         falt = next((k for k, val in DESIGNVAL.items() if del_ in val), None)
@@ -693,7 +723,7 @@ def varianter(kund: str, lista: list[str], ut: Path | None = None, samling: Path
     """Bygger samma kund i flera varianter till en förhandsvisning att visa kunden.
     prefix är sökvägen förhandsvisningen ligger under, till exempel /forslag/<kund>/ i Designer."""
     data = las_kund(kund)
-    valda = [tolka_variant(v) for v in (lista or STANDARDVARIANTER)]
+    valda = [tolka_variant(v) for v in (lista or forslag(kund, data))]
     ut = ut or UT / kund
     samling = samling or UT / f"{kund}-varianter"
     if samling.exists():
@@ -708,12 +738,12 @@ def varianter(kund: str, lista: list[str], ut: Path | None = None, samling: Path
     synka_starter(ut, kund)
     npm_install(ut)
     for nr, design in enumerate(valda, start=1):
-        d = {**design_med_standard(data), **design}
+        d = design_med_standard(med_design(data, **design))
         # Utan bild blir hero text på sajten, så förhandsvisningen ska heta så också.
         utan_bild = not data.get("bilder", {}).get("hero") and d["hero"] != "text"
         if utan_bild:
             d["hero"] = design["hero"] = "text"
-        namn = "-".join(d[k] for k in DESIGNVAL)
+        namn = variantnamn(d)
         rubrik(f"Variant {nr} av {len(valda)}: {namn}")
         if utan_bild:
             info("Kunden har ingen herobild, så hero visas som text")
@@ -730,7 +760,8 @@ def varianter(kund: str, lista: list[str], ut: Path | None = None, samling: Path
     if undan.exists():
         shutil.move(str(undan), str(ut / "dist"))
     (samling / "index.html").write_text(varianter_index(data["namn"], kort), encoding="utf-8")
-    (samling / "varianter.json").write_text(json.dumps([{"mapp": m, **d} for m, d in kort], indent=2) + "\n", encoding="utf-8")
+    (samling / "varianter.json").write_text(json.dumps([{"mapp": m, "variant": varianttext(d), **d} for m, d in kort], indent=2) + "\n",
+                                            encoding="utf-8")
     (samling / "robots.txt").write_text("User-agent: *\nDisallow: /\n", encoding="utf-8")
     (samling / "wrangler.jsonc").write_text(json.dumps({
         "name": f"hjerdal-{kund}-forslag",
@@ -748,7 +779,8 @@ def varianter_index(namn: str, kort: list[tuple[str, dict]]) -> str:
         rader.append(
             f'<li><a href="./{mapp}/" style="background:{bg};color:{ink}">'
             f'<span class="t">{STIL_NAMN[d["stil"]]}</span>'
-            f'<span class="d">Färger: {TEMA_NAMN[d["tema"]]} · Startsida: {HERO_NAMN[d["hero"]]} · Meny: {MENY_NAMN[d["meny"]]}</span>'
+            f'<span class="d">Typsnitt: {NAMN["typsnitt"][d["typsnitt"]]} · Färger: {TEMA_NAMN[d["tema"]]} · '
+            f'Startsida: {HERO_NAMN[d["hero"]]} · Meny: {MENY_NAMN[d["meny"]]}</span>'
             f'<span class="n">{html.escape(namn)}</span></a></li>'
         )
     return f"""<!doctype html>
@@ -771,6 +803,133 @@ a:hover{{transform:translateY(-2px)}}
 <ul>{"".join(rader)}</ul>
 </main></body></html>
 """
+
+
+# --- Unik design och förslag -------------------------------------------------
+# Två kunder från mallen ska inte få samma sajt. Det som syns mest är typsnittet och
+# färgerna; sedan formerna, etiketterna, fotona, stilens egna grepp, startsidan och menyn.
+
+LIKHET = ("typsnitt", "farger", "former", "etiketter", "foton", "stil", "hero", "meny")
+LIKHET_NAMN = {"typsnitt": "typsnitt", "farger": "färger", "former": "former", "etiketter": "etiketter",
+               "foton": "foton", "stil": "stil", "hero": "startsida", "meny": "meny"}
+
+
+def lista_text(ord_: list[str]) -> str:
+    """['a', 'b', 'c'] blir 'a, b och c'."""
+    return ", ".join(ord_[:-1]) + " och " + ord_[-1] if len(ord_) > 1 else "".join(ord_)
+
+
+def designavtryck(data: dict) -> dict:
+    """Det som avgör hur en sajt från mallen ser ut. Färgerna är temat och en egen accent."""
+    d = design_med_standard(data)
+    accent = (data.get("design") or {}).get("accent")
+    d["farger"] = d["tema"] + (f":{accent.lower()}" if isinstance(accent, str) else "")
+    if not (data.get("bilder") or {}).get("hero"):
+        d["hero"] = "text"
+    return d
+
+
+def for_lik(a: dict, b: dict) -> list[str] | None:
+    """Valen två designer har gemensamt, om de är för lika: samma typsnitt och färger, eller
+    högst två olika val av åtta. Annars None."""
+    lika = [k for k in LIKHET if a[k] == b[k]]
+    if {"typsnitt", "farger"} <= set(lika) or len(LIKHET) - len(lika) <= 2:
+        return lika
+    return None
+
+
+def likhet_rad(lika: list[str]) -> str:
+    """Vad som behöver ändras för att en design inte längre ska vara för lik: minst tre val
+    olika, och typsnittet eller färgerna ett av dem."""
+    kvar = max(0, 3 - (len(LIKHET) - len(lika)))
+    tal = {1: "ett", 2: "två", 3: "tre"}
+    if {"typsnitt", "farger"} <= set(lika):
+        return "Byt typsnitt eller färger" + (f" och {tal[kvar - 1]} val till." if kvar > 1 else ".")
+    return f"Byt {tal[kvar]} val till."
+
+
+def har_egen_design(mapp: Path) -> bool:
+    return (mapp / "design.json").exists() or (mapp / "src").is_dir()
+
+
+def andra_avtryck(kund: str) -> list[tuple[str, str, dict]]:
+    """De andra aktiva kunderna från mallen som (mapp, namn, designavtryck). Kunder med egen
+    design har en egen sajt och räknas inte, och inte heller arkiverade."""
+    ut = []
+    for mapp in sorted(KUNDER.iterdir()) if KUNDER.is_dir() else []:
+        if mapp.name == kund or not (mapp / "kund.json").exists() or (mapp / "arkiv.json").exists() or har_egen_design(mapp):
+            continue
+        try:
+            annan = json.loads((mapp / "kund.json").read_text(encoding="utf-8"))
+            ut.append((mapp.name, annan.get("namn") or mapp.name, designavtryck(annan)))
+        except (json.JSONDecodeError, KeyError, AttributeError, TypeError):
+            continue
+    return ut
+
+
+def lika_kunder(kund: str, data: dict) -> list[tuple[str, str, list[str]]]:
+    """Kunderna vars design ligger för nära den här, som (mapp, namn, gemensamma val)."""
+    if har_egen_design(KUNDER / kund):
+        return []
+    mitt = designavtryck(data)
+    return [(mapp, namn, lika) for mapp, namn, annan in andra_avtryck(kund) if (lika := for_lik(mitt, annan)) is not None]
+
+
+# Vilka stilar som passar vilket slags ställe, efter ord i kundfilens kök, beskrivning,
+# namn, rubrik och ingress. Utan träff kommer stilarna i den här ordningen.
+STIL_ORD = {
+    "afton": ("avsmakning", "fine dining", "vinbar", "sommelier", "champagne", "cocktail", "gastronom", "säsongsmeny", "chef's table"),
+    "stampel": ("delade", "smårätter", "tapas", "izakaya", "mezze", "dumpling", "ramen", "bao", "deli", "koreansk", "kvarterskrog"),
+    "affisch": ("vedeld", "vedugn", "eld", "grill", "naturvin", "bryggeri", "öl", "bar", "rök"),
+    "mjuk": ("kafé", "café", "kaffe", "bageri", "konditori", "brunch", "glass", "frukost", "fika", "bakverk"),
+    "klassisk": ("bistro", "brasserie", "husman", "klassisk", "fransk", "vita dukar", "trattoria", "matsal"),
+    "kvarter": ("pizza", "burgare", "burger", "street", "kebab", "taco", "falafel", "hamburgare", "korv", "food truck"),
+    "hjerdal": (),
+}
+
+
+def stilar_for(data: dict) -> list[str]:
+    """Stilarna i den ordning de passar stället bäst, efter orden i STIL_ORD."""
+    text = " ".join(str(data.get(k) or "") for k in ("namn", "beskrivning", "rubrik", "ingress"))
+    text = (text + " " + " ".join([*(data.get("kok") or []), *(data.get("remsa") or [])])).lower()
+    poang = {s: sum(text.count(o) for o in STIL_ORD.get(s, ())) for s in STILAR}
+    ordning = [s for s in STIL_ORD if s in STILAR] + [s for s in STILAR if s not in STIL_ORD]
+    return sorted(ordning, key=lambda s: -poang[s])
+
+
+def forslag(kund: str, data: dict, antal: int = 4) -> list[str]:
+    """Förslagen när varianter körs utan val: olika stilar som passar stället, i teman och
+    delar som ingen annan kund från mallen har, och inte för lika varandra. Samma kund får
+    samma förslag varje gång, men två kunder av samma slag börjar på olika teman."""
+    andra = [a for _, _, a in andra_avtryck(kund)]
+    fro = int(hashlib.sha256(kund.encode()).hexdigest(), 16)
+    med_bild = bool((data.get("bilder") or {}).get("hero"))
+    heros = ("delad", "bild", "text") if med_bild else ("text",)
+    valda: list[dict] = []
+    for stil in stilar_for(data):
+        if len(valda) == antal:
+            break
+        nr = len(valda)
+        teman = STIL_TEMAN[stil]
+        teman = teman[fro % len(teman):] + teman[:fro % len(teman)]
+        # Helst ett tema som inget tidigare förslag har, så att de fyra ser olika ut.
+        teman = sorted(teman, key=lambda t: t in {v["tema"] for v in valda})
+        # Om stilens alla teman är tagna får den lånade etiketter och foton från andra stilar.
+        alternativ = [{}] + [{"etiketter": STIL_DELAR[s]["etiketter"], "foton": STIL_DELAR[s]["foton"]}
+                             for s in STILAR if STIL_DELAR[s]["etiketter"] != STIL_DELAR[stil]["etiketter"]]
+        for byte in alternativ:
+            hittad = None
+            for tema in teman:
+                design = {"stil": stil, "tema": tema, "hero": heros[(fro + nr) % len(heros)],
+                          "meny": MENYER[(fro + nr) % len(MENYER)], **byte}
+                d = designavtryck(med_design(data, **design))
+                if all(for_lik(d, a) is None for a in andra + valda):
+                    hittad = design, d
+                    break
+            if hittad:
+                valda.append(hittad[1])
+                break
+    return [varianttext(d) for d in valda]
 
 
 # --- Visa ---------------------------------------------------------------------
@@ -851,7 +1010,7 @@ def lista() -> None:
             info(f"{mapp.name:<24} (kundfilen går inte att läsa)")
 
 
-def publicera(kund: str, forslag: bool) -> None:
+def publicera(kund: str, forslag: bool, trots_likhet: bool = False) -> None:
     mapp = UT / (f"{kund}-varianter" if forslag else kund)
     if not (mapp / "wrangler.jsonc").exists():
         raise FabrikFel(f"Inget att publicera i {mapp}. Kör först: fabrik.py {'varianter' if forslag else 'bygg'} {kund}")
@@ -859,6 +1018,12 @@ def publicera(kund: str, forslag: bool) -> None:
         fel = kontroll(kund, mapp / "dist")
         if fel:
             raise FabrikFel("Sajten publiceras inte förrän kontrollen är utan fel.")
+        lika = lika_kunder(kund, las_kund(kund))
+        if lika and not trots_likhet:
+            raise FabrikFel("Designen ligger för nära " + lista_text([f"{namn} (samma {lista_text([LIKHET_NAMN[k] for k in delat])})"
+                                                                     for _, namn, delat in lika])
+                            + f". {likhet_rad(lika[0][2])} Bygg sedan igen. Ska de vara lika, till exempel två "
+                              "ställen med samma ägare, publicera med --trots-likhet.")
     if not os.environ.get("CLOUDFLARE_API_TOKEN"):
         raise FabrikFel("CLOUDFLARE_API_TOKEN saknas. Lägg in en API-token med rätten Workers Scripts: Edit och kör igen.")
     rubrik(f"Publicerar {mapp.name} på Cloudflare")
@@ -911,7 +1076,8 @@ def main() -> int:
     s.add_argument("--visa", action="store_true", help="öppna sajten i webbläsaren efteråt")
     s = sub.add_parser("varianter", help="bygg kunden i flera varianter att visa")
     s.add_argument("kund")
-    s.add_argument("varianter", nargs="*", help="stil:tema:hero:meny i valfri ordning, standard fyra olika stilar")
+    s.add_argument("varianter", nargs="*", help="stil:tema:hero:meny, och typsnitt, former, etiketter eller foton, i valfri "
+                   "ordning. Standard fyra förslag som passar stället och inte liknar andra kunder")
     s.add_argument("--visa", action="store_true", help="öppna förhandsvisningen i webbläsaren efteråt")
     s = sub.add_parser("visa", help="öppna en byggd sajt i webbläsaren")
     s.add_argument("kund")
@@ -926,6 +1092,7 @@ def main() -> int:
     s = sub.add_parser("publicera", help="publicera på Cloudflare Workers")
     s.add_argument("kund")
     s.add_argument("--varianter", action="store_true", help="publicera förhandsvisningen i stället")
+    s.add_argument("--trots-likhet", action="store_true", help="publicera fast designen ligger nära en annan kunds")
     sub.add_parser("lista", help="visa alla kunder")
     s = sub.add_parser("designer", help="öppna HJERDAL Designer, formuläret för säljare")
     s.add_argument("--port", type=int, default=4848, help="standard 4848, nästa lediga om den är upptagen")
@@ -955,7 +1122,7 @@ def main() -> int:
         elif a.kommando == "validera":
             validera(a.kund)
         elif a.kommando == "publicera":
-            publicera(a.kund, a.varianter)
+            publicera(a.kund, a.varianter, a.trots_likhet)
         elif a.kommando == "lista":
             lista()
         elif a.kommando == "designer":

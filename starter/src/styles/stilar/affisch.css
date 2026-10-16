@@ -1,0 +1,12 @@
+/* Stilen affisch: som en affisch på en vägg. Delarna är typsnittet schibsted, formerna
+   tjocka, etiketter i versaler och svartvita foton (src/lib/designval.ts). Eget grepp:
+   startsidan läses uppifrån som en affisch, med ingressen först, rubriken stor längst ner
+   och knappen under en linje. Idén kommer från Glød i examples/inspiration.md. Bäst med
+   en kort rubrik och med temat Senap eller Fjäll. */
+[data-stil="affisch"] .lede { max-width: 30ch; font-size: clamp(19px, 1.9vw, 25px); line-height: 1.38; color: var(--ink); }
+
+/* Bara ordningen på skärmen ändras; i koden kommer rubriken först. */
+[data-stil="affisch"]:is([data-hero="text"], [data-hero="delad"]) .hero-grid > div { display: flex; flex-direction: column; }
+[data-stil="affisch"]:is([data-hero="text"], [data-hero="delad"]) .hero-grid .lede { order: -1; margin: 0 0 clamp(40px, 9vw, 120px); }
+[data-stil="affisch"]:is([data-hero="text"], [data-hero="delad"]) .hero-grid .lbl { order: -2; }
+[data-stil="affisch"] .hero-grid .actions { justify-content: space-between; margin-top: clamp(24px, 3vw, 36px); padding-top: clamp(20px, 2.4vw, 28px); border-top: 2px solid var(--ink); }

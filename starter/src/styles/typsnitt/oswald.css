@@ -1,0 +1,20 @@
+/* Typsnittet oswald: smala versala rubriker i Oswald och Archivo i brödtexten. */
+@import '@fontsource-variable/oswald';
+@import '@fontsource-variable/archivo/wght.css';
+
+[data-typsnitt="oswald"] {
+  --f-display: "Oswald Variable", "Oswald", "Arial Narrow", Impact, sans-serif;
+  --f-body: "Archivo Variable", "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display-weight: 600; --display-track: -0.005em; --display-case: uppercase;
+  --f-pris: var(--f-display); --pris-track: .01em;
+  --btn: 700 14px/1 var(--f-body); --btn-track: .06em; --btn-case: uppercase;
+  --logo: 600 25px/1 var(--f-display); --logo-track: .02em; --logo-case: uppercase;
+  --ratt: 600 20px/1.2 var(--f-display); --ratt-case: uppercase;
+}
+/* Versala Å, Ä och Ö når högre än versalhöjden och behöver luft mot raden ovanför. Men
+   aldrig större än spalten rubriken står i (cqi), så att ett långt ord i versaler får
+   plats bredvid en bild och i en smal mobil. */
+[data-typsnitt="oswald"] .h1 { max-width: 13ch; line-height: 1.22; font-size: clamp(3.1rem, 9.6vw, 7.6rem); font-size: min(clamp(3.1rem, 9.6vw, 7.6rem), 13cqi); overflow-wrap: break-word; }
+[data-typsnitt="oswald"] :is(.h2, .h3) { line-height: 1.2; }
+[data-typsnitt="oswald"] .ratt-pris { font-size: 19px; font-weight: 500; }
+[data-typsnitt="oswald"] .meny-nav a { font-weight: 700; text-transform: uppercase; letter-spacing: .04em; font-size: 13px; }

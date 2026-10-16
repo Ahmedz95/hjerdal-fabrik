@@ -101,6 +101,11 @@ def bilddata(mapp: Path, fil: str | None) -> str | None:
     return f"data:{MIME.get(ext, 'application/octet-stream')};base64,{base64.b64encode(innehall).decode()}"
 
 
+def framhav(text: str) -> str:
+    """En rubrik med ord mellan *stjärnor* framhävda, som på sajten (Framhavd.astro)."""
+    return re.sub(r"\*([^*\n]+)\*", r"<em>\1</em>", escape(text))
+
+
 def html(kund: str, data: dict, problem: list[tuple[str, str]]) -> str:
     s = fabrik.SCHEMA
     namn_pa = s["namn"]
@@ -108,7 +113,8 @@ def html(kund: str, data: dict, problem: list[tuple[str, str]]) -> str:
     tema = next((t for t in s["teman"] if t["id"] == design["tema"]), s["teman"][0])
     accent = data.get("design", {}).get("accent")
     accent = accent if isinstance(accent, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", accent) else tema["accent"]
-    serif = (data.get("design", {}).get("rubrik") or tema.get("rubrik")) == "serif"
+    serif = design["typsnitt"] in ("garamond", "bodoni") or (
+        design["typsnitt"] == "albert" and (data.get("design", {}).get("rubrik") or tema.get("rubrik")) == "serif")
     mapp = fabrik.kundmapp(kund) / "bilder"
     bilder = data.get("bilder") or {}
     kontakt = data.get("kontakt") or {}
@@ -152,9 +158,11 @@ def html(kund: str, data: dict, problem: list[tuple[str, str]]) -> str:
     om = data.get("om") or {}
     if om:
         om_bild = bilddata(mapp, (bilder.get("om") or {}).get("fil"))
-        sektion("Om oss", (f"<h3>{escape(om.get('rubrik', ''))}</h3>" if om.get("rubrik") else "")
+        sektion("Om oss", (f"<h3>{framhav(om['rubrik'])}</h3>" if om.get("rubrik") else "")
                 + "".join(f"<p>{escape(st)}</p>" for st in om.get("stycken") or [])
-                + (f'<img class="foto" src="{om_bild}" alt="{escape((bilder.get("om") or {}).get("alt", ""))}">' if om_bild else ""))
+                + (f'<img class="foto" src="{om_bild}" alt="{escape((bilder.get("om") or {}).get("alt", ""))}">' if om_bild else "")
+                + ("<h3>Historien</h3><table>" + "".join(f"<tr><th>{escape(h.get('nar', ''))}</th><td>{escape(h.get('text', ''))}</td></tr>"
+                                                          for h in om["historia"]) + "</table>" if om.get("historia") else ""))
 
     meny = data.get("meny") or {}
     sektioner = []
@@ -178,6 +186,14 @@ def html(kund: str, data: dict, problem: list[tuple[str, str]]) -> str:
     sektion(meny.get("rubrik") or "Meny", (f"<p>{escape(meny['text'])}</p>" if meny.get("text") else "") + "".join(sektioner)
             + (f'<p class="liten">{escape(meny["allergiText"])}</p>' if meny.get("allergiText") else ""))
 
+    sektion("Frågor före besöket", "".join(f"<h3>{escape(f.get('fraga', ''))}</h3><p>{escape(f.get('svar', ''))}</p>"
+                                           for f in data.get("fragor") or []))
+    kort = data.get("stampelkort") or {}
+    if kort:
+        sektion("Stämpelkort", (f"<h3>{framhav(kort['rubrik'])}</h3>" if kort.get("rubrik") else "")
+                + (f"<p>{escape(kort['text'])}</p>" if kort.get("text") else "")
+                + f'<p class="liten">{escape(str(kort.get("antal", 10)))} rutor på kortet, den sista bjuds.</p>')
+
     galleri = []
     for falt, text in (("hero", "Stor bild på startsidan"), ("om", "Bild till Om oss")):
         b = bilder.get(falt) or {}
@@ -200,6 +216,7 @@ def html(kund: str, data: dict, problem: list[tuple[str, str]]) -> str:
         + f'<span class="farg" style="background:{accent}" title="accent"></span>'
     sektion("Utseende", "<dl>" + rader([
         ("Stil", escape(namn_pa["stil"].get(design["stil"], design["stil"]))),
+        ("Typsnitt", escape(namn_pa["typsnitt"].get(design["typsnitt"], design["typsnitt"]))),
         ("Färgtema", f"{escape(tema['namn'])} <span class=\"farger\">{farger}</span>"),
         ("Startsidan", escape(namn_pa["hero"].get(design["hero"], design["hero"]))),
         ("Menyn", escape(namn_pa["meny"].get(design["meny"], design["meny"]))),
@@ -228,6 +245,7 @@ h1 {{ font-size: clamp(34px, 7vw, 54px); margin: 0 0 14px; letter-spacing: -.01e
 header .rubrik {{ font-size: 21px; margin: 0 0 8px; }}
 header .ingress {{ color: var(--muted); margin: 0 0 14px; max-width: 60ch; }}
 header .kok {{ display: inline-block; border: 1px solid var(--accent); color: var(--accent); border-radius: 99px; padding: 3px 12px; font-size: 13px; }}
+header .remsa {{ margin: 14px 0 0; font-size: 14px; color: var(--muted); }}
 header .hero {{ display: block; width: 100%; max-height: 360px; object-fit: cover; border-radius: 10px; margin-top: 28px; }}
 main {{ padding: 8px 24px 40px; }}
 section {{ padding: 30px 0; border-bottom: 1px solid #e3e6e4; }}
@@ -275,9 +293,10 @@ footer {{ padding: 24px; font-size: 13px; color: #5c6368; }}
 <header><div>
 <p class="etikett">Underlag för webbplatsen · {datum(idag)}</p>
 <h1>{escape(namn)}</h1>
-{f'<p class="rubrik">{escape(data["rubrik"])}</p>' if data.get("rubrik") else ""}
+{f'<p class="rubrik">{framhav(data["rubrik"])}</p>' if data.get("rubrik") else ""}
 {f'<p class="ingress">{escape(data["ingress"])}</p>' if data.get("ingress") else ""}
 {f'<span class="kok">{escape(kok)}</span>' if kok else ""}
+{f'<p class="remsa">{escape(" · ".join(data["remsa"]))}</p>' if data.get("remsa") else ""}
 {f'<img class="hero" src="{hero}" alt="{escape((bilder.get("hero") or {}).get("alt", ""))}">' if hero else ""}
 </div></header>
 <main>

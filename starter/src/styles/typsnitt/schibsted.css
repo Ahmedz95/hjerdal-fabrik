@@ -1,0 +1,26 @@
+/* Typsnittet schibsted: Schibsted Grotesk i allt, fett och tätt i jätteformat. Ord mellan
+   *stjärnor* blir kursiva och lätta. */
+@import '@fontsource-variable/schibsted-grotesk';
+@import '@fontsource-variable/schibsted-grotesk/wght-italic.css';
+
+[data-typsnitt="schibsted"] {
+  --f-display: "Schibsted Grotesk Variable", "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body: var(--f-display);
+  --display-weight: 780; --display-track: -0.052em;
+  --f-pris: var(--f-body); --pris-track: 0;
+  --btn: 600 16px/1 var(--f-body);
+  --logo: 800 21px/1 var(--f-display); --logo-track: -0.02em; --logo-case: uppercase;
+  --ratt: 650 19px/1.25 var(--f-body);
+}
+[data-typsnitt="schibsted"] body { font-size: 17px; }
+/* Rubriken i jätteformat. Storleken följer spalten den står i (cqi), så att ett långt
+   ord får plats även bredvid en bild; ett ord som ändå är för långt bryts hellre än att
+   sticka ut. */
+[data-typsnitt="schibsted"] .h1 { max-width: none; font-size: clamp(2.5rem, 10.4vw, 9.4rem); font-size: clamp(2.5rem, 14.5cqi, 9.4rem); line-height: .9; overflow-wrap: break-word; }
+[data-typsnitt="schibsted"] .h2 { max-width: 14ch; font-size: clamp(2.2rem, 6vw, 4.8rem); line-height: .94; overflow-wrap: break-word; }
+[data-typsnitt="schibsted"] .h3 { font-weight: 720; letter-spacing: -0.03em; }
+[data-typsnitt="schibsted"] :is(.h1, .h2, .h3) em { font-style: italic; font-weight: 420; color: inherit; }
+[data-typsnitt="schibsted"] .nav a { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+[data-typsnitt="schibsted"] .ratt-pris { font-weight: 650; font-size: 17px; }
+[data-typsnitt="schibsted"] .meny-nav a { font-weight: 600; }
+[data-typsnitt="schibsted"] .sektion-head .h3 { font-size: clamp(1.9rem, 3.4vw, 2.8rem); }

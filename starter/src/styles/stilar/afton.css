@@ -1,0 +1,10 @@
+/* Stilen afton: för avsmakningsmenyer, fine dining och vinbarer. Mörkt och stilla med
+   mycket luft. Delarna är typsnittet bodoni, formerna tunna och etiketter med en linje
+   (src/lib/designval.ts). Idén kommer från Ombra och Chez Bacchus i
+   examples/inspiration.md: en stor lugn rubrik, ett par kursiva ord och en enda knapp.
+   Passar bäst med de mörka temana Kol, Mossa, Plommon och Ek. */
+
+/* Menyn: beskrivningen kursiv, och i den numrerade menyn blir sektionerna romerska
+   siffror i accentfärgen, som satserna i en avsmakningsmeny. */
+[data-stil="afton"] .ratt-text { font-style: italic; }
+[data-stil="afton"][data-meny="numrerad"] .sektion::before { content: counter(sektion, upper-roman); content: counter(sektion, upper-roman) / ""; font-style: italic; color: var(--accent-tekst); }

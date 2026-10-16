@@ -34,6 +34,27 @@ kod. Skärmdumpar i mobil och dator, första skärmen och hela sidan, ligger i
 | [ÉTÉ](https://ete.restaurant/) | Palatsträdgården som första skärm med stora versaler över bilden, menyrader med punktlinjer fram till priset, varm beige. | Cookiebanner över rubriken, och stora tomma ytor där innehållet väntar på scrollanimationer. |
 | [Bubbeleh](https://bubbeleh.com.br) | Mat i händer, en tydlig orange knapp för att beställa och rätterna som kort med pris. Lätt att förstå på en sekund. | Det ser ut som en mall; det är nivån vi vill bort från, inte till. |
 
+## I mallen
+
+Det här finns nu som val i Designer, så att en kund från mallen kan få nivån utan egen
+design. Idéerna är tagna härifrån; texter, bilder och kod är våra egna.
+
+| Val | Från | Vad |
+|---|---|---|
+| Stilen `afton` | Ombra, Chez Bacchus | Bodoni Moda med kursiva ord i accentfärgen, spärrade etiketter efter en tunn linje, mycket luft, en enda knapp. |
+| Stilen `affisch` | Glød | Ett typsnitt i jätteformat, ingressen överst och rubriken längst ner, tjocka linjer, svartvita foton med linjer över. |
+| Stilen `stampel` | WATDA, Casa Victoria | Feta versaler blandade med en mjuk serif, etiketter som tejp, lutande bilder, märkningen som stämplar, det praktiska som en mörk remsa. |
+| Temana `kol`, `mossa`, `plommon` | Assador 29, Chez Bacchus, Ombra | Glöd, djupgrönt och vinrött med guld, för mörka och varma ställen. |
+| Temana `oliv`, `terrakotta`, `senap` | WATDA, ÉTÉ, Glød | Kräm med oliv, varm beige med tegel och senapsgult med svart. |
+| Menyn `numrerad` | Ombra | Sektionerna med stora siffror, romerska i Afton, som satserna i en avsmakningsmeny. |
+| `*stjärnor*` i rubriken | Ombra, WATDA | Ett par ord i rubriken framhävs, kursivt eller i en annan stil. |
+| `remsa` i kundfilen | WATDA, Casa Victoria | Det stället har som en remsa under första skärmen. Den står still, så att inget rör sig av sig självt. |
+| `stampelkort` | Casa Victoria | Stämpelkortet från kassan som ett kort på startsidan, med den sista rutan som det som bjuds. |
+| `fragor` | WATDA | Frågor före besöket på startsidan, som öppnas utan JavaScript. |
+| `om.historia` | Ombra | Ställets historia som en tidslinje på sidan Om oss. |
+
+Kännetecknen syns bara när kunden har fyllt i dem, med kundens riktiga innehåll.
+
 ## Det vi gör bättre som standard
 
 - **Ingen cookiebanner.** Fabrikens sajter har ingen spårning och inga typsnitt eller

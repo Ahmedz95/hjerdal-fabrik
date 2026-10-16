@@ -1,8 +1,8 @@
 # Designspråk: startern
 
 Starterns eget utseende, som varje kund från mallen får: HJERDAL:s formspråk, samma som
-hjerdal.se. Säljaren varierar det med fyra stilar, sex färgteman och layouterna i
-Designer. En kund med egen design har ett eget `DESIGN_LANGUAGE.md` i `kunder/<kund>/`,
+hjerdal.se. Säljaren varierar det med sju stilar, delarna i dem, tolv färgteman och
+layouterna i Designer. En kund med egen design har ett eget `DESIGN_LANGUAGE.md` i `kunder/<kund>/`,
 skrivet från mallen i `schemas/mallar/`, och det går före det här.
 
 ## Idén
@@ -13,21 +13,35 @@ bakgrunden och gör det lätt att se menyn, hitta dit och boka.
 ## Färg
 
 Temat i kundfilen ger sju färger: bakgrund, yta, text, grå text, linjer, accent och
-texten på accenten. Accenten bara på det man kan klicka på. Bygget stoppar om en färg får
-för låg kontrast (`src/lib/tema.ts`).
+texten på accenten. Accenten bara på det man kan klicka på och i ord som framhävs i en
+rubrik. Där används `--accent-tekst`, som blir textfärgen när accenten är för svag mot
+bakgrunden. Bygget stoppar om en färg får för låg kontrast (`src/lib/tema.ts`).
 
 ## Typografi
 
 Stilen `hjerdal`: stora lätta rubriker i Albert Sans (Fraunces i teman med serif),
-spärrade versala etiketter och priser i mono. De andra stilarna byter typsnitt och
-former: `klassisk` (Cormorant Garamond och Source Serif), `kvarter` (Oswald och Archivo)
-och `mjuk` (Bricolage Grotesque och Figtree).
+spärrade versala etiketter och priser i mono. De andra stilarna kommer med andra
+typsnitt: `klassisk` (Cormorant Garamond och Source Serif), `kvarter` (Oswald och
+Archivo), `mjuk` (Bricolage Grotesque och Figtree), `afton` (Bodoni Moda och Jost),
+`affisch` (Schibsted Grotesk i allt) och `stampel` (Archivo med Fraunces). De tre sista
+bygger på inspirationen i `examples/inspiration.md`. Typsnittet är en egen del och går
+att byta oberoende av stilen (`src/styles/typsnitt/`). Ord mellan `*stjärnor*` i en
+rubrik i kundfilen blir `<em>`, och typsnittet bestämmer hur de framhävs.
 
 ## Layout och rytm
 
 En spalt i mobilen, två i datorn. Stora avstånd mellan sektionerna, 1 px linjer, inga
 skuggor, runda knappar. Startsidans överdel är text, text och bild eller helbild, och
-menyn är lista, två kolumner eller kort.
+menyn är lista, två kolumner, kort eller numrerad. Afton, Affisch och Stämpel bryter
+mot det här med tunna eller tjocka linjer, raka hörn och skuggor. Det är delar som går
+att byta var för sig: formerna i `src/styles/former/`, etiketterna i
+`src/styles/etiketter/` och hur foton visas i `src/styles/foton/`. Det som bara en stil
+har, som Klassisks punktlinjer och Stämpels mörka remsa, står i `src/styles/stilar/`.
+
+Kännetecknen (remsan under första skärmen, stämpelkortet, frågorna före besöket och
+tidslinjen på Om oss) syns bara när kunden har fyllt i dem. De har inga egna former:
+hörnen kommer från `--r-tagg` och `--r-kort`, linjerna från formerna och texten från
+rubrikernas typsnitt, så de ser ut som resten av sajten i varje stil.
 
 ## Rörelse
 

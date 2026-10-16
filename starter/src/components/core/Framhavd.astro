@@ -1,0 +1,9 @@
+---
+// En rubrik från kundfilen där ord mellan *stjärnor* framhävs med <em>. Stilen
+// bestämmer hur: kursivt i accentfärgen i Afton, i en mjuk serif i Stämpel.
+import { framhavt } from '../../lib/format';
+
+interface Props { text: string }
+const delar = framhavt(Astro.props.text);
+---
+{delar.map(([del, em]) => (em ? <em>{del}</em> : del))}

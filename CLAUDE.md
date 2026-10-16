@@ -17,7 +17,7 @@ HJERDAL:s fabrik för restaurangsajter. En sajt görs på ett av två sätt:
 | `starter/` | Astro-sajten alla kunder byggs från. Regler för koden i `starter/CLAUDE.md`. |
 | `starter/src/components/core/` | Det som fungerar likadant för alla: metadata och SEO, menyn, öppettiderna. Delas av alla kunder. |
 | `starter/src/components/brand/` | Utseendet: sidhuvud, startsidans överdel, sidfot. En kund med egen design byter dem. |
-| `starter/src/styles/` | `tokens.css` (mått, typsnitt, former), `bas.css` (starterns grund), `stilar/` (mallens fyra stilar) och `brand.css` (tom, kundens egen). |
+| `starter/src/styles/` | `tokens.css` (mått, typsnitt, former), `bas.css` (starterns grund), mallens delar i `typsnitt/`, `former/`, `etiketter/` och `foton/`, `stilar/` (det bara en av mallens sju stilar har) och `brand.css` (tom, kundens egen). |
 | `starter/cms.manifest.json` | De fält som går att redigera: kundfilens schema, stilar och teman. Designer ritar sitt formulär från den. Skrivs av `npm run schema` i `starter/`. |
 | `kunder/<kund>/` | `kund.json` och `bilder/`. Med egen design även `brief.json`, `design.json`, `DESIGN_LANGUAGE.md` och kundens egna filer i `src/` och `public/`, som läggs ovanpå startern vid bygget. |
 | `schemas/` | JSON Schema för briefen och designspecen, och mallarna för en ny kund. |

@@ -1,0 +1,5 @@
+/* Etiketterna ruta: feta versaler i textfärgen efter en liten ruta i accentfärgen, och
+   märkningen i menyn som feta brickor på ytfärgen. */
+[data-etiketter="ruta"] { --lbl: 700 13px/1.3 var(--f-body); --lbl-track: .08em; --lbl-case: uppercase; --lbl-color: var(--ink); }
+[data-etiketter="ruta"] .lbl::before { content: ""; display: inline-block; width: .72em; height: .72em; margin-right: .6em; background: var(--accent); vertical-align: -.04em; }
+[data-etiketter="ruta"] .tagg { box-shadow: none; background: var(--surface); color: var(--ink); font-weight: 700; letter-spacing: .06em; }

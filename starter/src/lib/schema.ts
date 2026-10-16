@@ -7,7 +7,7 @@
 // .describe('Etikett|Hjälptext|tips') är det som visas i formuläret. Tipsen är
 // valfria: flerrad ger en textruta med flera rader.
 import { z } from 'astro/zod';
-import { heros, menyer, stilar, teman } from './designval';
+import { etiketter, former, foton, heros, menyer, stilar, teman, typsnitt } from './designval';
 
 /** Felmeddelanden på svenska. Ett eget meddelande på ett fält, som i tid nedan, går före. */
 export const svenskaFel: z.ZodErrorMap = (fel, ctx) => {
@@ -15,7 +15,7 @@ export const svenskaFel: z.ZodErrorMap = (fel, ctx) => {
   if (tom || (fel.code === 'too_small' && fel.type === 'string' && fel.minimum === 1)) return { message: 'måste fyllas i' };
   switch (fel.code) {
     case 'invalid_type':
-      return { message: `ska vara ${{ string: 'text', number: 'ett tal', boolean: 'ja eller nej', array: 'en lista', object: 'en grupp' }[fel.expected as string] ?? fel.expected}` };
+      return { message: `ska vara ${{ string: 'text', number: 'ett tal', integer: 'ett heltal', boolean: 'ja eller nej', array: 'en lista', object: 'en grupp' }[fel.expected as string] ?? fel.expected}` };
     case 'too_small':
       if (fel.type === 'string') return { message: `ska vara minst ${fel.minimum} tecken` };
       if (fel.type === 'array') return { message: fel.minimum === 1 ? 'behöver minst en' : `behöver minst ${fel.minimum}` };
@@ -108,8 +108,13 @@ export const schema = z.object({
     .min(50)
     .max(160)
     .describe('Beskrivning för Google|En mening på 50–160 tecken: vad, var och varför.|flerrad'),
-  rubrik: z.string().min(1).describe('Rubrik på startsidan|Gärna en kort mening.'),
+  rubrik: z.string().min(1).describe('Rubrik på startsidan|Gärna en kort mening. Ord mellan *stjärnor* framhävs, kursivt eller i accentfärgen beroende på stilen.'),
   ingress: z.string().min(1).describe('Ingress|Två meningar under rubriken.|flerrad'),
+  remsa: z
+    .array(z.string().min(1).max(32))
+    .max(8)
+    .default([])
+    .describe('Remsa|Korta ord om det ni har, till exempel Naturvin, Surdeg från eget bageri eller Uteservering. Visas som en remsa under första skärmen på startsidan.'),
   kok: z.array(z.string()).default([]).describe('Kök|Till exempel Svensk eller Italiensk. Den första visas på startsidan.'),
   prisniva: z.enum(['$', '$$', '$$$', '$$$$']).optional().describe('Prisnivå'),
   kontakt: z
@@ -158,8 +163,20 @@ export const schema = z.object({
     .describe('Avvikande öppettider|Helgdagar och semester. Visas tills datumet har passerat.'),
   om: z
     .object({
-      rubrik: z.string().min(1).describe('Rubrik'),
+      rubrik: z.string().min(1).describe('Rubrik|Ord mellan *stjärnor* framhävs.'),
       stycken: z.array(z.string().min(1)).min(1).describe('Text|Ett eller flera stycken.|flerrad'),
+      historia: z
+        .array(
+          z
+            .object({
+              nar: z.string().min(1).max(24).describe('När|Ett år eller en tid, till exempel 2014 eller Våren 2019.'),
+              text: z.string().min(1).describe('Vad hände||flerrad'),
+            })
+            .describe('Händelse'),
+        )
+        .max(12)
+        .default([])
+        .describe('Historien|Viktiga händelser för stället, den första först. Visas som en tidslinje på sidan Om oss.'),
     })
     .optional()
     .describe('Om oss'),
@@ -175,6 +192,26 @@ export const schema = z.object({
       sektioner: z.array(sektion).min(1).describe('Sektioner'),
     })
     .describe('Meny'),
+  fragor: z
+    .array(
+      z
+        .object({
+          fraga: z.string().min(1).describe('Fråga|Till exempel Behöver vi boka bord?'),
+          svar: z.string().min(1).describe('Svar||flerrad'),
+        })
+        .describe('Fråga'),
+    )
+    .max(10)
+    .default([])
+    .describe('Frågor före besöket|Det gästerna brukar undra över, som bokning, barn, hund, allergier eller parkering. Visas på startsidan.'),
+  stampelkort: z
+    .object({
+      rubrik: z.string().min(1).describe('Rubrik|Till exempel Kaffekortet. Ord mellan *stjärnor* framhävs.'),
+      text: z.string().min(1).describe('Erbjudandet|Till exempel Köp nio kaffe, det tionde bjuder vi på. Skriv bara det ni verkligen erbjuder.|flerrad'),
+      antal: z.number().int().min(4).max(12).default(10).describe('Rutor på kortet|Från 4 till 12. Den sista är det som bjuds.'),
+    })
+    .optional()
+    .describe('Stämpelkort|Om ni har ett stämpelkort i kassan. Visas som ett kort på startsidan.'),
   bilder: z
     .object({
       hero: bild.optional().describe('Stor bild på startsidan|Används när hero är delad eller bild.'),
@@ -186,9 +223,13 @@ export const schema = z.object({
     .describe('Bilder och logga'),
   design: z
     .object({
-      stil: z.enum(stilar).default('hjerdal').describe('Stil|Typsnitt och former.'),
+      stil: z.enum(stilar).default('hjerdal').describe('Stil|Utgångspunkten: typsnitt, former, etiketter och foton. Varje del kan bytas nedan.'),
+      typsnitt: z.enum(typsnitt).optional().describe('Typsnitt|Utan val används stilens.|stilens'),
+      former: z.enum(former).optional().describe('Former|Hörn, linjer och knappar. Utan val används stilens.|stilens, kompakt'),
+      etiketter: z.enum(etiketter).optional().describe('Etiketter|Raden ovanför rubrikerna och märkningen i menyn. Utan val används stilens.|stilens, kompakt'),
+      foton: z.enum(foton).optional().describe('Foton|Utan val används stilens.|stilens, kompakt'),
       tema: z.enum(teman).default('fjall').describe('Färger'),
-      rubrik: z.enum(['sans', 'serif']).optional().describe('Rubriktypsnitt|Bara i stilen HJERDAL. Utan val används temats.'),
+      rubrik: z.enum(['sans', 'serif']).optional().describe('Rubriktypsnitt|Bara med typsnittet Albert Sans. Utan val används temats.'),
       accent: hex.optional().describe('Egen accentfärg|Färgen på knapparna. Bygget stoppar om texten på dem blir svår att läsa.'),
       hero: z.enum(heros).default('text').describe('Startsidans överdel|Delad och bild kräver en stor bild.'),
       meny: z.enum(menyer).default('lista').describe('Menyns layout'),

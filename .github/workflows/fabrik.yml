@@ -29,8 +29,8 @@ jobs:
         run: python3 quality/prov_fabrik.py
       - name: HJERDAL Designer och MCP
         run: python3.9 designer/prov.py
-      - name: Bygg en variant i varje stil
-        run: python3 fabrik.py varianter bistro-nordvik
+      - name: Bygg en variant i varje stil och en blandning av delar
+        run: python3 fabrik.py varianter bistro-nordvik hjerdal:hav:kolumner klassisk:linne:lista kvarter:skiffer:kort mjuk:salvia:kort afton:kol:numrerad affisch:senap:lista stampel:oliv:kort mjuk:linne:bodoni:tejp:svartvita
       - uses: actions/upload-artifact@v4
         if: always()
         with:
