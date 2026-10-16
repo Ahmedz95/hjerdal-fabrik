@@ -7,12 +7,14 @@ import Meny from '../components/brand/Meny.astro';
 import Historia from '../components/brand/Historia.astro';
 import Kulisser from '../components/brand/Kulisser.astro';
 import Boka from '../components/brand/Boka.astro';
+import Huvud from '../components/brand/Huvud.astro';
 import { kund } from '../lib/kund';
 import { restaurangLd, menyLd } from '../lib/ld';
 
 const title = `${kund.namn} | Ramen på Södermalm i ${kund.kontakt.adress.ort}`;
 ---
 <Bas {title} description={kund.beskrivning} sokvag="/" ld={[restaurangLd(), menyLd()]}>
+  <Huvud slot="head" />
   <Hero />
   <Meny />
   <Historia />

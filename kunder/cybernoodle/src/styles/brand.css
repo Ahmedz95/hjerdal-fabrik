@@ -84,6 +84,19 @@ a[href^="tel:"] { font-family: var(--f-hud); letter-spacing: .02em; }
 .cn-hud strong { font-weight: 500; color: var(--paper); }
 .cn-hud a { display: inline-flex; align-items: center; min-height: 44px; color: var(--dim); text-decoration: none; }
 .cn-hud a span { box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--sakura) 70%, transparent); }
+/* Pausa rörelsen: en kryssruta som ser ut som en liten knapp. Flimret stannar med CSS, regnet och ångan i rorelse.ts. */
+.cn-paus label { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
+.cn-paus input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.cn-paus i { position: relative; width: 22px; height: 22px; border: 1px solid var(--rule-strong); border-radius: 50%; }
+.cn-paus i::before, .cn-paus i::after { content: ""; position: absolute; top: 7px; width: 2px; height: 8px; background: var(--dim); }
+.cn-paus i::before { left: 7px; }
+.cn-paus i::after { right: 7px; }
+.cn-paus input:checked + i { border-color: var(--cyan); }
+.cn-paus input:checked + i::before { top: 6px; left: 8px; width: 0; height: 0; border-block: 5px solid transparent; border-left: 7px solid var(--cyan); background: none; }
+.cn-paus input:checked + i::after { display: none; }
+.cn-paus input:focus-visible + i { outline: 2px solid var(--cyan); outline-offset: 3px; }
+@media (hover: hover) { .cn-paus label:hover { color: var(--paper); } }
+html:has([data-paus]:checked) :is(.cn-neon, .cn-vskylt, .cn-punkt) { animation: none; }
 @media (hover: hover) { .cn-hud a:hover { color: var(--paper); } }
 .cn-punkt { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); animation: cn-puls 2s infinite; }
 .stangt .cn-punkt { background: var(--sakura); box-shadow: 0 0 10px var(--sakura); }
@@ -102,7 +115,7 @@ a[href^="tel:"] { font-family: var(--f-hud); letter-spacing: .02em; }
 .cn-ton { position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255, 61, 139, .34), transparent 42%, transparent 62%, rgba(63, 224, 255, .28)); mix-blend-mode: screen; pointer-events: none; }
 .cn-foto::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9, 9, 15, .55), transparent 30%, transparent 72%, rgba(9, 9, 15, .75)); pointer-events: none; }
 .cn-anga { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; }
-.cn-foto figcaption { position: absolute; left: 14px; bottom: 12px; z-index: 2; font: 400 11px/1.4 var(--f-hud); letter-spacing: .22em; text-transform: uppercase; color: var(--paper); }
+.cn-foto figcaption { position: absolute; left: 14px; bottom: 12px; z-index: 2; font: 400 11px/1.4 var(--f-hud); letter-spacing: .22em; text-transform: uppercase; color: var(--paper); text-shadow: 0 1px 2px rgba(9, 9, 15, .9), 0 0 12px rgba(9, 9, 15, .8); }
 .cn-foto figcaption b { font-weight: 500; color: var(--broth); }
 .cn-vskylt { position: absolute; z-index: 3; display: flex; align-items: center; gap: 10px; padding: 16px 9px; border: 2px solid currentColor; border-radius: 6px; background: rgba(7, 7, 12, .82); writing-mode: vertical-rl; font-family: var(--f-display); font-weight: 800; line-height: 1; letter-spacing: .14em; text-shadow: 0 0 8px currentColor, 0 0 22px currentColor; box-shadow: 0 0 16px -2px currentColor, inset 0 0 14px -6px currentColor; }
 .cn-vskylt small { font: 500 .34em/1 var(--f-hud); letter-spacing: .3em; text-transform: uppercase; text-shadow: 0 0 6px currentColor; opacity: .85; }
@@ -192,6 +205,7 @@ a[href^="tel:"] { font-family: var(--f-hud); letter-spacing: .02em; }
 .cn-panel { display: grid; border: 1px solid var(--rule); background: var(--alley); }
 .cn-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--rule); }
 .cn-panel-head .lbl { font-size: 11px; }
+.cn-sparat i { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: currentColor; vertical-align: 1px; }
 .cn-sparat, .cn-ping { font: 400 11px/1 var(--f-hud); letter-spacing: .14em; color: var(--cyan); opacity: 0; transition: opacity .3s; }
 .cn-sparat.on, .cn-ping.on { opacity: 1; }
 .cn-redigera { min-width: 0; margin: 0; padding: 0; border: 0; }
@@ -202,7 +216,7 @@ a[href^="tel:"] { font-family: var(--f-hud); letter-spacing: .02em; }
 .cn-kolumner span:nth-child(3) { text-align: center; }
 .cn-rad { min-height: 48px; padding-block: 6px; }
 .cn-rad-namn { min-width: 0; overflow: hidden; font-size: 14px; white-space: nowrap; text-overflow: ellipsis; }
-input.cn-rad-pris { width: 72px; padding: 6px 8px; border: 1px solid var(--rule-strong); border-radius: 2px; background: var(--night); color: var(--broth); font: 400 14px/1.4 var(--f-hud); text-align: right; }
+input.cn-rad-pris { width: 72px; min-height: 44px; padding: 6px 8px; border: 1px solid var(--rule-strong); border-radius: 2px; background: var(--night); color: var(--broth); font: 400 14px/1.4 var(--f-hud); text-align: right; }
 input.cn-rad-pris:focus { border-color: var(--broth); }
 span.cn-rad-pris { font: 400 13px/1.4 var(--f-hud); color: var(--dim); text-align: right; }
 .cn-brytare { position: relative; justify-self: center; width: 40px; height: 22px; }
@@ -219,7 +233,9 @@ span.cn-rad-pris { font: 400 13px/1.4 var(--f-hud); color: var(--dim); text-alig
 .cn-snabbval button { min-height: 44px; padding: 0 14px; border: 1px solid var(--rule-strong); border-radius: var(--r-btn); background: transparent; color: var(--paper); font: 500 11px/1 var(--f-hud); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
 @media (hover: hover) { .cn-snabbval button:hover { border-color: var(--cyan); } }
 .cn-utan-js { padding: 0 18px 18px; font-size: 14px; color: var(--dim); }
-.cn-utan-js[hidden] { display: none; }
+.cn-pris-fel { padding: 12px 18px 0; font-size: 14px; color: var(--sakura); }
+.cn-pris-fel[hidden] { display: none; }
+input.cn-rad-pris[aria-invalid] { border-color: var(--sakura); }
 
 .cn-utdata { min-width: 0; }
 .cn-skarmar { display: grid; gap: 28px; align-items: end; }
@@ -227,7 +243,7 @@ span.cn-rad-pris { font: 400 13px/1.4 var(--f-hud); color: var(--dim); text-alig
 .cn-ut-rubrik { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .cn-ut-rubrik .lbl { font-size: 11px; }
 .cn-ut-lank { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; font: 500 12px/1 var(--f-hud); letter-spacing: .16em; text-transform: uppercase; color: var(--cyan); text-decoration: none; }
-.cn-ut-lank::after { content: "↗"; margin-left: 8px; }
+.cn-ut-lank::after { content: "→" / ""; margin-left: 8px; }
 @media (hover: hover) { .cn-ut-lank:hover { text-decoration: underline; } }
 
 /* Skärmen ovanför baren, i liten skala */
@@ -236,6 +252,8 @@ span.cn-rad-pris { font: 400 13px/1.4 var(--f-hud); color: var(--dim); text-alig
 .cn-tv-topp { display: flex; align-items: baseline; justify-content: space-between; }
 .cn-tv-topp b { font: 800 clamp(13px, 5cqi, 24px)/1 var(--f-display); color: var(--sakura); text-shadow: 0 0 12px var(--sakura); }
 .cn-tv-topp span { font: 400 clamp(8px, 2.4cqi, 12px)/1 var(--f-hud); letter-spacing: .2em; color: var(--cyan); }
+/* Chakra Petch har inga japanska tecken. */
+.cn-tv-topp .cn-jp-tecken, .cn-skarm-topp .cn-jp-tecken { font-family: var(--f-display); letter-spacing: .1em; }
 .cn-tv-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 2% 6%; align-content: start; }
 .cn-tv-rad { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; min-width: 0; padding-bottom: 1.5%; border-bottom: 1px dashed var(--rule); font-size: clamp(8px, 2.7cqi, 14px); }
 .cn-tv-namn { overflow: hidden; font-family: var(--f-display); font-weight: 700; white-space: nowrap; text-overflow: ellipsis; color: var(--paper); }
@@ -296,20 +314,23 @@ span.cn-rad-pris { font: 400 13px/1.4 var(--f-hud); color: var(--dim); text-alig
 .cn-knappval { display: flex; flex-wrap: wrap; gap: 8px; }
 .cn-knappval label { position: relative; }
 .cn-knappval input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-.cn-knappval input:disabled { cursor: not-allowed; }
 .cn-knappval label > span { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 14px; border: 1px solid var(--rule-strong); border-radius: var(--r-btn); background: var(--night); color: var(--paper); font: 400 14px/1 var(--f-hud); transition: background .2s, border-color .2s, color .2s; }
 .cn-knappval input:checked + span { border-color: var(--cyan); background: var(--cyan); color: var(--night); box-shadow: 0 0 16px color-mix(in srgb, var(--cyan) 45%, transparent); }
 .cn-knappval input:focus-visible + span { outline: 2px solid var(--cyan); outline-offset: 3px; }
-.cn-knappval input:disabled + span { text-decoration: line-through; opacity: .35; }
+.cn-val.fel legend { color: var(--sakura); }
+.cn-tid-fel { margin: -2px 0 12px; padding-left: 10px; border-left: 2px solid var(--sakura); font-size: 14px; color: var(--paper); }
+.cn-tid-fel[hidden] { display: none; }
+.cn-val.fel .cn-knappval label > span { border-color: color-mix(in srgb, var(--sakura) 70%, var(--rule-strong)); }
 .cn-val input[type="text"] { width: 100%; padding: 12px 14px; border: 1px solid var(--rule-strong); border-radius: 2px; background: var(--night); color: var(--paper); font: 400 16px/1.4 var(--f-body); }
 .cn-val input[type="text"]:focus { border-color: var(--cyan); }
 .cn-val input::placeholder { color: var(--dim); opacity: 1; }
 .cn-bokning .btn { justify-self: start; }
-.cn-bekraftelse { display: grid; gap: 10px; padding: 20px; border: 1px solid var(--cyan); background: color-mix(in srgb, var(--cyan) 8%, transparent); }
-.cn-bekraftelse:empty { display: none; }
+/* Statusrutan finns alltid, så att skärmläsare hör bekräftelsen; ramen sitter på rutan inuti. */
+.cn-bekraftelse-ruta { display: grid; gap: 10px; padding: 20px; border: 1px solid var(--cyan); background: color-mix(in srgb, var(--cyan) 8%, transparent); }
 .cn-bekraftelse b { font: 500 22px/1.35 var(--f-display); }
 .cn-bekraftelse p { font-size: 14px; color: var(--dim); }
 .cn-ring { font-size: 15px; color: var(--dim); }
+.cn-utan-js-text { display: none; }
 .cn-ring a { color: var(--paper); text-decoration-color: var(--sakura); text-underline-offset: 4px; }
 @media (hover: hover) { .cn-knappval input:not(:disabled):not(:checked):hover + span { border-color: var(--cyan); } }
 @media (min-width: 860px) { .cn-boka-grid { grid-template-columns: 1fr 1.15fr; } }
@@ -336,6 +357,7 @@ span.cn-rad-pris { font: 400 13px/1.4 var(--f-hud); color: var(--dim); text-alig
     var(--night);
 }
 .cn-fel-skylt { position: absolute; right: -2vw; bottom: -4vw; margin: 0; color: transparent; font: 800 clamp(160px, 38vw, 460px)/1 var(--f-display); -webkit-text-stroke: 1px #3A3A52; pointer-events: none; }
+.cn-fel .cn-neon { animation: none; }
 .cn-fel-text { position: relative; display: grid; gap: 24px; justify-items: start; padding-block: clamp(56px, 10vw, 120px); }
 
 /* ---------- Skärmen ovanför baren, /skarm/ ---------- */
@@ -359,5 +381,6 @@ span.cn-rad-pris { font: 400 13px/1.4 var(--f-hud); color: var(--dim); text-alig
 /* ---------- Minskad rörelse: allt står still ---------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .cn-paus { display: none; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

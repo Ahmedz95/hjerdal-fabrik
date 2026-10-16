@@ -1,7 +1,7 @@
 {
   "namn": "CyberNoodle",
   "doman": "cybernoodle.hjerdal.se",
-  "beskrivning": "Ramen från Osakas bakgator på Götgatan, Södermalm. Tonkotsu som kokat i arton timmar, öppet sent och bord att boka direkt på sajten.",
+  "beskrivning": "Ramen från Osakas bakgator på Götgatan, Södermalm. Tonkotsu som kokat i arton timmar, en lång bar mot köket och öppet till två på helgerna.",
   "rubrik": "Ramen från Osakas bakgator, serverad under neon.",
   "ingress": "Buljongen har kokat i arton timmar innan du ens har hängt av dig jackan.",
   "kok": ["Ramen", "Japansk"],
@@ -11,7 +11,6 @@
     "adress": { "gata": "Götgatan 42", "postnummer": "118 26", "ort": "Stockholm" },
     "karta": "https://www.google.com/maps/search/?api=1&query=G%C3%B6tgatan+42%2C+118+26+Stockholm"
   },
-  "boka": { "url": "https://cybernoodle.hjerdal.se/kontakt/#boka", "text": "Boka bord" },
   "sociala": {},
   "oppettider": [
     { "dagar": ["man"], "tider": [] },
@@ -25,14 +24,14 @@
   "om": {
     "rubrik": "Kökschefen Rin Takeda lärde sig ramen klockan tre på natten.",
     "stycken": [
-      "I en gränd bakom Dōtonbori, under en skylt som surrade, stod hon i sju år vid samma gryta. Det är den grytan vi försöker laga i Stockholm.",
+      "I en gränd bakom Dotonbori, under en skylt som surrade, stod hon i sju år vid samma gryta. Det är den grytan vi försöker laga i Stockholm.",
       "Neonet är för stämningen. Allt annat är hantverk: tonkotsu som kokas i arton timmar, tare som vilar i en vecka och ägg som marineras över natten. Vi har 42 platser, en lång bar mot köket och lagom mycket rök i luften."
     ]
   },
   "meny": {
     "rubrik": "Meny",
-    "text": "Allt kokas här, från buljongen till den sjudna äggulan. Nudlarna dras varje morgon av vetemjöl från Östergötland och kansui från Osaka.",
-    "special": "Hakata-ramen med extra fet tonkotsu och tunna nudlar. Bara 30 skålar i kväll.",
+    "text": "Allt kokas här, från buljongen till den sjudna äggulan. Nudlarna görs varje morgon av vetemjöl från Östergötland och kansui från Osaka.",
+    "special": "Hakata-ramen med extra fet tonkotsu och tunna nudlar, tills grytan är tom.",
     "allergiText": "Priser i kronor inklusive moms. Säg till om allergier, vi anpassar gärna.",
     "sektioner": [
       {
@@ -40,7 +39,7 @@
         "ratter": [
           { "namn": "Tonkotsu Neon", "text": "Fläskbuljong i arton timmar, chashu, sjudet ägg, svart vitlöksolja och nori.", "pris": 195, "taggar": [], "allergener": ["gluten", "ägg", "soja"] },
           { "namn": "Miso Blackout", "text": "Röd och vit miso från Sendai, stekt fläskfärs, majs, smör och sesam.", "pris": 189, "taggar": [], "allergener": ["gluten", "soja", "mjölk", "sesam"] },
-          { "namn": "Tantan Pulse", "text": "Sesam och chiliolja, malet fläsk, pak choi och Sichuanpeppar som stickar.", "pris": 198, "taggar": ["stark"], "allergener": ["gluten", "soja", "sesam"] },
+          { "namn": "Tantan Pulse", "text": "Sesam och chiliolja, malet fläsk, pak choi och Sichuanpeppar som får läpparna att domna.", "pris": 198, "taggar": ["stark"], "allergener": ["gluten", "soja", "sesam"] },
           { "namn": "Yuzu Shio Glow", "text": "Klar kycklingbuljong med havssalt och yuzu, kyckling sous vide, mitsuba.", "pris": 185, "taggar": [], "allergener": ["gluten"] },
           { "namn": "Vegan Ghost", "text": "Shiitake- och kombudashi, rostad sojabuljong, tofu och grillad svamp.", "pris": 179, "taggar": ["vegansk"], "allergener": ["gluten", "soja"] },
           { "namn": "Osaka Midnight", "text": "Shoyu på tre sorters soja, tunna raka nudlar, wagyu-chashu och vårlök.", "pris": 245, "taggar": [], "allergener": ["gluten", "soja"] }

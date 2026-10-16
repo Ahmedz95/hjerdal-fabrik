@@ -25,7 +25,6 @@ export function startaKulisser() {
 
   const falt = panel.querySelector<HTMLFieldSetElement>('[data-redigera]')!;
   falt.disabled = false;
-  panel.querySelector('[data-utan-js]')?.setAttribute('hidden', '');
   const specialIn = panel.querySelector<HTMLTextAreaElement>('[data-falt="special"]')!;
 
   function ritaRatt(r: Ratt) {
@@ -60,7 +59,10 @@ export function startaKulisser() {
   function ritaPanel() {
     for (const r of lage.ratter) {
       const pris = panel!.querySelector<HTMLInputElement>(`[data-id="${r.id}"][data-falt="pris"]`);
-      if (pris && r.pris !== undefined) pris.value = String(r.pris);
+      if (pris && r.pris !== undefined) {
+        pris.value = String(r.pris);
+        markeraPris(pris, true);
+      }
       const slut = panel!.querySelector<HTMLInputElement>(`[data-id="${r.id}"][data-falt="slut"]`);
       if (slut) slut.checked = r.slut;
     }
@@ -68,10 +70,12 @@ export function startaKulisser() {
   }
 
   const toast = document.querySelector<HTMLElement>('[data-toast]');
+  const meddelande = document.querySelector<HTMLElement>('[data-meddelande]');
   let toastTimer: number | undefined;
   const pingTimers = new Map<Element, number>();
 
-  function uppdatera(andrade: string[], vad: string) {
+  /** vad syns i toasten; lasas, om det finns, läses upp i stället och säger mer. */
+  function uppdatera(andrade: string[], vad: string, lasas = vad) {
     const t0 = performance.now();
     for (const id of andrade) {
       if (id === 'special') ritaSpecial();
@@ -83,6 +87,7 @@ export function startaKulisser() {
       clearTimeout(pingTimers.get(el));
       pingTimers.set(el, window.setTimeout(() => el.classList.remove('on'), 1600));
     }
+    if (meddelande) meddelande.textContent = `${lasas}. Menyn, QR-menyn och skärmen är ändrade.`;
     if (toast) {
       toast.textContent = `${vad} · Hemsida, QR-meny och skärm uppdaterade på ${ms} ms`;
       toast.classList.add('on');
@@ -91,19 +96,40 @@ export function startaKulisser() {
     }
   }
 
-  falt.addEventListener('input', (e) => {
-    const el = e.target as HTMLInputElement;
-    const id = el.dataset.id;
-    if (!id || el.dataset.falt !== 'pris') return;
-    const v = Number.parseInt(el.value, 10);
-    if (Number.isNaN(v) || v < 0 || v > 999) return;
+  // Ett pris gäller när man har skrivit klart: efter en kort paus, eller när fältet lämnas.
+  const prisFel = panel.querySelector<HTMLElement>('[data-pris-fel]')!;
+  function markeraPris(el: HTMLInputElement, giltigt: boolean) {
+    if (giltigt) {
+      el.removeAttribute('aria-invalid');
+      el.removeAttribute('aria-describedby');
+    } else {
+      el.setAttribute('aria-invalid', 'true');
+      el.setAttribute('aria-describedby', prisFel.id);
+    }
+    prisFel.hidden = !panel!.querySelector('[data-falt="pris"][aria-invalid]');
+  }
+  const prisTimers = new Map<string, number>();
+  function sattPris(el: HTMLInputElement) {
+    const id = el.dataset.id!;
+    clearTimeout(prisTimers.get(id));
+    const v = Number(el.value);
+    const giltigt = el.value.trim() !== '' && Number.isInteger(v) && v >= 0 && v <= 999;
+    markeraPris(el, giltigt);
     const r = ratt(id);
+    if (!giltigt || r.pris === v) return;
     r.pris = v;
     uppdatera([id], `${r.namn}: ${kr(v)}`);
+  }
+  falt.addEventListener('input', (e) => {
+    const el = e.target as HTMLInputElement;
+    if (!el.dataset.id || el.dataset.falt !== 'pris') return;
+    clearTimeout(prisTimers.get(el.dataset.id));
+    prisTimers.set(el.dataset.id, window.setTimeout(() => sattPris(el), 600));
   });
   falt.addEventListener('change', (e) => {
     const el = e.target as HTMLInputElement;
     const id = el.dataset.id;
+    if (id && el.dataset.falt === 'pris') return sattPris(el);
     if (!id || el.dataset.falt !== 'slut') return;
     const r = ratt(id);
     r.slut = el.checked;
@@ -129,9 +155,10 @@ export function startaKulisser() {
     const slut = [dyrast, smatt].filter((r): r is Ratt => Boolean(r));
     if (!slut.length) return;
     for (const r of slut) r.slut = true;
-    lage.special = `Fredagsrusning: ${slut.map((r) => r.namn).join(' och ')} är slut.${tips ? ` ${tips.namn} rekommenderas.` : ''}`;
+    const namn = slut.map((r) => r.namn).join(' och ');
+    lage.special = `Fredagsrusning: ${namn} är slut.${tips ? ` Prova ${tips.namn} i stället.` : ''}`;
     ritaPanel();
-    uppdatera([...slut.map((r) => r.id), 'special'], 'Fredagsrusning');
+    uppdatera([...slut.map((r) => r.id), 'special'], 'Fredagsrusning', `Fredagsrusning: ${namn} är slut i kväll`);
   });
   panel.querySelector('[data-snabb="happy"]')?.addEventListener('click', () => {
     const dryck = lage.ratter.filter((r) => lage.sektioner.length > 1 && r.sektion === sista && r.pris !== undefined);
@@ -139,7 +166,7 @@ export function startaKulisser() {
     for (const r of dryck) r.pris = Math.round((start.ratter.find((s) => s.id === r.id)!.pris ?? 0) * 0.85);
     lage.special = 'Happy hour 17–19: alla drycker 15 % billigare. Kampai!';
     ritaPanel();
-    uppdatera([...dryck.map((r) => r.id), 'special'], 'Happy hour');
+    uppdatera([...dryck.map((r) => r.id), 'special'], 'Happy hour', 'Happy hour: drycken 15 procent billigare');
   });
   panel.querySelector('[data-snabb="aterstall"]')?.addEventListener('click', () => {
     lage = kopia();
@@ -150,7 +177,7 @@ export function startaKulisser() {
   // Klockan på skärmen.
   const klocka = () => {
     const nu = new Date().toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-    for (const el of document.querySelectorAll('[data-klocka]')) el.textContent = `ラーメン · ${nu}`;
+    for (const el of document.querySelectorAll('[data-klocka]')) el.textContent = nu;
   };
   klocka();
   setInterval(klocka, 20000);

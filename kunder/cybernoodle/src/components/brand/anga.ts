@@ -1,6 +1,8 @@
 // Ånga som stiger ur skålarna på fotona. Varje canvas har var ångan börjar
 // (data-ox, data-oy) och hur bred den är (data-spread), som andelar av fotot.
-// Står still med minskad rörelse, och ritar bara när fotot syns.
+// Står still med minskad rörelse och när besökaren pausar, och ritar bara när
+// fotot syns.
+import { stilla, narRorelsenAndras } from './rorelse';
 
 type Puff = { x: number; p: number; r: number; s: number; fas: number };
 
@@ -8,7 +10,6 @@ export function startaAnga(cv: HTMLCanvasElement) {
   const x = cv.getContext('2d');
   if (!x || cv.dataset.startad) return;
   cv.dataset.startad = '1';
-  const stilla = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ox = Number(cv.dataset.ox);
   const oy = Number(cv.dataset.oy);
   const spread = Number(cv.dataset.spread);
@@ -36,7 +37,7 @@ export function startaAnga(cv: HTMLCanvasElement) {
     // screen i stället för lighter, så att puffarna inte summeras till en vit lampa.
     x!.globalCompositeOperation = 'screen';
     for (const f of puffar) {
-      const p = stilla ? f.p : (f.p + (t / 9000) * f.s) % 1;
+      const p = (f.p + (t / 9000) * f.s) % 1;
       const y = oy * H - p * oy * H * 1.05;
       const px = f.x + Math.sin(p * 5 + f.fas) * W * 0.05 * p;
       const r = f.r * (1 + p * 1.8);
@@ -53,26 +54,41 @@ export function startaAnga(cv: HTMLCanvasElement) {
     x!.globalCompositeOperation = 'source-over';
   }
 
+  // Tiden står still medan ångan är pausad, så att den fortsätter där den var.
+  let tid = 0;
+  let forra: number | undefined;
   function bild(t: number) {
-    if (!synlig || stilla) {
+    if (!synlig || stilla()) {
       igang = false;
+      forra = undefined;
       return;
     }
-    rita(t);
+    tid += forra === undefined ? 0 : Math.min(t - forra, 100);
+    forra = t;
+    rita(tid);
     requestAnimationFrame(bild);
   }
-
-  storlek();
-  rita(0);
-  addEventListener('resize', () => {
-    storlek();
-    rita(0);
-  });
-  new IntersectionObserver(([e]) => {
-    synlig = e.isIntersecting;
-    if (synlig && !igang && !stilla) {
+  const kor = () => {
+    if (synlig && !igang && !stilla()) {
       igang = true;
       requestAnimationFrame(bild);
     }
+  };
+
+  storlek();
+  rita(0);
+  let vantar: number | undefined;
+  addEventListener('resize', () => {
+    clearTimeout(vantar);
+    vantar = window.setTimeout(() => {
+      if (Math.abs(cv.getBoundingClientRect().width - W) < 1) return;
+      storlek();
+      rita(tid);
+    }, 150);
+  });
+  new IntersectionObserver(([e]) => {
+    synlig = e.isIntersecting;
+    kor();
   }).observe(cv);
+  narRorelsenAndras(kor);
 }

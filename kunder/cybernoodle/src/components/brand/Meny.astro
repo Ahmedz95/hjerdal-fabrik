@@ -19,7 +19,7 @@ const uppraknat = (a: string[]) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}
 <section class="cn-meny cn-sektion-yta" id="meny" aria-labelledby="cn-meny-rubrik">
   <div class="wrap">
     <div class="cn-head">
-      <p class="lbl"><b>Kvällens meny</b> · Uppdateras live från köket</p>
+      <p class="lbl"><b>Kvällens meny</b> · Samma meny som i köket</p>
       <Rubrik class="h2" id="cn-meny-rubrik">{menyRubrik()}</Rubrik>
       {kund.meny.text && <p>{kund.meny.text}</p>}
     </div>
@@ -28,7 +28,7 @@ const uppraknat = (a: string[]) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}
       <p class="cn-special-text" data-special-text>{kund.meny.special}</p>
     </div>
     {sektioner.length > 1 && (
-      <div class="cn-filter" role="group" aria-label="Visa en del av menyn" data-filter hidden>
+      <div class="cn-filter" role="group" aria-label="Visa en del av menyn" data-filter>
         <button type="button" data-visa="alla" aria-pressed="true">Alla</button>
         {sektioner.map((s) => <button type="button" data-visa={s.id} aria-pressed="false">{s.namn}</button>)}
       </div>
@@ -43,12 +43,13 @@ const uppraknat = (a: string[]) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}
           <div class="cn-ratter">
             {s.ratter.map((r) => (
               <article class:list={['cn-ratt', { slut: r.slut }]} data-ratt={r.id}>
-                <span class="cn-stampel" data-stampel hidden={!r.slut}>Slut i kväll</span>
                 {japanska[r.namn] && <span class="cn-jp" aria-hidden="true">{japanska[r.namn]}</span>}
                 <div class="cn-ratt-rad">
                   <RattRubrik class="cn-ratt-namn">{r.namn}</RattRubrik>
                   <span class="cn-pris" data-pris>{prisText(r)}</span>
                 </div>
+                {/* Efter namnet, så att den som läser med skärmläsare hör att rätten är slut. */}
+                <span class="cn-stampel" data-stampel hidden={!r.slut}>Slut i kväll</span>
                 {r.text && <p class="cn-ratt-text">{r.text}</p>}
                 {r.taggar.length > 0 && (
                   <ul class="cn-taggar" aria-label="Märkning">
@@ -67,10 +68,10 @@ const uppraknat = (a: string[]) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}
 </section>
 
 <script>
-  // Knapparna som visar en del av menyn. Utan JavaScript syns hela menyn.
+  // Knapparna som visar en del av menyn. Utan JavaScript döljs de av en
+  // noscript-stil i sidans head (Huvud.astro), och hela menyn syns.
   for (const grupp of document.querySelectorAll<HTMLElement>('[data-filter]')) {
     const meny = grupp.closest('.cn-meny')!;
-    grupp.hidden = false;
     grupp.addEventListener('click', (e) => {
       const knapp = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-visa]');
       if (!knapp) return;

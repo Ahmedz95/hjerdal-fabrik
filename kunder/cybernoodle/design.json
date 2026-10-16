@@ -104,19 +104,19 @@
     {
       "namn": "Shippori Mincho B1",
       "roll": "rubrik",
-      "kalla": "src/assets/typsnitt/shippori-mincho-b1-500.woff2, -700 och -800",
+      "kalla": "src/assets/typsnitt/shippori-mincho-b1-{500,700,800}-{latin,jp}.woff2",
       "licens": "OFL"
     },
     {
       "namn": "Zen Kaku Gothic New",
       "roll": "brodtext",
-      "kalla": "src/assets/typsnitt/zen-kaku-gothic-new-400.woff2 och -700",
+      "kalla": "src/assets/typsnitt/zen-kaku-gothic-new-{400,700}-{latin,jp}.woff2",
       "licens": "OFL"
     },
     {
       "namn": "Chakra Petch",
       "roll": "etikett",
-      "kalla": "src/assets/typsnitt/chakra-petch-400.woff2, -500 och -600",
+      "kalla": "src/assets/typsnitt/chakra-petch-{400,500,600}.woff2",
       "licens": "OFL"
     }
   ],
@@ -135,7 +135,7 @@
     }
   ],
   "rorelse": {
-    "princip": "Regnet faller över stadssiluetten, ångan stiger från skålarna och namnet flimrar ibland som en skylt med glappkontakt. När köket ändrar menyn glitchar de rader som ändras, kort. Allt som rör sig av sig självt stannar när det är utanför skärmen.",
+    "princip": "Regnet faller över stadssiluetten, ångan stiger från skålarna och namnet flimrar ibland som en skylt med glappkontakt. När köket ändrar menyn glitchar de rader som ändras, kort. Allt som rör sig av sig självt stannar när det är utanför skärmen, och knappen Pausa rörelsen i första skärmen stoppar det.",
     "minskadRorelse": "Regnet, ångan, flimret, glitchen och uppräkningen av siffrorna står still. Regnet och ångan ritas en gång som en stillbild, och ändringarna i menyn syns direkt utan effekt."
   },
   "wow": "Bakom kulisserna ändrar besökaren ett pris, markerar en rätt som slut eller skriver en ny special, och menyn på sajten, QR-menyn i mobilen och skärmen ovanför baren ändras samtidigt, med hur många millisekunder det tog.",

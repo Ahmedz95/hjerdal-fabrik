@@ -1,12 +1,16 @@
 // Bokningen i webbläsaren: de närmaste sex dagarna med öppet, tiderna var
 // trettionde minut fram till en timme före stängning, och en bekräftelse.
-// Det är en demo; ingen bokning skickas. Hos en riktig kund går den till
-// restaurangens bokningssystem.
-import { lasOppet, tiderFor } from './oppet';
+// Det är en demo; ingen bokning skickas och inga tider är fullbokade. Hos en
+// riktig kund går den till restaurangens bokningssystem, som vet vilka tider
+// som är lediga.
+import { lasOppet, tiderFor, nuIStockholm } from './oppet';
 
-const dagNamn = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör'];
+const dagKort = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör'];
+const dagLang = ['söndag', 'måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag'];
+const manad = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
 const stor = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-const hhmm = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+/** "19.00", som tiderna på resten av sajten. */
+const tidText = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}.${String(m % 60).padStart(2, '0')}`;
 
 export function startaBokning() {
   const form = document.querySelector<HTMLFormElement>('[data-bokning]');
@@ -14,9 +18,11 @@ export function startaBokning() {
   if (!form || !o) return;
   const dagRuta = form.querySelector<HTMLElement>('[data-dagar]')!;
   const tidRuta = form.querySelector<HTMLElement>('[data-tider]')!;
+  const tidGrupp = tidRuta.closest('fieldset')!;
+  const tidFel = form.querySelector<HTMLElement>('[data-tid-fel]')!;
   const svar = form.querySelector<HTMLElement>('[data-bekraftelse]')!;
 
-  const nu = new Date();
+  const nu = nuIStockholm();
   const nuMin = nu.getHours() * 60 + nu.getMinutes();
 
   /** Tiderna att boka en dag, i minuter: var trettionde minut till en timme före stängning, senast 23. */
@@ -37,50 +43,60 @@ export function startaBokning() {
 
   dagRuta.innerHTML = '';
   dagar.forEach((d, i) => {
-    const etikett = d.idag ? 'I dag' : `${stor(dagNamn[d.datum.getDay()])} ${d.datum.getDate()}`;
+    const etikett = d.idag ? 'I dag' : `${stor(dagKort[d.datum.getDay()])} ${d.datum.getDate()}`;
     dagRuta.insertAdjacentHTML('beforeend', `<label><input type="radio" name="dag" value="${i}"${i === 0 ? ' checked' : ''}><span>${etikett}</span></label>`);
   });
 
   const valt = (namn: string) => form.querySelector<HTMLInputElement>(`input[name="${namn}"]:checked`)?.value;
 
+  function visaFel(text: string) {
+    tidFel.textContent = text;
+    tidFel.hidden = !text;
+    tidGrupp.classList.toggle('fel', Boolean(text));
+    if (text) tidGrupp.setAttribute('aria-describedby', tidFel.id);
+    else tidGrupp.removeAttribute('aria-describedby');
+  }
+
+  /** Ritar dagens tider. Den valda tiden står kvar om den finns den nya dagen. */
   function ritaTider() {
+    const fore = valt('tid');
     const dag = dagar[Number(valt('dag') ?? 0)];
-    const gaster = Number(valt('gaster') ?? 2);
-    const seed = dag.datum.getDate();
     tidRuta.innerHTML = '';
-    tider(dag.datum, dag.idag).forEach((m, i) => {
-      // Några tider är fullbokade, olika varje dag och fler för stora sällskap.
-      const full = (i * 7 + seed) % 5 === 0 || (gaster >= 5 && i % 3 === 1);
-      const tid = hhmm(m);
-      tidRuta.insertAdjacentHTML(
-        'beforeend',
-        `<label${full ? ' class="full"' : ''}><input type="radio" name="tid" value="${tid}"${full ? ' disabled' : ''}><span>${tid}${full ? '<span class="sr"> fullbokat</span>' : ''}</span></label>`,
-      );
-    });
+    for (const m of tider(dag.datum, dag.idag)) {
+      const tid = tidText(m);
+      tidRuta.insertAdjacentHTML('beforeend', `<label><input type="radio" name="tid" value="${tid}"${tid === fore ? ' checked' : ''}><span>${tid}</span></label>`);
+    }
+    if (fore && !valt('tid')) visaFel(`${fore} går inte att boka den dagen. Välj en annan tid.`);
   }
 
   form.addEventListener('change', (e) => {
     const namn = (e.target as HTMLInputElement).name;
-    if (namn === 'dag' || namn === 'gaster') ritaTider();
-    if (namn !== 'namn') svar.textContent = '';
+    if (namn === 'tid') visaFel('');
+    if (namn === 'dag') ritaTider();
+    if (namn !== 'namn') svar.replaceChildren();
   });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const tid = valt('tid');
     if (!tid) {
-      svar.innerHTML = '<b>Välj en tid först.</b>';
-      form.querySelector<HTMLInputElement>('input[name="tid"]:not(:disabled)')?.focus();
+      visaFel('Välj en tid först.');
+      tidGrupp.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      form.querySelector<HTMLInputElement>('input[name="tid"]')?.focus();
       return;
     }
     const dag = dagar[Number(valt('dag') ?? 0)].datum;
     const gaster = valt('gaster') ?? '2';
     const namn = (form.querySelector<HTMLInputElement>('input[name="namn"]')!.value || '').trim();
+    const ruta = document.createElement('div');
+    ruta.className = 'cn-bekraftelse-ruta';
     const b = document.createElement('b');
-    b.textContent = `${namn ? `${namn}, b` : 'B'}ord för ${gaster} ${dagNamn[dag.getDay()]} ${dag.getDate()}/${dag.getMonth() + 1} kl ${tid}. Vi ses under neonet.`;
+    b.textContent = `${namn ? `${namn}, b` : 'B'}ord för ${gaster} ${dagLang[dag.getDay()]} ${dag.getDate()} ${manad[dag.getMonth()]} kl. ${tid}. Vi ses under neonet.`;
     const p = document.createElement('p');
     p.textContent = 'Det här är en demo, så ingen bokning har skickats.';
-    svar.replaceChildren(b, p);
+    ruta.append(b, p);
+    svar.replaceChildren(ruta);
+    ruta.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
 
   ritaTider();

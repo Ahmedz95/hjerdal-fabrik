@@ -2,12 +2,14 @@
 // Menyn, som också är QR-menyn vid borden. Samma kort som på startsidan.
 import Bas from '../layouts/Bas.astro';
 import Meny from '../components/brand/Meny.astro';
+import Huvud from '../components/brand/Huvud.astro';
 import { kund } from '../lib/kund';
 import { menyLd } from '../lib/ld';
 
 const delar = kund.meny.sektioner.map((s) => s.namn.toLowerCase()).join(', ');
 const description = `Kvällens meny hos ${kund.namn} på ${kund.kontakt.adress.gata}: ${delar}. Priser, märkning och allergener.`;
 ---
-<Bas title={`${kund.meny.rubrik} | ${kund.namn}`} description={description.slice(0, 160)} sokvag="/meny/" ld={[menyLd()]}>
+<Bas title={`${kund.meny.rubrik} med priser, ramen på ${kund.kontakt.adress.gata} | ${kund.namn}`} description={description.slice(0, 160)} sokvag="/meny/" ld={[menyLd()]}>
+  <Huvud slot="head" />
   <Meny niva={1} />
 </Bas>

@@ -3,13 +3,19 @@
    Färgerna och typsnitten som CSS-variabler, så att också starterns sidor
    (404, QR-skylten) får dem. Resten av utseendet står i brand.css.
 
-   Typsnitten ligger i src/assets/typsnitt/, beskurna till latinska tecken och
-   de japanska tecken som sajten använder (se DESIGN_LANGUAGE.md). */
-@font-face { font-family: "Shippori Mincho B1"; font-weight: 500; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-500.woff2") format("woff2"); }
-@font-face { font-family: "Shippori Mincho B1"; font-weight: 700; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-700.woff2") format("woff2"); }
-@font-face { font-family: "Shippori Mincho B1"; font-weight: 800; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-800.woff2") format("woff2"); }
-@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 400; font-display: swap; src: url("../assets/typsnitt/zen-kaku-gothic-new-400.woff2") format("woff2"); }
-@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 700; font-display: swap; src: url("../assets/typsnitt/zen-kaku-gothic-new-700.woff2") format("woff2"); }
+   Typsnitten ligger i src/assets/typsnitt/, beskurna till de latinska tecken som
+   svenska behöver och de japanska tecken som sajten använder, i två filer per vikt
+   så att de latinska kommer först (se DESIGN_LANGUAGE.md). */
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 500; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-500-latin.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0-00FF, U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605; }
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 500; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-500-jp.woff2") format("woff2"); unicode-range: U+3000-30FF, U+4E00-9FFF; }
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 700; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-700-latin.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0-00FF, U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605; }
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 700; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-700-jp.woff2") format("woff2"); unicode-range: U+3000-30FF, U+4E00-9FFF; }
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 800; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-800-latin.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0-00FF, U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605; }
+@font-face { font-family: "Shippori Mincho B1"; font-weight: 800; font-display: swap; src: url("../assets/typsnitt/shippori-mincho-b1-800-jp.woff2") format("woff2"); unicode-range: U+3000-30FF, U+4E00-9FFF; }
+@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 400; font-display: swap; src: url("../assets/typsnitt/zen-kaku-gothic-new-400-latin.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0-00FF, U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605; }
+@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 400; font-display: swap; src: url("../assets/typsnitt/zen-kaku-gothic-new-400-jp.woff2") format("woff2"); unicode-range: U+3000-30FF, U+4E00-9FFF; }
+@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 700; font-display: swap; src: url("../assets/typsnitt/zen-kaku-gothic-new-700-latin.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0-00FF, U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605; }
+@font-face { font-family: "Zen Kaku Gothic New"; font-weight: 700; font-display: swap; src: url("../assets/typsnitt/zen-kaku-gothic-new-700-jp.woff2") format("woff2"); unicode-range: U+3000-30FF, U+4E00-9FFF; }
 @font-face { font-family: "Chakra Petch"; font-weight: 400; font-display: swap; src: url("../assets/typsnitt/chakra-petch-400.woff2") format("woff2"); }
 @font-face { font-family: "Chakra Petch"; font-weight: 500; font-display: swap; src: url("../assets/typsnitt/chakra-petch-500.woff2") format("woff2"); }
 @font-face { font-family: "Chakra Petch"; font-weight: 600; font-display: swap; src: url("../assets/typsnitt/chakra-petch-600.woff2") format("woff2"); }

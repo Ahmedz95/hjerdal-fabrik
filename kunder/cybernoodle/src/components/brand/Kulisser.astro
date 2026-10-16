@@ -11,7 +11,8 @@ import { sektioner, ratter, prisText } from './data';
 
 const special = kund.meny.special ?? '';
 const menyUrl = `https://${kund.doman}/meny/`;
-const qr = await QRCode.toString(menyUrl, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#09090fff', light: '#00000000' } });
+const qr = (await QRCode.toString(menyUrl, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#09090fff', light: '#00000000' } }))
+  .replace('<svg ', '<svg aria-hidden="true" focusable="false" ');
 // Skärmen visar maten: allt utom menyns sista del (drycken), högst åtta rätter.
 const tvRatter = (sektioner.length > 1 ? sektioner.slice(0, -1) : sektioner).flatMap((s) => s.ratter).slice(0, 8);
 const data = {
@@ -26,14 +27,14 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     <div class="cn-head">
       <p class="lbl"><b>Bakom kulisserna</b> · Byggt av HJERDAL</p>
       <h2 class="h2" id="cn-bakom-rubrik">Ändra en gång. Syns överallt.</h2>
-      <p>Det här är panelen som köket använder. Prova att höja ett pris, markera en rätt som slut eller skriva en ny special. Menyn ovanför, QR-menyn på borden och skärmen ovanför baren ändras samtidigt.</p>
+      <p>Så här ser det ut när köket ändrar menyn. Prova att höja ett pris, markera en rätt som slut eller skriva en ny special: menyn ovanför, QR-menyn på borden och skärmen ovanför baren ändras samtidigt.</p>
     </div>
 
     <div class="cn-studio">
       <div class="cn-panel" data-panel>
         <div class="cn-panel-head">
           <h3 class="lbl">Köksadmin · Kvällens meny</h3>
-          <span class="cn-sparat" data-ping aria-hidden="true">● Sparat</span>
+          <span class="cn-sparat" data-ping aria-hidden="true"><i></i>Ändrat</span>
         </div>
         <fieldset class="cn-redigera" data-redigera disabled>
           <legend class="sr">Kvällens meny</legend>
@@ -46,7 +47,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
                 <span class="cn-rad-namn">{r.namn}</span>
               )}
               {r.pris !== undefined ? (
-                <input class="cn-rad-pris" type="number" id={`cn-pris-${r.id}`} data-id={r.id} data-falt="pris" min="0" max="999" step="5" value={r.pris} inputmode="numeric" />
+                <input class="cn-rad-pris" type="number" id={`cn-pris-${r.id}`} data-id={r.id} data-falt="pris" min="0" max="999" step="1" value={r.pris} inputmode="numeric" />
               ) : (
                 <span class="cn-rad-pris">{r.prisText}</span>
               )}
@@ -56,6 +57,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
               </span>
             </div>
           ))}
+          <p class="cn-pris-fel" id="cn-pris-fel" data-pris-fel hidden>Priset ska vara mellan 0 och 999 kr.</p>
           <div class="cn-special-falt">
             <label class="lbl" for="cn-special-in">Kvällens special</label>
             <textarea id="cn-special-in" data-falt="special" maxlength="110" rows="3">{special}</textarea>
@@ -66,7 +68,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
             <button type="button" data-snabb="aterstall">Återställ</button>
           </div>
         </fieldset>
-        <p class="cn-utan-js" data-utan-js>Panelen behöver JavaScript. Skärmen och QR-menyn bredvid visar kvällens meny som den är.</p>
+        <p class="cn-utan-js cn-utan-js-text">Panelen behöver JavaScript. Skärmen och QR-menyn bredvid visar kvällens meny som den är.</p>
       </div>
 
       <div class="cn-utdata">
@@ -77,7 +79,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
               <span class="cn-ping" data-ping aria-hidden="true">uppdaterad</span>
             </div>
             <div class="cn-tv" aria-hidden="true">
-              <div class="cn-tv-topp"><b>{kund.namn}</b><span data-klocka>ラーメン</span></div>
+              <div class="cn-tv-topp"><b>{kund.namn}</b><span><span class="cn-jp-tecken">ラーメン</span> · <span data-klocka></span></span></div>
               <div class="cn-tv-lista">
                 {tvRatter.map((r) => (
                   <div class:list={['cn-tv-rad', { slut: r.slut }]} data-ratt={r.id}>
@@ -118,12 +120,14 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     </div>
 
     <ul class="cn-bevis">
-      <li><b>Ett ställe att ändra</b><span>Köket uppdaterar menyn från mobilen mellan två beställningar.</span></li>
+      <li><b>Ett ställe att ändra</b><span>Priset, Slut i kväll och kvällens special ändras på ett ställe, inte på tre.</span></li>
       <li><b>Tre ställen som visar</b><span>Hemsidan, QR-menyn och skärmen läser från samma meny.</span></li>
       <li><b>Syns på Google</b><span>Menyn är riktig text som sökmotorer läser, inte en PDF eller en bild.</span></li>
     </ul>
   </div>
-  <div class="cn-toast" data-toast role="status" aria-live="polite"></div>
+  {/* Toasten syns; statusraden bredvid finns alltid och läses upp av skärmläsare. */}
+  <div class="cn-toast" data-toast aria-hidden="true"></div>
+  <p class="sr" role="status" data-meddelande></p>
   <script type="application/json" id="cn-meny-data" set:html={json}></script>
 </section>
 

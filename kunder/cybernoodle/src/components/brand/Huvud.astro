@@ -1,0 +1,11 @@
+---
+// Det som läggs i varje sidas head: de två typsnitt som syns först hämtas direkt,
+// så att rubriken och ingressen inte hoppar när de kommer, och en stil för den som
+// inte har JavaScript, så att inget hoppar när skripten startar för alla andra.
+import namnet from '../../assets/typsnitt/shippori-mincho-b1-800-latin.woff2?url';
+import texten from '../../assets/typsnitt/zen-kaku-gothic-new-400-latin.woff2?url';
+---
+<link rel="preload" href={namnet} as="font" type="font/woff2" crossorigin />
+<link rel="preload" href={texten} as="font" type="font/woff2" crossorigin />
+{/* html före klassen, eftersom sajtens stil kommer efter den här i head. */}
+<noscript><style>html .cn-filter, html .cn-med-js { display: none; } html .cn-utan-js-text { display: revert; }</style></noscript>

@@ -5,6 +5,17 @@ export type Oppet = { vecka: [number, number][][]; avvikelser: { datum: string; 
 
 const kortDag = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör'];
 
+/** Klockan i Stockholm som ett Date med de lokala fälten satta, så att öppet nu
+ *  och bokningens dagar stämmer också för den som har telefonen i en annan tidszon. */
+export function nuIStockholm(): Date {
+  const delar = Object.fromEntries(
+    new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Stockholm', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' })
+      .formatToParts(new Date())
+      .map((p) => [p.type, Number(p.value)]),
+  );
+  return new Date(delar.year, delar.month - 1, delar.day, delar.hour, delar.minute);
+}
+
 export const iso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -29,7 +40,7 @@ export function klocka(m: number): string {
 }
 
 /** "Öppet nu · till 23" eller "Stängt · öppnar tis 17". */
-export function status(o: Oppet, nu = new Date()): { oppet: boolean; text: string } {
+export function status(o: Oppet, nu = nuIStockholm()): { oppet: boolean; text: string } {
   const m = nu.getHours() * 60 + nu.getMinutes();
   const igar = new Date(nu);
   igar.setDate(nu.getDate() - 1);
@@ -68,7 +79,7 @@ export function visaStatus() {
 
 /** Dagens rad i öppettiderna. */
 export function markeraIdag() {
-  const idag = new Date().getDay();
+  const idag = nuIStockholm().getDay();
   for (const rad of document.querySelectorAll<HTMLElement>('[data-veckodag]')) {
     if (Number(rad.dataset.veckodag) !== idag) continue;
     rad.classList.add('idag');

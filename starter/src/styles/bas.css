@@ -12,7 +12,7 @@ p { margin: 0; }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 2px; }
 .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: max(var(--gut), env(safe-area-inset-left)) max(var(--gut), env(safe-area-inset-right)); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.skip { position: absolute; left: var(--gut); top: -60px; z-index: 10; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; text-decoration: none; }
+.skip { position: absolute; left: var(--gut); top: -60px; z-index: 100; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; text-decoration: none; }
 .skip:focus { top: 12px; }
 
 /* Typografi */

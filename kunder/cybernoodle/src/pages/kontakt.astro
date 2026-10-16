@@ -1,12 +1,14 @@
 ---
 import Bas from '../layouts/Bas.astro';
 import Boka from '../components/brand/Boka.astro';
+import Huvud from '../components/brand/Huvud.astro';
 import { kund } from '../lib/kund';
 import { restaurangLd } from '../lib/ld';
 
 const { adress } = kund.kontakt;
-const description = `Hitta till ${kund.namn} på ${adress.gata} i ${adress.ort}. Öppettider, telefon och bordsbokning direkt på sidan.`;
+const description = `Hitta till ${kund.namn} på ${adress.gata} i ${adress.ort}. Öppettider, karta och telefon, två minuter från Medborgarplatsen.`;
 ---
-<Bas title={`Hitta hit och boka bord | ${kund.namn}`} {description} sokvag="/kontakt/" ld={[restaurangLd()]}>
+<Bas title={`Hitta hit, ${adress.gata} på Södermalm | ${kund.namn}`} {description} sokvag="/kontakt/" ld={[restaurangLd()]}>
+  <Huvud slot="head" />
   <Boka niva={1} />
 </Bas>

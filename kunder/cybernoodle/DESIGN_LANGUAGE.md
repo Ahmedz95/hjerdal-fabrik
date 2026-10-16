@@ -11,7 +11,7 @@ om i fabriken: Astro-komponenter på startern, typsnitten på sajten och fakta i
 
 En gränd i Osaka klockan tre på natten. Mörkt, vått och upplyst av skyltar, med en
 rykande skål ramen i mitten. Idén kommer från stället självt: kökschefen lärde sig ramen
-i en gränd bakom Dōtonbori, och restaurangen har öppet sent. Lugn japansk typografi gör
+i en gränd bakom Dotonbori, och restaurangen har öppet sent. Lugn japansk typografi gör
 det elegant i stället för skrikigt.
 
 ## Känslan
@@ -43,16 +43,18 @@ Alla par av text och bakgrund klarar WCAG AA och står i design.json.
   med versaler i 11-13 px, som displayer i en stad.
 
 Typsnitten ligger i `src/assets/typsnitt/` med sina licenser (OFL). De är beskurna med
-`pyftsubset` till latinska tecken (U+0020-007E, U+00A0-017F, U+2000-206F, U+20AC,
-U+2190-2199, U+2212, U+25CF, U+2605) och de japanska tecken som står i kundens filer,
-med `vert` och `palt` kvar för de vertikala skyltarna. Chakra Petch har bara de latinska.
-Läggs en rätt med nya japanska tecken till, gör om beskärningen från typsnittens TTF-filer
-(github.com/google/fonts, mappen `ofl/`), så att tecknen finns med:
+`pyftsubset` till de latinska tecken som svenska behöver (U+0020-007E, U+00A0-00FF,
+U+2010-203A, U+20AC, U+2190-2193, U+2212, U+2605) och de japanska tecken som står i
+kundens filer, med `vert` och `palt` kvar för de vertikala skyltarna. Shippori och Zen
+Kaku har en latinsk och en japansk fil per vikt, med `unicode-range` i tokens.css, så att
+de latinska kommer först; Shippori 800 och Zen Kaku 400 hämtas direkt (Huvud.astro).
+Chakra Petch har bara latinska tecken, och inget av typsnitten har ō, så japanska ord
+skrivs utan streck (Dotonbori). Läggs en rätt med nya japanska tecken till, gör om
+beskärningen från typsnittens TTF-filer (github.com/google/fonts, mappen `ofl/`):
 
 ```sh
-pyftsubset ShipporiMinchoB1-ExtraBold.ttf --flavor=woff2 \
-  --unicodes="U+0020-007E,U+00A0-017F,U+2000-206F,U+20AC,U+2190-2199,U+2212,U+25CF,U+2605,<japanska tecken>" \
-  --layout-features+=palt,vert,vrt2,vkrn,vpal,tnum --output-file=src/assets/typsnitt/shippori-mincho-b1-800.woff2
+pyftsubset ShipporiMinchoB1-ExtraBold.ttf --flavor=woff2 --unicodes="<japanska tecken>" \
+  --layout-features+=palt,vert,vrt2,vkrn,vpal,tnum --output-file=src/assets/typsnitt/shippori-mincho-b1-800-jp.woff2
 ```
 
 ## Layout och rytm
@@ -74,9 +76,10 @@ liggande i mobilen, med ett rosa och blått neonskimmer och ånga ovanpå. Sidfo
 
 Regn faller över en stadssiluett med tända fönster och suddiga skyltar. Ånga stiger från
 skålarna. Namnet flimrar ibland som en skylt med glappkontakt, och neonskyltarna pulserar
-långsamt. När köket ändrar menyn glitchar raderna som ändras i en kvarts sekund. Siffrorna
+långsamt. När köket ändrar menyn glitchar raderna som ändras, kort. Siffrorna
 i Historia räknas upp när de syns. Allt som rör sig av sig självt stannar utanför
-skärmen. Med minskad rörelse står allt still: regnet och ångan ritas en gång som en
+skärmen, och knappen Pausa rörelsen i första skärmen stoppar regnet, ångan och flimret.
+Med minskad rörelse står allt still från början: regnet och ångan ritas en gång som en
 stillbild, och ändringar syns direkt.
 
 ## Wow-ögonblicket
@@ -95,8 +98,8 @@ millisekunder det tog. Det är restaurangens verkliga problem, menyn på tre st�
   fram. Caset hade väntetid och lediga platser; de är borttagna här.
 - Gör inte: neon på brödtext eller fler än två neonfärger i samma ruta.
 - Gör inte: typsnitt eller bilder från andra webbplatser.
-- Bokningen är en demo och säger det i bekräftelsen. Några tider visas som fullbokade
-  för att visa hur det ser ut; hos en riktig kund kommer tiderna från bokningssystemet.
-  Utan JavaScript visas telefonnumret.
+- Bokningen är en demo och säger det i bekräftelsen. Den hittar inte på fullbokade
+  tider; hos en riktig kund kommer de lediga tiderna från bokningssystemet. Utan
+  JavaScript står telefonnumret där.
 - 404-sidan är en fel gränd med en släckt skylt (迷子), och favikonen är namnets C i
   rosa neon.
