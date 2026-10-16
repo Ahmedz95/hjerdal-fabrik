@@ -33,25 +33,28 @@ bygge tar runt tio sekunder. Inget konto behövs utom för `publicera`.
 | Kommando | Vad det gör |
 | --- | --- |
 | `ny <kund> --namn "…" [--egen-design]` | Skapar `kunder/<kund>/kund.json` från `schemas/mallar/kund.json`. Alla fält med FYLL I måste fyllas i innan bygget går. Med `--egen-design` även brief, designspec, designspråk och en startpunkt för kundens egen design. |
-| `bygg <kund> [--visa]` | Kopierar startern till `ut/<kund>/`, lägger in kundfil, bilder och kundens egen design, tar bort sidor kunden inte valt, bygger och kontrollerar. `--stil`, `--tema`, `--hero` och `--meny` provar ett annat designval utan att ändra kundfilen. |
-| `varianter <kund> [val …] [--visa]` | Bygger samma kund i flera varianter till `ut/<kund>-varianter/` med en översiktssida. Utan val blir det fyra förslag i fyra olika stilar. Ett val är stil, tema, hero och meny med kolon emellan, i valfri ordning: `varianter cafe-solros mjuk:linne klassisk:ek:bild`. Det som inte anges tas från kundfilen. |
+| `bygg <kund> [--visa]` | Kopierar startern till `ut/<kund>/`, lägger in kundfil, bilder och kundens egen design, tar bort sidor kunden inte valt, bygger och kontrollerar. `--stil`, `--typsnitt`, `--former`, `--etiketter`, `--foton`, `--tema`, `--hero` och `--meny` provar ett annat designval utan att ändra kundfilen. Säger till om designen ligger för nära en annan kunds. |
+| `varianter <kund> [val …] [--visa]` | Bygger samma kund i flera varianter till `ut/<kund>-varianter/` med en översiktssida. Utan val blir det fyra [förslag](#unik-design) i olika stilar som passar stället. Ett val är stil, tema, hero, meny och delar med kolon emellan, i valfri ordning: `varianter cafe-solros mjuk:linne klassisk:ek:bild afton:kol:tejp`. Det som inte anges tas från kundfilen, och en annan stil kommer med sina egna delar. |
 | `visa <kund> [--varianter]` | Öppnar den byggda sajten, eller förhandsvisningen, i webbläsaren. |
 | `kontroll <kund>` | Kontrollerar en byggd sajt igen. |
 | `kvalitet [<kund> …] [--snabb]` | Kvalitetsgrinden i `quality/STANDARD.md`: bygger, kontrollerar, öppnar varje sida i Chrome i mobil och dator (`scripts/kvalitet.mjs`) och kör Lighthouse. Skärmdumparna hamnar i `ut/<kund>/kvalitet/`. Utan kund: alla aktiva kunder. `--snabb` hoppar över Lighthouse. Kräver Google Chrome. |
 | `validera <kund>` | Kontrollerar kundfil, brief, designspec och kundens egna filer utan att bygga. |
-| `publicera <kund> [--varianter]` | Publicerar på Cloudflare Workers med `wrangler deploy`. Kräver `CLOUDFLARE_API_TOKEN`. Med `--varianter` publiceras förhandsvisningen, så att kunden kan välja via en länk. |
+| `publicera <kund> [--varianter]` | Publicerar på Cloudflare Workers med `wrangler deploy`. Kräver `CLOUDFLARE_API_TOKEN`. Stoppar om designen ligger [för nära](#unik-design) en annan kunds, utom med `--trots-likhet`. Med `--varianter` publiceras förhandsvisningen, så att kunden kan välja via en länk. |
 | `lista` | Visar alla kunder, deras stil och tema och när de byggdes. |
 | `designer` | Öppnar [HJERDAL Designer](#hjerdal-designer). |
 | `mcp` | MCP-servern som låter [Claude](#claude) arbeta i Designer. Startas av Claude-appen, inte för hand. |
 
 ## Designval
 
-Stilen bestämmer typsnitt och former, temat färgerna. Varje kund ska kännas igen
-som sin egen restaurang. Det som alltid är HJERDAL är kvaliteten: snabb,
-tillgänglig, tydlig och utan onödig JavaScript. Sju stilar, tolv teman, tre
-hero och fyra menylayouter ger 1 008 kombinationer, före accentfärg och logga.
-Afton, Affisch och Stämpel och de sex nyare temana bygger på inspirationen i
-`examples/inspiration.md`.
+Stilen är en utgångspunkt: ett typsnitt, former, etiketter och foton, plus några
+grepp som bara stilen har, som punktlinjerna fram till priset i Klassisk. Varje del
+kan bytas för sig, så att ett kafé kan få Mjuk med tejpade etiketter och svartvita
+foton. Temat är färgerna. Varje kund ska kännas igen som sin egen restaurang. Det
+som alltid är HJERDAL är kvaliteten: snabb, tillgänglig, tydlig och utan onödig
+JavaScript. Sju stilar, sju typsnitt, sju former, sju etiketter, tre sätt att visa
+foton, tolv teman, tre hero och fyra menylayouter ger drygt en miljon kombinationer,
+före accentfärg och logga. Afton, Affisch och Stämpel, delarna de har med sig och de
+sex nyare temana bygger på inspirationen i `examples/inspiration.md`.
 
 | Stil | Passar | Känns igen på |
 | --- | --- | --- |
@@ -63,19 +66,53 @@ Afton, Affisch och Stämpel och de sex nyare temana bygger på inspirationen i
 | `affisch` | vedeldade kök, vinbarer, ställen med ett starkt namn | Schibsted Grotesk i jätteformat, ingressen först och rubriken längst ner som på en affisch, tjocka linjer, svartvita foton |
 | `stampel` | kvarterskrogar, delade rätter, kaféer med personlighet | feta versaler i Archivo blandade med Fraunces, etiketter som tejp, lutande bilder med en platta i accentfärgen, det praktiska som en mörk remsa |
 
+Delarna varje stil kommer med. Varje del går att ge vilken stil som helst.
+
+| Stil | `typsnitt` | `former` | `etiketter` | `foton` |
+| --- | --- | --- | --- | --- |
+| `hjerdal` | `albert` (Albert Sans) | `runda` | `sparrade` | `naturliga` (som de är) |
+| `klassisk` | `garamond` (Cormorant och Source Serif) | `raka` | `kursiva` | `naturliga` |
+| `kvarter` | `oswald` (Oswald och Archivo) | `kantiga` | `ruta` | `naturliga` |
+| `mjuk` | `bricolage` (Bricolage och Figtree) | `mjuka` | `brickor` | `naturliga` |
+| `afton` | `bodoni` (Bodoni och Jost) | `tunna` | `linje` | `naturliga` |
+| `affisch` | `schibsted` (Schibsted Grotesk) | `tjocka` | `versaler` | `svartvita` |
+| `stampel` | `archivo` (Archivo och Fraunces) | `klistermarken` (lutande kort med skugga) | `tejp` | `lutande` (snett på en platta i accentfärgen) |
+
 | Fält i `design` | Val | Standard |
 | --- | --- | --- |
 | `stil` | se ovan | `hjerdal` |
+| `typsnitt`, `former`, `etiketter`, `foton` | se ovan | stilens |
 | `tema` | ljusa: `fjall` (HJERDAL:s egna färger), `linne` (varm), `salvia` (grön), `oliv` (grön och varm), `terrakotta` (tegel), `senap` (gul bakgrund). Mörka: `ek` (varm), `skiffer` (kall), `hav` (blå), `kol` (glöd), `mossa` (skog och guld), `plommon` (vinrött och guld) | `fjall` |
 | `hero` | `text` (Stor rubrik), `delad` (Text och bild bredvid varandra), `bild` (Helbild med texten ovanpå) | `text` |
 | `meny` | `lista` (sektionsrubrik till vänster, rätter till höger), `kolumner` (Två kolumner), `kort` (rätterna som kort), `numrerad` (sektionerna med stora siffror, som en avsmakningsmeny) | `lista` |
 | `accent` | En egen färg, till exempel `#7A3B2E`. Bygget stoppar om knapptexten då får för låg kontrast. | temats |
-| `rubrik` | Bara i stilen `hjerdal`: `sans` (Albert Sans) eller `serif` (Fraunces) | temats |
+| `rubrik` | Bara med typsnittet `albert`: `sans` (Albert Sans) eller `serif` (Fraunces) | temats |
 
-Utan herobild blir hero alltid `text`. Ord mellan `*stjärnor*` i startsidans rubrik
-och i rubriken om restaurangen framhävs, och stilen bestämmer hur: kursivt i
-accentfärgen i Afton, i en mjuk serif i Stämpel, kursivt i Klassisk och Affisch
-och i accentfärgen i HJERDAL, Kvarter och Mjuk.
+Utan herobild blir hero alltid `text`. Helbilden finns bara på startsidan; de andra
+sidorna har sin rubrik som text. Ord mellan `*stjärnor*` i startsidans rubrik
+och i rubriken om restaurangen framhävs, och typsnittet bestämmer hur: kursivt i
+accentfärgen med Bodoni, i en mjuk serif med Archivo, kursivt med Garamond och
+Schibsted och i accentfärgen med de andra typsnitten.
+
+### Unik design
+
+Två kunder från mallen ska inte få samma sajt. Fabriken jämför varje kund med de
+andra aktiva kunderna från mallen på åtta val: typsnitt, färger (temat och en egen
+accent), former, etiketter, foton, stil, hero och meny. En design är för lik en
+annan om typsnitt och färger är desamma, eller om högst två av de åtta skiljer.
+Kunder med egen design och arkiverade kunder räknas inte.
+
+- `bygg` och Designer säger till och vad som behöver bytas, till exempel *Byt
+  typsnitt eller färger och ett val till*.
+- `publicera` stoppar. Ska två sajter vara lika, till exempel två ställen med samma
+  ägare, publiceras de med `--trots-likhet`.
+- *Förslag* (`varianter` utan val) väljer fyra olika stilar efter orden i kundens
+  namn, kök, beskrivning, rubrik och ingress: avsmakning och vinbar ger Afton
+  först, tapas och delade rätter Stämpel, kafé och bageri Mjuk, och så vidare
+  (`STIL_ORD` i `fabrik.py`). Inget förslag ligger för nära en annan kund eller
+  ett annat förslag, och de fyra får olika teman. Är stilens alla teman tagna lånar den etiketter och foton från
+  en annan stil. Samma kund får samma förslag varje gång, men två kunder av samma
+  slag börjar på olika teman.
 
 ## Bilder och logga
 
@@ -154,8 +191,12 @@ med en miniatyr av den senaste förhandsvisningen och hur långt den har kommit:
 4. *Förhandsvisa* bygger sajten och visar den i helskärm som mobil, surfplatta
    eller dator. Esc stänger. Fel visas i en ruta överst och vid fälten, och
    försvinner så fort fältet är rätt.
-5. *Förslag* bygger fyra varianter i olika stilar. *Välj den här stilen* sätter
-   den kunden gillar som kundens design. *Visa för kunden* visar förslagen över
+5. *Förslag* bygger fyra varianter i olika stilar som passar stället, och aldrig
+   en design som en annan kund redan har (se [Unik design](#unik-design)).
+   *Välj den här stilen* sätter den kunden gillar som kundens design, med
+   delarna. Under *Design* går sedan typsnitt, former, etiketter och foton att
+   byta ett och ett; *Som stilen* följer stilen. Ligger designen för nära en
+   annan kund säger en ruta överst i *Design* vad som behöver bytas. *Visa för kunden* visar förslagen över
    hela skärmen utan Designer runt omkring, för mötet: pilarna byter stil,
    *Välj den här* sparar den och Esc går tillbaka. Raden längst ner gömmer sig
    när musen står still.
@@ -198,8 +239,8 @@ Meddelandet efter uppladdningen säger hur mycket mindre bilden blev.
 **Så växer den med fabriken.** Formuläret ritas från kundfilens schema
 (`starter/src/lib/schema.ts`), som `npm run schema` i `starter/` skriver till
 `starter/cms.manifest.json`. Ett nytt fält i schemat blir ett nytt fält i
-Designer, en ny stil eller ett nytt tema i `starter/src/lib/designval.ts` blir ett
-nytt kort att välja. Etiketten och hjälptexten är `.describe('Etikett|Hjälptext')`,
+Designer, en ny stil, del eller ett nytt tema i `starter/src/lib/designval.ts` blir
+ett nytt kort att välja. Etiketten och hjälptexten är `.describe('Etikett|Hjälptext')`,
 och `|flerrad` sist ger en textruta med flera rader. Fältets kontroll väljs efter
 vad det tar emot: ett mönster som godtar `11:00` blir en klocka, ett som godtar
 `bild.jpg` blir en bildväljare. CI stoppar om `cms.manifest.json` inte är
@@ -304,12 +345,12 @@ Varningar, till exempel en avvikelse vars datum har passerat, stoppar inte bygge
 
 Exempelkunden Bistro Nordvik får 100 i alla fyra Lighthouse-kategorier i mobil i
 alla sju stilarna. Startsidan väger 49 kB i `hjerdal`, runt 70 kB i `kvarter`
-och `mjuk` och 133 kB i `klassisk`, som laddar tre typsnittsfiler. En stil vars
-typsnitt annars får rubriker eller knappar att hoppa när de kommer hämtar dem direkt,
-med en `<stil>.forladda.ts` bredvid sin CSS, som `afton`. CI-jobbet
+och `mjuk` och 133 kB i `klassisk`, som laddar tre typsnittsfiler. Ett typsnitt
+som annars får rubriker eller knappar att hoppa när det kommer hämtas direkt, med
+en `<typsnitt>.forladda.ts` bredvid sin CSS, som `bodoni`. CI-jobbet
 Fabrik kör kvalitetsgrinden för varje aktiv kund, provkör egen design
-(`quality/prov_fabrik.py`) och Designer och bygger en variant i varje stil vid
-varje ändring.
+(`quality/prov_fabrik.py`) och Designer och bygger en variant i varje stil och en
+blandning av delar vid varje ändring.
 
 ## Mappar
 
@@ -322,11 +363,12 @@ starter/           Astro-sajten alla kunder byggs från (regler i starter/CLAUDE
   src/components/core/  det som fungerar likadant för alla: Seo, MenySektion, Oppettider
   src/components/brand/ utseendet som en kund med egen design byter: Sidhuvud, Hero, Sidfot
   src/layouts/Bas.astro ramen för alla sidor
-  src/styles/        tokens.css (mått, typsnitt, former), bas.css (grunden),
-                     stilar/ (en fil per stil med typsnitt och former), brand.css (kundens egen)
+  src/styles/        tokens.css (mått, typsnitt, former), bas.css (grunden), delarna i
+                     typsnitt/, former/, etiketter/ och foton/ (en fil per val),
+                     stilar/ (stilens egna grepp) och brand.css (kundens egen)
   src/config/        site.ts (namn, adress, språk) och brand.json (hur en egen design tar över)
   src/lib/schema.ts  kundfilens fält, regler och etiketter
-  src/lib/designval.ts stilarna, färgtemana och layouterna
+  src/lib/designval.ts stilarna, delarna, färgtemana och layouterna
   src/lib/tema.ts    kontrastkontrollen
   src/lib/ld.ts      strukturerad data
   src/data/kund.json exempelkunden, så att startern går att köra med npm run dev
@@ -358,10 +400,12 @@ ut/                byggda sajter, förhandsvisningar och delade beroenden (check
 Ändringar görs i `starter/`, aldrig i en kunds kopia i `ut/`. Varje bygge skriver
 `fabrik.json` med starterns version, så att det syns vilken starter en kund har.
 
-En ny stil är en ny fil i `starter/src/styles/stilar/` som sätter variablerna i
-`tokens.css` och laddar sina typsnitt, plus stilens namn och beskrivning i
-`starter/src/lib/designval.ts`. Kör sedan `npm run schema` i `starter/`, så känner
-fabrik.py och Designer till den. Ett nytt fält läggs till i
+En ny del, till exempel ett typsnitt, är en fil i `starter/src/styles/typsnitt/`
+(eller `former/`, `etiketter/`, `foton/`) med selektorn `[data-typsnitt="<id>"]`,
+plus namn och beskrivning i `typsnittInfo` i `starter/src/lib/designval.ts`. En ny
+stil är en fil i `starter/src/styles/stilar/` med det bara stilen har, och en rad i
+`stilInfo` med namn, beskrivning, delar och de teman den föreslår. Kör sedan
+`npm run schema` i `starter/`, så känner fabrik.py och Designer till dem. Ett nytt fält läggs till i
 `starter/src/lib/schema.ts` på samma sätt.
 
 ## Egen design

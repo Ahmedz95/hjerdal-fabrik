@@ -5,43 +5,255 @@
       "id": "hjerdal",
       "namn": "HJERDAL",
       "passar": "Det mesta",
-      "beskrivning": "Vårt eget formspråk: lätta stora rubriker, spärrade versala etiketter, runda knappar och priser i mono."
+      "beskrivning": "Vårt eget formspråk: lätta stora rubriker, spärrade versala etiketter, runda knappar och priser i mono.",
+      "delar": {
+        "typsnitt": "albert",
+        "former": "runda",
+        "etiketter": "sparrade",
+        "foton": "naturliga"
+      },
+      "teman": [
+        "fjall",
+        "hav",
+        "skiffer",
+        "linne"
+      ]
     },
     {
       "id": "klassisk",
       "namn": "Klassisk",
       "passar": "Vita dukar, vinbarer, gamla bistroer",
-      "beskrivning": "Serif i rubriker och text, centrerad startsida, raka hörn, kursiva etiketter och punktlinjer fram till priset."
+      "beskrivning": "Serif i rubriker och text, centrerad startsida, raka hörn, kursiva etiketter och punktlinjer fram till priset.",
+      "delar": {
+        "typsnitt": "garamond",
+        "former": "raka",
+        "etiketter": "kursiva",
+        "foton": "naturliga"
+      },
+      "teman": [
+        "linne",
+        "ek",
+        "plommon",
+        "mossa"
+      ]
     },
     {
       "id": "kvarter",
       "namn": "Kvarter",
       "passar": "Pizzerior, burgare, streetfood",
-      "beskrivning": "Smala versala rubriker, kraftiga linjer, små hörn och tydliga block."
+      "beskrivning": "Smala versala rubriker, kraftiga linjer, små hörn och tydliga block.",
+      "delar": {
+        "typsnitt": "oswald",
+        "former": "kantiga",
+        "etiketter": "ruta",
+        "foton": "naturliga"
+      },
+      "teman": [
+        "skiffer",
+        "senap",
+        "kol",
+        "fjall"
+      ]
     },
     {
       "id": "mjuk",
       "namn": "Mjuk",
       "passar": "Kaféer, bagerier, brunch",
-      "beskrivning": "Vänliga rubriker, rundade kort och bilder och etiketter som små brickor."
+      "beskrivning": "Vänliga rubriker, rundade kort och bilder och etiketter som små brickor.",
+      "delar": {
+        "typsnitt": "bricolage",
+        "former": "mjuka",
+        "etiketter": "brickor",
+        "foton": "naturliga"
+      },
+      "teman": [
+        "salvia",
+        "terrakotta",
+        "linne",
+        "oliv"
+      ]
     },
     {
       "id": "afton",
       "namn": "Afton",
       "passar": "Avsmakningsmenyer, fine dining, vinbarer",
-      "beskrivning": "Stora rubriker i Bodoni med kursiva ord i accentfärgen, spärrade etiketter, mycket luft och tunna linjer."
+      "beskrivning": "Stora rubriker i Bodoni med kursiva ord i accentfärgen, spärrade etiketter, mycket luft och tunna linjer.",
+      "delar": {
+        "typsnitt": "bodoni",
+        "former": "tunna",
+        "etiketter": "linje",
+        "foton": "naturliga"
+      },
+      "teman": [
+        "kol",
+        "mossa",
+        "plommon",
+        "ek"
+      ]
     },
     {
       "id": "affisch",
       "namn": "Affisch",
       "passar": "Vedeldade kök, vinbarer, ställen med ett starkt namn",
-      "beskrivning": "Ett typsnitt i jätteformat, tjocka linjer, svartvita foton och etiketter som på en affisch."
+      "beskrivning": "Ett typsnitt i jätteformat, tjocka linjer, svartvita foton och etiketter som på en affisch.",
+      "delar": {
+        "typsnitt": "schibsted",
+        "former": "tjocka",
+        "etiketter": "versaler",
+        "foton": "svartvita"
+      },
+      "teman": [
+        "senap",
+        "fjall",
+        "ek",
+        "kol"
+      ]
     },
     {
       "id": "stampel",
       "namn": "Stämpel",
       "passar": "Kvarterskrogar, delade rätter, kaféer med personlighet",
-      "beskrivning": "Feta versaler blandade med en mjuk serif, etiketter som tejp, lutande bilder och stämplar."
+      "beskrivning": "Feta versaler blandade med en mjuk serif, etiketter som tejp, lutande bilder och stämplar.",
+      "delar": {
+        "typsnitt": "archivo",
+        "former": "klistermarken",
+        "etiketter": "tejp",
+        "foton": "lutande"
+      },
+      "teman": [
+        "oliv",
+        "terrakotta",
+        "linne",
+        "plommon"
+      ]
+    }
+  ],
+  "typsnitt": [
+    {
+      "id": "albert",
+      "namn": "Albert Sans",
+      "beskrivning": "Lätta stora rubriker och priser i mono. Fraunces i rubrikerna i teman med serif."
+    },
+    {
+      "id": "garamond",
+      "namn": "Cormorant och Source Serif",
+      "beskrivning": "Serif i rubriker och text, som en tryckt meny."
+    },
+    {
+      "id": "oswald",
+      "namn": "Oswald och Archivo",
+      "beskrivning": "Smala versala rubriker och en tydlig grotesk."
+    },
+    {
+      "id": "bricolage",
+      "namn": "Bricolage och Figtree",
+      "beskrivning": "Vänliga, lite egensinniga rubriker och en mjuk grotesk."
+    },
+    {
+      "id": "bodoni",
+      "namn": "Bodoni och Jost",
+      "beskrivning": "Bodoni med kursiva ord, spärrade knappar och en geometrisk grotesk."
+    },
+    {
+      "id": "schibsted",
+      "namn": "Schibsted Grotesk",
+      "beskrivning": "Ett typsnitt i allt, fett och tätt i jätteformat."
+    },
+    {
+      "id": "archivo",
+      "namn": "Archivo och Fraunces",
+      "beskrivning": "Feta versaler blandade med en mjuk och rund serif."
+    }
+  ],
+  "former": [
+    {
+      "id": "runda",
+      "namn": "Runda",
+      "beskrivning": "Runda knappar, tunna linjer och inga skuggor."
+    },
+    {
+      "id": "raka",
+      "namn": "Raka",
+      "beskrivning": "Raka hörn och tunna linjer."
+    },
+    {
+      "id": "kantiga",
+      "namn": "Kantiga",
+      "beskrivning": "Små hörn och kraftiga linjer mellan avsnitten."
+    },
+    {
+      "id": "mjuka",
+      "namn": "Mjuka",
+      "beskrivning": "Rundade kort, bilder och band."
+    },
+    {
+      "id": "tunna",
+      "namn": "Tunna",
+      "beskrivning": "Raka hörn, hårfina linjer och mer luft mellan avsnitten."
+    },
+    {
+      "id": "tjocka",
+      "namn": "Tjocka",
+      "beskrivning": "Tjocka linjer i textfärgen och runda knappar."
+    },
+    {
+      "id": "klistermarken",
+      "namn": "Klistermärken",
+      "beskrivning": "Kraftiga linjer, knappar och kort med en förskjuten skugga."
+    }
+  ],
+  "etiketter": [
+    {
+      "id": "sparrade",
+      "namn": "Spärrade",
+      "beskrivning": "Små spärrade versaler i grått."
+    },
+    {
+      "id": "kursiva",
+      "namn": "Kursiva",
+      "beskrivning": "En kursiv rad i rubrikernas typsnitt."
+    },
+    {
+      "id": "ruta",
+      "namn": "Med ruta",
+      "beskrivning": "Feta versaler efter en liten ruta i accentfärgen."
+    },
+    {
+      "id": "brickor",
+      "namn": "Brickor",
+      "beskrivning": "Små runda brickor."
+    },
+    {
+      "id": "linje",
+      "namn": "Med linje",
+      "beskrivning": "Spärrade versaler i accentfärgen efter en tunn linje."
+    },
+    {
+      "id": "versaler",
+      "namn": "Versaler",
+      "beskrivning": "Små versaler i textfärgen, som på en affisch."
+    },
+    {
+      "id": "tejp",
+      "namn": "Tejp",
+      "beskrivning": "Versaler på en remsa tejp, lite snett, och märkningen som stämplar."
+    }
+  ],
+  "foton": [
+    {
+      "id": "naturliga",
+      "namn": "Som de är",
+      "beskrivning": "I färg, utan effekter."
+    },
+    {
+      "id": "svartvita",
+      "namn": "Svartvita",
+      "beskrivning": "I svartvitt, med lodräta linjer över bilden bredvid rubriken."
+    },
+    {
+      "id": "lutande",
+      "namn": "Lutande",
+      "beskrivning": "Lite snett, med en ram och en platta i accentfärgen bakom."
     }
   ],
   "teman": [
@@ -255,6 +467,38 @@
       "afton": "Afton",
       "affisch": "Affisch",
       "stampel": "Stämpel"
+    },
+    "typsnitt": {
+      "albert": "Albert Sans",
+      "garamond": "Cormorant och Source Serif",
+      "oswald": "Oswald och Archivo",
+      "bricolage": "Bricolage och Figtree",
+      "bodoni": "Bodoni och Jost",
+      "schibsted": "Schibsted Grotesk",
+      "archivo": "Archivo och Fraunces"
+    },
+    "former": {
+      "runda": "Runda",
+      "raka": "Raka",
+      "kantiga": "Kantiga",
+      "mjuka": "Mjuka",
+      "tunna": "Tunna",
+      "tjocka": "Tjocka",
+      "klistermarken": "Klistermärken"
+    },
+    "etiketter": {
+      "sparrade": "Spärrade",
+      "kursiva": "Kursiva",
+      "ruta": "Med ruta",
+      "brickor": "Brickor",
+      "linje": "Med linje",
+      "versaler": "Versaler",
+      "tejp": "Tejp"
+    },
+    "foton": {
+      "naturliga": "Som de är",
+      "svartvita": "Svartvita",
+      "lutande": "Lutande"
     },
     "tema": {
       "fjall": "Fjäll",
@@ -853,7 +1097,55 @@
               "stampel"
             ],
             "default": "hjerdal",
-            "description": "Stil|Typsnitt och former."
+            "description": "Stil|Utgångspunkten: typsnitt, former, etiketter och foton. Varje del kan bytas nedan."
+          },
+          "typsnitt": {
+            "type": "string",
+            "enum": [
+              "albert",
+              "garamond",
+              "oswald",
+              "bricolage",
+              "bodoni",
+              "schibsted",
+              "archivo"
+            ],
+            "description": "Typsnitt|Utan val används stilens.|stilens"
+          },
+          "former": {
+            "type": "string",
+            "enum": [
+              "runda",
+              "raka",
+              "kantiga",
+              "mjuka",
+              "tunna",
+              "tjocka",
+              "klistermarken"
+            ],
+            "description": "Former|Hörn, linjer och knappar. Utan val används stilens.|stilens, kompakt"
+          },
+          "etiketter": {
+            "type": "string",
+            "enum": [
+              "sparrade",
+              "kursiva",
+              "ruta",
+              "brickor",
+              "linje",
+              "versaler",
+              "tejp"
+            ],
+            "description": "Etiketter|Raden ovanför rubrikerna och märkningen i menyn. Utan val används stilens.|stilens, kompakt"
+          },
+          "foton": {
+            "type": "string",
+            "enum": [
+              "naturliga",
+              "svartvita",
+              "lutande"
+            ],
+            "description": "Foton|Utan val används stilens.|stilens, kompakt"
           },
           "tema": {
             "type": "string",
@@ -880,7 +1172,7 @@
               "sans",
               "serif"
             ],
-            "description": "Rubriktypsnitt|Bara i stilen HJERDAL. Utan val används temats."
+            "description": "Rubriktypsnitt|Bara med typsnittet Albert Sans. Utan val används temats."
           },
           "accent": {
             "type": "string",

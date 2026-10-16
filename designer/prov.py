@@ -134,6 +134,13 @@ def main() -> int:
         (FABRIK / "kunder" / TOMMA_DAGAR / "kund.json").write_text(json.dumps(kopia, ensure_ascii=False), encoding="utf-8")
         status, svar = fraga(bas, "POST", f"/api/kunder/{TOMMA_DAGAR}/bygg")
         kolla(status == 200 and not json.loads(svar).get("fel"), "en menysektion utan valda dagar går att bygga")
+        # Kopian har samma design som Bistro Nordvik, så formuläret ska säga till.
+        kopian = json.loads(fraga(bas, "GET", f"/api/kunder/{TOMMA_DAGAR}")[1])
+        lik = [x for x in kopian.get("likhet", []) if x["namn"] == "Bistro Nordvik"]
+        kolla(bool(lik) and "typsnitt" in lik[0]["lika"] and lik[0]["rad"].startswith("Byt"), "en design som en annan kunds syns direkt")
+        annan = {**kopian["data"], "design": {**kopian["data"]["design"], "stil": "stampel"}}
+        status, svar = fraga(bas, "PUT", f"/api/kunder/{TOMMA_DAGAR}", {"data": annan, "andrad": kopian["andrad"]})
+        kolla(status == 200 and json.loads(svar).get("likhet") == [], "en annan stil räcker för att inte vara för lik")
 
         print("\n▸ Bilder görs lagom stora")
         provbilder(bas)
@@ -160,6 +167,8 @@ def main() -> int:
         kolla(data["kontakt"]["telefon"] == "+46 40 12 34 56" and data["kok"] == ["Pizza"], "ändringen finns i kundfilen")
         svar = rpc(5, "tools/call", {"name": "andra_falt", "arguments": {"kund": PROVKUND, "falt": {"kontakt.telefon": "040-12"}}})["result"]
         kolla("kontakt.telefon" in svar["content"][0]["text"], "MCP säger till när ett fält har fel format")
+        svar = rpc(6, "tools/call", {"name": "andra_falt", "arguments": {"kund": TOMMA_DAGAR, "falt": {"design.stil": "hjerdal"}}})["result"]
+        kolla("för nära Bistro Nordvik" in svar["content"][0]["text"], "MCP säger till när designen ligger för nära en annan kund")
         mcp.stdin.close()
         mcp.wait(timeout=10)
 

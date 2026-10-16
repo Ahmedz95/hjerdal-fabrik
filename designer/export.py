@@ -113,7 +113,8 @@ def html(kund: str, data: dict, problem: list[tuple[str, str]]) -> str:
     tema = next((t for t in s["teman"] if t["id"] == design["tema"]), s["teman"][0])
     accent = data.get("design", {}).get("accent")
     accent = accent if isinstance(accent, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", accent) else tema["accent"]
-    serif = (data.get("design", {}).get("rubrik") or tema.get("rubrik")) == "serif"
+    serif = design["typsnitt"] in ("garamond", "bodoni") or (
+        design["typsnitt"] == "albert" and (data.get("design", {}).get("rubrik") or tema.get("rubrik")) == "serif")
     mapp = fabrik.kundmapp(kund) / "bilder"
     bilder = data.get("bilder") or {}
     kontakt = data.get("kontakt") or {}
@@ -205,6 +206,7 @@ def html(kund: str, data: dict, problem: list[tuple[str, str]]) -> str:
         + f'<span class="farg" style="background:{accent}" title="accent"></span>'
     sektion("Utseende", "<dl>" + rader([
         ("Stil", escape(namn_pa["stil"].get(design["stil"], design["stil"]))),
+        ("Typsnitt", escape(namn_pa["typsnitt"].get(design["typsnitt"], design["typsnitt"]))),
         ("Färgtema", f"{escape(tema['namn'])} <span class=\"farger\">{farger}</span>"),
         ("Startsidan", escape(namn_pa["hero"].get(design["hero"], design["hero"]))),
         ("Menyn", escape(namn_pa["meny"].get(design["meny"], design["meny"]))),

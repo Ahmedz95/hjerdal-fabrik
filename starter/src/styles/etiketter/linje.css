@@ -1,0 +1,9 @@
+/* Etiketterna linje: spärrade versaler i accentfärgen efter en tunn linje, och märkningen
+   i menyn som spärrad text i accentfärgen med punkter emellan. */
+[data-etiketter="linje"] {
+  --lbl: 500 11.5px/1.4 var(--f-body); --lbl-track: .32em; --lbl-case: uppercase; --lbl-color: var(--accent-tekst);
+}
+[data-etiketter="linje"] .lbl::before { content: ""; display: inline-block; width: 28px; height: 1px; margin-right: 14px; background: currentColor; vertical-align: .32em; }
+[data-etiketter="linje"] :is(.fakta dt, .kontaktlista dt, .fot h2) { letter-spacing: .26em; }
+[data-etiketter="linje"] .tagg { box-shadow: none; padding: 0; letter-spacing: .2em; color: var(--accent-tekst); }
+[data-etiketter="linje"] .tagg + .tagg::before { content: "· "; }

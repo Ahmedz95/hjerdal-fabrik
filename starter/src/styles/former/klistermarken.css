@@ -1,0 +1,21 @@
+/* Formerna klistermärken: kraftiga linjer i textfärgen, knappar som klistermärken med en
+   förskjuten skugga och korten i menyn med ram, skugga och lite snett. */
+[data-former="klistermarken"] { --r-btn: 4px; --r-tagg: 999px; --r-kort: 4px; --r-bild: 4px; }
+[data-former="klistermarken"] .top { border-bottom: 2px solid var(--ink); }
+[data-former="klistermarken"] .nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--accent); }
+[data-former="klistermarken"] :is(.sec, .fot) { border-top: 2px solid var(--ink); }
+[data-former="klistermarken"] .sec-tat { border-top: 0; }
+[data-former="klistermarken"] .btn { box-shadow: inset 0 0 0 2px var(--ink), 3px 3px 0 var(--ink); }
+[data-former="klistermarken"] .btn-line { box-shadow: inset 0 0 0 2px var(--ink), 3px 3px 0 var(--ink); }
+[data-former="klistermarken"][data-hero="bild"] .hero .btn { box-shadow: inset 0 0 0 2px #F5F6F4, 3px 3px 0 #F5F6F4; }
+@media (hover: hover) {
+  [data-former="klistermarken"] .btn:hover, [data-former="klistermarken"] .btn-line:hover { transform: translate(-1px, -1px); box-shadow: inset 0 0 0 2px var(--ink), 4px 4px 0 var(--ink); }
+}
+[data-former="klistermarken"] .tl { border-bottom-width: 2px; font-weight: 700; }
+[data-former="klistermarken"]:not([data-meny="kort"]) .ratter { border-top: 2px solid var(--ink); }
+[data-former="klistermarken"] .meny-nav { border-bottom: 2px solid var(--ink); }
+[data-former="klistermarken"] .meny-nav a { box-shadow: inset 0 0 0 2px var(--ink); }
+[data-former="klistermarken"][data-meny="kort"] .ratt { box-shadow: inset 0 0 0 2px var(--ink), 4px 4px 0 var(--ink); }
+[data-former="klistermarken"][data-meny="kort"] .ratt:nth-child(3n + 1) { rotate: -.6deg; }
+[data-former="klistermarken"][data-meny="kort"] .ratt:nth-child(3n + 2) { rotate: .5deg; }
+[data-former="klistermarken"] .special { border: 2px solid var(--ink); border-left-width: 2px; box-shadow: 4px 4px 0 var(--accent); }

@@ -1,14 +1,19 @@
 ---
 // Ramen för alla sidor: metadata, färger, sidhuvud och sidfot. Delas av alla
 // kunder. Utseendet ändras i src/styles/ och src/components/brand/, aldrig här.
-// Ordningen är lagren: standardvärden, starterns grund, stilen och sist kundens
-// egen design (tom i startern).
+// Ordningen är lagren: standardvärden, starterns grund, stilens delar, stilens egna
+// grepp och sist kundens egen design (tom i startern).
 import '../styles/tokens.css';
 import '../styles/bas.css';
-// Stilens typsnitt och former, src/styles/stilar/<stil>.css. Sökvägen sätts i
-// astro.config.mjs efter kundfilen, så att bara den valda stilens typsnitt följer med.
+// Delarna och stilen, en fil var i src/styles/typsnitt/, former/, etiketter/, foton/ och
+// stilar/. Sökvägarna sätts i astro.config.mjs efter kundfilen, så att bara de valda
+// filerna, och därmed bara de valda typsnitten, följer med.
+import '@typsnitt';
+import '@former';
+import '@etiketter';
+import '@foton';
 import '@stil';
-import forladda from '@stil-forladda';
+import forladda from '@typsnitt-forladda';
 import '../styles/brand.css';
 import Seo from '../components/core/Seo.astro';
 import Sidhuvud from '../components/brand/Sidhuvud.astro';
@@ -16,6 +21,7 @@ import Sidfot from '../components/brand/Sidfot.astro';
 import { brand, sajt } from '../config/site';
 import { kund } from '../lib/kund';
 import { temaVariabler } from '../lib/tema';
+import { valdaDelar } from '../lib/designval';
 
 interface Props {
   title: string;
@@ -32,9 +38,13 @@ interface Props {
 const { title, description, sokvag, ld = [], noindex = false, naken = false, ogBild } = Astro.props;
 // Med egna färger sätter kundens tokens.css färgerna, och temat används inte.
 const tema = brand.farger === 'tema' ? temaVariabler(kund.design) : undefined;
+const delar = valdaDelar(kund.design);
+// Startsidans överdel (data-hero). Helbilden finns bara på startsidan; de andra sidorna har
+// en rubrik utan bild och får överdelen som text, annars blir rubriken vit på en tom yta.
+const hero = !kund.bilder.hero || (kund.design.hero === 'bild' && sokvag !== '/') ? 'text' : kund.design.hero;
 ---
 <!doctype html>
-<html lang={sajt.lang} data-stil={kund.design.stil} data-tema={kund.design.tema} data-hero={kund.bilder.hero ? kund.design.hero : 'text'} data-meny={kund.design.meny}>
+<html lang={sajt.lang} data-stil={kund.design.stil} data-typsnitt={delar.typsnitt} data-former={delar.former} data-etiketter={delar.etiketter} data-foton={delar.foton} data-tema={kund.design.tema} data-hero={hero} data-meny={kund.design.meny}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />

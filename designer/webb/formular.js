@@ -161,7 +161,7 @@ function falt(s, vag, kravd, ctx, opt = {}) {
   if (s.type === 'boolean') return vaxel(s, vag, ctx);
   if (s.enum) {
     const info = valInfo(s.enum, ctx);
-    return ram(s, vag, kravd, info ? kortval(s, vag, kravd, info, ctx) : segment(s, vag, kravd, ctx));
+    return ram(s, vag, kravd, info && !etikett(s).tips.includes('kompakt') ? kortval(s, vag, kravd, info, ctx) : segment(s, vag, kravd, ctx));
   }
   if (s.type === 'string' && bildtyper(s).length) return ram(s, vag, kravd, bildval(s, vag, kravd, ctx));
   if (s.type === 'string' && arFarg(s)) return ram(s, vag, kravd, farg(s, vag, ctx));
@@ -225,12 +225,24 @@ function valInfo(varden, ctx) {
   return Object.values(ctx.schemafil).find((l) => Array.isArray(l) && l[0]?.id && l.length === varden.length && varden.every((v) => l.some((x) => x.id === v)));
 }
 
+/** Det stilen väljer för en av stilens delar (design.typsnitt, former, etiketter eller foton),
+ *  som id, när fältet har tipset stilens. Visas som valet "Som stilen". */
+function stilensDel(s, vag, ctx) {
+  if (!etikett(s).tips.includes('stilens')) return undefined;
+  const stil = hamta(ctx.data, [...vag.slice(0, -1), 'stil']) ?? 'hjerdal';
+  return ctx.schemafil.stilar?.find((x) => x.id === stil)?.delar?.[vag.at(-1)] ?? null;
+}
+
 function segment(s, vag, kravd, ctx) {
   const v = hamta(ctx.data, vag) ?? s.default;
   const namn = valNamn(s.enum, ctx);
-  const val = [...(kravd || s.default !== undefined ? [] : [[undefined, 'Inget val']]), ...s.enum.map((x) => [x, namn(x)])];
+  const info = valInfo(s.enum, ctx);
+  const stilens = stilensDel(s, vag, ctx);
+  const tom = stilens === undefined ? 'Inget val' : `Som stilen${stilens ? ` (${namn(stilens)})` : ''}`;
+  const val = [...(kravd || s.default !== undefined ? [] : [[undefined, tom]]), ...s.enum.map((x) => [x, namn(x)])];
   return h('div', { class: 'segment', role: 'radiogroup' }, val.map(([x, text]) =>
-    h('button', { type: 'button', role: 'radio', 'aria-checked': String(v === x), onclick: () => { ctx.andra(vag, x); ctx.ritaOm(); } }, text)));
+    h('button', { type: 'button', role: 'radio', title: info?.find((i) => i.id === x)?.beskrivning ?? null, 'aria-checked': String(v === x),
+      onclick: () => { ctx.andra(vag, x); ctx.ritaOm(); } }, text)));
 }
 
 const stilTyp = {
@@ -242,14 +254,21 @@ const stilTyp = {
   affisch: { fontFamily: '"Helvetica Neue", Arial, sans-serif', fontWeight: 800, letterSpacing: '-0.05em' },
   stampel: { fontFamily: '"Arial Black", "Helvetica Neue", sans-serif', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.01em' },
 };
+// Typsnitten ser ut som stilarna de kommer från.
+Object.assign(stilTyp, { albert: stilTyp.hjerdal, garamond: stilTyp.klassisk, oswald: stilTyp.kvarter, bricolage: stilTyp.mjuk,
+  bodoni: stilTyp.afton, schibsted: stilTyp.affisch, archivo: stilTyp.stampel });
 
 function kortval(s, vag, kravd, info, ctx) {
   const v = hamta(ctx.data, vag) ?? s.default;
-  return h('div', { class: 'kortval', role: 'radiogroup' }, info.map((x) => {
+  // Ett valfritt fält som följer stilen börjar med valet "Som stilen", i stilens typsnitt.
+  const stilens = stilensDel(s, vag, ctx);
+  const lista = stilens === undefined || kravd ? info
+    : [{ id: undefined, namn: 'Som stilen', beskrivning: info.find((x) => x.id === stilens)?.namn, typ: stilens }, ...info];
+  return h('div', { class: 'kortval', role: 'radiogroup' }, lista.map((x) => {
     const farg = x.bg && { background: x.bg, color: x.ink, '--accent': x.accent, '--linje': x.line };
     return h('button', { type: 'button', role: 'radio', class: farg ? 'tema' : 'val', style: farg || null, 'aria-checked': String(v === x.id),
       onclick: () => { ctx.andra(vag, x.id); ctx.ritaOm(); } },
-      h('span', { class: 'val-namn', style: stilTyp[x.id] ?? null }, x.namn),
+      h('span', { class: 'val-namn', style: stilTyp[x.typ ?? x.id] ?? null }, x.namn),
       farg ? h('span', { class: 'prov' }, h('span', { class: 'prick' }), x.mork ? 'Mörkt' : 'Ljust')
         : [x.passar && h('span', { class: 'val-passar' }, x.passar), x.beskrivning && h('span', { class: 'val-text' }, x.beskrivning)]);
   }));

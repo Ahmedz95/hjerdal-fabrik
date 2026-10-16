@@ -1,25 +1,6 @@
-/* Stilen klassisk: för vita dukar, vinbarer och bistroer med lång historia.
-   Cormorant Garamond i rubrikerna, Source Serif i brödtexten, centrerad
-   startsida, raka hörn, kursiva etiketter och punktlinjer fram till priset. */
-@import '@fontsource-variable/cormorant-garamond/wght.css';
-@import '@fontsource-variable/cormorant-garamond/wght-italic.css';
-@import '@fontsource-variable/source-serif-4/wght.css';
-
-[data-stil="klassisk"] {
-  --f-display: "Cormorant Garamond Variable", "Cormorant Garamond", Garamond, Georgia, serif;
-  --f-body: "Source Serif 4 Variable", "Source Serif 4", Georgia, "Times New Roman", serif;
-  --display-weight: 500; --display-track: -0.012em;
-  --f-pris: var(--f-body); --pris-track: 0;
-  --lbl: italic 400 20px/1.3 var(--f-display); --lbl-track: .01em; --lbl-case: none;
-  --btn: 600 12.5px/1 var(--f-body); --btn-track: .16em; --btn-case: uppercase;
-  --logo: 500 27px/1 var(--f-display); --logo-track: .01em; --logo-case: none;
-  --ratt: 600 17px/1.35 var(--f-body);
-  --r-btn: 0; --r-tagg: 0; --r-kort: 0; --r-bild: 0;
-}
-[data-stil="klassisk"] body { line-height: 1.65; }
-[data-stil="klassisk"] .h1 { line-height: 1; font-size: clamp(2.9rem, 7.6vw, 6.3rem); }
-[data-stil="klassisk"] :is(.h1, .h2, .h3) em { font-style: italic; color: inherit; }
-[data-stil="klassisk"] .btn-line { box-shadow: inset 0 0 0 1px var(--ink); }
+/* Stilen klassisk: för vita dukar, vinbarer och bistroer med lång historia. Delarna är
+   typsnittet garamond, formerna raka och kursiva etiketter (src/lib/designval.ts). Egna
+   grepp: startsidan och rubrikerna centrerade och punktlinjer fram till priset. */
 
 /* Startsidan och rubrikerna centreras, som en tryckt meny. */
 [data-stil="klassisk"][data-hero="text"] .hero,
@@ -41,6 +22,3 @@
 [data-stil="klassisk"] .ratt-namn { display: flex; align-items: baseline; gap: 10px; }
 [data-stil="klassisk"] .ratt-namn::after { content: ""; flex: 1 1 24px; min-width: 24px; border-bottom: 1px dotted var(--muted); }
 [data-stil="klassisk"] .ratt-text { font-style: italic; }
-[data-stil="klassisk"] .tagg { box-shadow: none; padding: 0; letter-spacing: .12em; }
-[data-stil="klassisk"] .tagg + .tagg::before { content: "· "; }
-[data-stil="klassisk"] .sektion-head .h3 { font-size: clamp(1.8rem, 3vw, 2.5rem); }

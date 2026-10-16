@@ -23,6 +23,7 @@ const app = {
   visning: null, // förhandsvisningen eller förslagen i helskärm
   start: null, // kunderna på startsidan och hur de ritas om
   arkiv: null, // när den öppna kunden arkiverades och tas bort, om den är arkiverad
+  likhet: [], // andra kunder från mallen som designen ligger för nära
 };
 const rot = document.getElementById('app');
 // replaceChildren skriver ut null och false som text, så de filtreras bort först.
@@ -317,6 +318,30 @@ function ritaArkivruta() {
     h('button', { type: 'button', class: 'knapp litet', onclick: () => aterstallKund({ kund: app.kund, namn: app.data?.namn || app.kund }) }, ikon('angra', 15), 'Ta tillbaka')));
 }
 
+/**
+ * Två kunder från mallen ska inte få samma sajt. Ligger designen för nära en annan kund
+ * säger rutan överst i Design vad de har gemensamt. Fabriken publicerar inte en sådan sajt.
+ */
+function ritaLikhet() {
+  const design = document.getElementById('s-design');
+  design?.querySelector('.likhetsruta')?.remove();
+  if (!design || !app.likhet?.length) return;
+  const [forsta, ...fler] = app.likhet;
+  const ruta = h('div', { class: 'arkivruta likhetsruta', role: 'status' }, ikon('forslag', 18),
+    h('span', {}, `Designen ligger för nära ${forsta.namn}${fler.length ? ` och ${fler.length === 1 ? fler[0].namn : `${fler.length} kunder till`}` : ''}: samma ${ordLista(forsta.lika)}. `,
+      `${forsta.rad} Förslag visar bara designer som ingen annan kund har.`));
+  design.querySelector('.sektion-hjalp, .sektion-huvud').after(ruta);
+}
+
+function visaLikhet(likhet) {
+  const fore = JSON.stringify(app.likhet ?? []);
+  app.likhet = likhet ?? [];
+  if (JSON.stringify(app.likhet) !== fore) ritaLikhet();
+}
+
+/** ['a', 'b', 'c'] blir 'a, b och c'. */
+const ordLista = (ord) => (ord.length > 1 ? `${ord.slice(0, -1).join(', ')} och ${ord.at(-1)}` : ord.join(''));
+
 /** Sajterna på startsidan ritas i datorbredd och skalas ner till kortet. */
 function skalaMiniatyrer(lista) {
   skalaMiniatyrer.obs?.disconnect();
@@ -368,7 +393,7 @@ function nyKundDialog() {
 
 async function visaKund(kund) {
   const [svar, bilder] = await Promise.all([api('GET', `kunder/${kund}`), api('GET', `kunder/${kund}/bilder`)]);
-  Object.assign(app, { kund, data: svar.data, andrad: svar.andrad, arkiv: svar.arkiv, bilder, fel: [], fran: new Map(), osparat: false, stangda: new Set() });
+  Object.assign(app, { kund, data: svar.data, andrad: svar.andrad, arkiv: svar.arkiv, likhet: svar.likhet ?? [], bilder, fel: [], fran: new Map(), osparat: false, stangda: new Set() });
   document.title = `${svar.data.namn ?? kund} | HJERDAL Designer`;
   document.body.className = 'i-kund';
   let chattOppen = true;
@@ -469,6 +494,7 @@ function ritaOm(fokus) {
   yta.scrollTop = scroll;
   ritaNav();
   visaFel(false);
+  ritaLikhet();
   bevakaSektioner();
   if (fokus) document.querySelector(`[id="${fokus}"], [id^="${fokus}-"]`)?.focus();
 }
@@ -612,7 +638,7 @@ async function sparaNu() {
   if (!app.osparat || !app.kund) return;
   app.osparat = false;
   app.sparning = api('PUT', `kunder/${app.kund}`, { data: app.data, andrad: app.andrad })
-    .then((svar) => { app.andrad = svar.andrad; status('Sparat'); })
+    .then((svar) => { app.andrad = svar.andrad; status('Sparat'); visaLikhet(svar.likhet); })
     .catch(async (err) => {
       if (err.status === 409) {
         meddela('Kundfilen ändrades samtidigt, till exempel av Claude. Formuläret visar nu den nya versionen.');
@@ -632,7 +658,7 @@ async function laddaOm(markera = false) {
   if (!app.kund) return;
   const fore = JSON.parse(JSON.stringify(app.data ?? {}));
   const [svar, bilder] = await Promise.all([api('GET', `kunder/${app.kund}`), api('GET', `kunder/${app.kund}/bilder`)]);
-  Object.assign(app, { data: svar.data, andrad: svar.andrad, bilder, osparat: false });
+  Object.assign(app, { data: svar.data, andrad: svar.andrad, likhet: svar.likhet ?? [], bilder, osparat: false });
   const namn = document.getElementById('kundnamn');
   if (namn) namn.textContent = svar.data.namn ?? app.kund;
   status('Sparat');
@@ -836,7 +862,8 @@ function visa(p) {
           const t = app.schemafil.teman.find((y) => y.id === x.tema);
           return h('button', { type: 'button', class: 'variant', 'aria-pressed': String(x === valdVariant), onclick: () => visa({ url: `${v.bas}${x.mapp}/` }) },
             h('span', { class: 'variant-prov', style: { background: t?.bg, color: t?.ink, '--accent': t?.accent } }, h('b', {}, 'Aa'), h('i')),
-            h('span', {}, h('strong', {}, namn.stil[x.stil] ?? x.stil), h('small', {}, `${namn.tema[x.tema] ?? x.tema} · ${namn.hero[x.hero] ?? x.hero}`)));
+            h('span', {}, h('strong', {}, namn.stil[x.stil] ?? x.stil),
+              h('small', {}, [namn.tema[x.tema] ?? x.tema, namn.hero[x.hero] ?? x.hero, ...egnaDelar(x)].join(' · '))));
         })),
       scen,
       (v.varn?.length || v.granskning?.length) ? h('details', { class: 'granskning' }, h('summary', {},
@@ -971,14 +998,28 @@ function skala(scen, skarm, bredd, hojd) {
   addEventListener('resize', passa);
 }
 
+const DELAR = ['typsnitt', 'former', 'etiketter', 'foton'];
+
+const DELNAMN = { typsnitt: 'Typsnitt', former: 'Former', etiketter: 'Etiketter', foton: 'Foton' };
+
+/** Delarna i en variant som inte är stilens egna, i ord: ['Etiketter: Tejp']. */
+function egnaDelar(x) {
+  const stilens = app.schemafil.stilar?.find((s) => s.id === x.stil)?.delar ?? {};
+  const namn = app.schemafil.namn;
+  return DELAR.filter((k) => x[k] && x[k] !== stilens[k]).map((k) => `${DELNAMN[k]}: ${namn[k]?.[x[k]] ?? x[k]}`);
+}
+
 function valjVariant(x) {
   for (const k of ['stil', 'tema', 'hero', 'meny']) satt(app.data, ['design', k], x[k]);
+  // En del som är stilens egen sparas inte, så att den följer med om stilen byts senare.
+  const stilens = app.schemafil.stilar?.find((s) => s.id === x.stil)?.delar ?? {};
+  for (const k of DELAR) satt(app.data, ['design', k], x[k] && x[k] !== stilens[k] ? x[k] : undefined);
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   sparaSnart();
   stangVisning();
   ritaOm();
   rullaTill(document.getElementById('s-design'));
-  lysUpp(['design.stil', 'design.tema', 'design.hero', 'design.meny']);
+  lysUpp(['design.stil', ...DELAR.map((k) => `design.${k}`), 'design.tema', 'design.hero', 'design.meny']);
   meddela(`${app.schemafil.namn.stil[x.stil]} med ${app.schemafil.namn.tema[x.tema]} är vald.`);
 }
 

@@ -2,7 +2,7 @@
 // src/lib/designval.ts. Accenten kan bytas per kund; bygget stoppar om
 // texten på knapparna då blir svår att läsa.
 import type { Kund } from './kund';
-import { temaInfo } from './designval';
+import { temaInfo, valdaDelar } from './designval';
 
 export const temaLista = temaInfo;
 
@@ -29,7 +29,7 @@ const typsnitt = {
  *  bakgrunden. Senap är mörkare än mittgrått men har svart text, och räknas som ljust. */
 export const arMorkt = (tema: Kund['design']['tema']) => lum(temaLista[tema].bg) < lum(temaLista[tema].ink);
 
-/** CSS-variablerna för kundens tema och accent, och i stilen hjerdal rubriktypsnittet. */
+/** CSS-variablerna för kundens tema och accent, och med typsnittet albert rubriktypsnittet. */
 export function temaVariabler(design: Kund['design']) {
   const t = temaLista[design.tema];
   const accent = design.accent ?? t.accent;
@@ -63,8 +63,8 @@ export function temaVariabler(design: Kund['design']) {
     // bakgrunden och ytorna, annars textfärgen.
     '--accent-tekst': Math.min(kontrast(accent, t.bg), kontrast(accent, t.surface)) >= 4.5 ? accent : t.ink,
   };
-  // De andra stilarna har sina rubriktypsnitt i src/styles/stilar/.
-  if (design.stil === 'hjerdal') {
+  // De andra typsnitten har sina rubriker i src/styles/typsnitt/.
+  if (valdaDelar(design).typsnitt === 'albert') {
     const rubrik = design.rubrik ?? t.rubrik;
     vars['--f-display'] = typsnitt[rubrik];
     // Serifen får lite tyngre vikt och mindre spärrning än den lätta grotesken.

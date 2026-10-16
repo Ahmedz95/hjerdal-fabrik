@@ -1,0 +1,7 @@
+/* Etiketterna tejp: små versaler på en remsa tejp i textfärgen, lite sned, och märkningen
+   i menyn som runda stämplar. */
+[data-etiketter="tejp"] { --lbl: 700 11.5px/1.2 var(--f-body); --lbl-track: .12em; --lbl-case: uppercase; --lbl-color: var(--bg); }
+[data-etiketter="tejp"] .lbl { display: inline-block; padding: 7px 10px 6px; background: var(--ink); rotate: -1.5deg; }
+[data-etiketter="tejp"][data-hero="bild"] .hero .lbl { color: var(--bg); }
+[data-etiketter="tejp"] :is(.fakta dt, .kontaktlista dt, .fot h2) { font-weight: 700; color: var(--ink); }
+[data-etiketter="tejp"] .tagg { box-shadow: inset 0 0 0 1.5px currentColor; color: var(--ink); font-weight: 700; letter-spacing: .1em; rotate: -2deg; }

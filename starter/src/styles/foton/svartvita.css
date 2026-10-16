@@ -1,0 +1,4 @@
+/* Fotona i svartvitt, med lodräta linjer i bakgrundsfärgen över bilden bredvid rubriken. */
+[data-foton="svartvita"] :is(.hero-media, .om-bild) img { filter: grayscale(1) contrast(1.06); }
+[data-foton="svartvita"][data-hero="delad"] .hero-media { position: relative; }
+[data-foton="svartvita"][data-hero="delad"] .hero-media::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 46px, var(--bg) 46px 49px); background-position: 30px 0; pointer-events: none; }

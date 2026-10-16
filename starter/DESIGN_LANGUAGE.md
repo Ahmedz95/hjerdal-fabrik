@@ -1,8 +1,8 @@
 # Designspråk: startern
 
 Starterns eget utseende, som varje kund från mallen får: HJERDAL:s formspråk, samma som
-hjerdal.se. Säljaren varierar det med sju stilar, tolv färgteman och layouterna i
-Designer. En kund med egen design har ett eget `DESIGN_LANGUAGE.md` i `kunder/<kund>/`,
+hjerdal.se. Säljaren varierar det med sju stilar, delarna i dem, tolv färgteman och
+layouterna i Designer. En kund med egen design har ett eget `DESIGN_LANGUAGE.md` i `kunder/<kund>/`,
 skrivet från mallen i `schemas/mallar/`, och det går före det här.
 
 ## Idén
@@ -20,20 +20,23 @@ bakgrunden. Bygget stoppar om en färg får för låg kontrast (`src/lib/tema.ts
 ## Typografi
 
 Stilen `hjerdal`: stora lätta rubriker i Albert Sans (Fraunces i teman med serif),
-spärrade versala etiketter och priser i mono. De andra stilarna byter typsnitt och
-former: `klassisk` (Cormorant Garamond och Source Serif), `kvarter` (Oswald och Archivo),
-`mjuk` (Bricolage Grotesque och Figtree), `afton` (Bodoni Moda och Jost), `affisch`
-(Schibsted Grotesk i allt) och `stampel` (Archivo med Fraunces). De tre sista bygger på
-inspirationen i `examples/inspiration.md`. Ord mellan `*stjärnor*` i en rubrik i kundfilen
-blir `<em>`, och stilen bestämmer hur de framhävs.
+spärrade versala etiketter och priser i mono. De andra stilarna kommer med andra
+typsnitt: `klassisk` (Cormorant Garamond och Source Serif), `kvarter` (Oswald och
+Archivo), `mjuk` (Bricolage Grotesque och Figtree), `afton` (Bodoni Moda och Jost),
+`affisch` (Schibsted Grotesk i allt) och `stampel` (Archivo med Fraunces). De tre sista
+bygger på inspirationen i `examples/inspiration.md`. Typsnittet är en egen del och går
+att byta oberoende av stilen (`src/styles/typsnitt/`). Ord mellan `*stjärnor*` i en
+rubrik i kundfilen blir `<em>`, och typsnittet bestämmer hur de framhävs.
 
 ## Layout och rytm
 
 En spalt i mobilen, två i datorn. Stora avstånd mellan sektionerna, 1 px linjer, inga
 skuggor, runda knappar. Startsidans överdel är text, text och bild eller helbild, och
 menyn är lista, två kolumner, kort eller numrerad. Afton, Affisch och Stämpel bryter
-mot det här med tunna eller tjocka linjer, raka hörn och skuggor; det står i deras filer
-i `src/styles/stilar/`.
+mot det här med tunna eller tjocka linjer, raka hörn och skuggor. Det är delar som går
+att byta var för sig: formerna i `src/styles/former/`, etiketterna i
+`src/styles/etiketter/` och hur foton visas i `src/styles/foton/`. Det som bara en stil
+har, som Klassisks punktlinjer och Stämpels mörka remsa, står i `src/styles/stilar/`.
 
 ## Rörelse
 

@@ -7,7 +7,7 @@
 // .describe('Etikett|Hjälptext|tips') är det som visas i formuläret. Tipsen är
 // valfria: flerrad ger en textruta med flera rader.
 import { z } from 'astro/zod';
-import { heros, menyer, stilar, teman } from './designval';
+import { etiketter, former, foton, heros, menyer, stilar, teman, typsnitt } from './designval';
 
 /** Felmeddelanden på svenska. Ett eget meddelande på ett fält, som i tid nedan, går före. */
 export const svenskaFel: z.ZodErrorMap = (fel, ctx) => {
@@ -186,9 +186,13 @@ export const schema = z.object({
     .describe('Bilder och logga'),
   design: z
     .object({
-      stil: z.enum(stilar).default('hjerdal').describe('Stil|Typsnitt och former.'),
+      stil: z.enum(stilar).default('hjerdal').describe('Stil|Utgångspunkten: typsnitt, former, etiketter och foton. Varje del kan bytas nedan.'),
+      typsnitt: z.enum(typsnitt).optional().describe('Typsnitt|Utan val används stilens.|stilens'),
+      former: z.enum(former).optional().describe('Former|Hörn, linjer och knappar. Utan val används stilens.|stilens, kompakt'),
+      etiketter: z.enum(etiketter).optional().describe('Etiketter|Raden ovanför rubrikerna och märkningen i menyn. Utan val används stilens.|stilens, kompakt'),
+      foton: z.enum(foton).optional().describe('Foton|Utan val används stilens.|stilens, kompakt'),
       tema: z.enum(teman).default('fjall').describe('Färger'),
-      rubrik: z.enum(['sans', 'serif']).optional().describe('Rubriktypsnitt|Bara i stilen HJERDAL. Utan val används temats.'),
+      rubrik: z.enum(['sans', 'serif']).optional().describe('Rubriktypsnitt|Bara med typsnittet Albert Sans. Utan val används temats.'),
       accent: hex.optional().describe('Egen accentfärg|Färgen på knapparna. Bygget stoppar om texten på dem blir svår att läsa.'),
       hero: z.enum(heros).default('text').describe('Startsidans överdel|Delad och bild kräver en stor bild.'),
       meny: z.enum(menyer).default('lista').describe('Menyns layout'),

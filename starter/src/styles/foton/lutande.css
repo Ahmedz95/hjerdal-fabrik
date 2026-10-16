@@ -1,0 +1,3 @@
+/* Fotona lutar lite, med en ram i textfärgen och en förskjuten platta i accentfärgen bakom. */
+[data-foton="lutande"][data-hero="delad"] .hero-media, [data-foton="lutande"] .om-bild { rotate: 1.4deg; }
+[data-foton="lutande"][data-hero="delad"] .hero-media img, [data-foton="lutande"] .om-bild img { border: 2px solid var(--ink); box-shadow: -12px 12px 0 var(--accent); }

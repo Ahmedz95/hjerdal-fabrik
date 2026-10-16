@@ -71,6 +71,11 @@ p { margin: 0; }
 /* Hero: text, delad eller bild */
 .hero { padding-block: clamp(56px, 11vw, 150px) clamp(48px, 8vw, 110px); }
 .hero-grid { display: grid; gap: clamp(32px, 5vw, 72px); align-items: center; }
+/* Spalten rubriken står i är en behållare, så att rubriken kan följa dess bredd (cqi) och
+   ett långt ord får plats bredvid en bild. Med helbild är överdelen ett rutnät, där wrap
+   annars krymper till ingenting som behållare. */
+:is(.hero > .wrap, .hero-grid > div) { container-type: inline-size; }
+.hero > .wrap { width: 100%; }
 .hero-media img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--r-bild); }
 .fakta { display: grid; margin-top: clamp(48px, 8vw, 96px); border-top: 1px solid var(--line); }
 .fakta > div { padding-block: 18px; border-bottom: 1px solid var(--line); }

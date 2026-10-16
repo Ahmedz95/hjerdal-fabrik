@@ -1,0 +1,3 @@
+/* Formerna raka: raka hörn och tunna linjer, knappen med kant i textfärgen. */
+[data-former="raka"] { --r-btn: 0; --r-tagg: 0; --r-kort: 0; --r-bild: 0; }
+[data-former="raka"] .btn-line { box-shadow: inset 0 0 0 1px var(--ink); }
