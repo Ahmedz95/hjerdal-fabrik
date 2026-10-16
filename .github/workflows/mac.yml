@@ -1,0 +1,62 @@
+name: Mac
+# Programmet HJERDAL Designer byggs och provkörs på en riktig Mac med macOS 26, och ikonen i
+# macOS 26:s format görs med Xcode (designer/ikon/bygg-ikon.sh). Körs bara när något som rör
+# programmet ändras, eftersom Mac-maskiner kostar mer tid i GitHub.
+on:
+  pull_request:
+    paths:
+      - designer/fonster/**
+      - designer/ikon/**
+      - designer/ikon.png
+      - designer/installera.command
+      - .github/workflows/mac.yml
+  workflow_dispatch:
+jobs:
+  programmet:
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sökvägar
+        run: |
+          echo "APP=$RUNNER_TEMP/HJERDAL Designer.app" >> "$GITHUB_ENV"
+          echo "BILDER=$RUNNER_TEMP/bilder" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Ikonen i macOS 26:s format
+        run: |
+          designer/ikon/bygg-ikon.sh "$RUNNER_TEMP/ikon"
+          # Första gången finns ingen incheckad Assets.car. Annars provas den som checkats in.
+          [[ -s designer/ikon/Assets.car ]] || cp "$RUNNER_TEMP/ikon/Assets.car" designer/ikon/
+      - name: Programmet byggs som på säljarnas datorer
+        run: |
+          designer/fonster/gor-app.sh "$APP" "$(command -v python3)"
+          [[ "$(plutil -extract HJERDALFonster raw "$APP/Contents/Info.plist")" == true ]] || { echo "::error::Programmet fick inget eget fönster."; exit 1; }
+          python3 -c 'import sys; from pathlib import Path; from designer import server; server.PROGRAMMET = Path(sys.argv[1]); sys.exit(0 if server.eget_fonster() else 1)' "$APP" \
+            || { echo "::error::server.py känner inte igen programmet."; exit 1; }
+      - name: Designer öppnas i programmet
+        run: |
+          mkdir -p "$BILDER" ~/Downloads
+          HJERDAL_PROV="$BILDER/prov" "$APP/Contents/MacOS/HJERDAL Designer"
+      - name: Ikonen som macOS visar den, med och utan Assets.car
+        if: always()
+        run: |
+          mkdir -p "$BILDER"
+          HJERDAL_PROV_IKON="$BILDER/ikon.png" "$APP/Contents/MacOS/HJERDAL Designer"
+          GAMMAL="$RUNNER_TEMP/gammal/HJERDAL Designer.app"
+          mkdir -p "$(dirname "$GAMMAL")"
+          cp -R "$APP" "$GAMMAL"
+          rm "$GAMMAL/Contents/Resources/Assets.car"
+          plutil -remove CFBundleIconName "$GAMMAL/Contents/Info.plist"
+          plutil -replace CFBundleIdentifier -string se.hjerdal.designer.gammal "$GAMMAL/Contents/Info.plist"
+          codesign --force --sign - "$GAMMAL"
+          HJERDAL_PROV_IKON="$BILDER/ikon-bara-icns.png" "$GAMMAL/Contents/MacOS/HJERDAL Designer"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mac
+          path: |
+            ${{ runner.temp }}/bilder
+            ${{ runner.temp }}/ikon
+            ut/designer.log
