@@ -168,6 +168,9 @@ def main() -> int:
 
         print("\n▸ Exportera och arkivera")
         provarkiv(bas)
+
+        print("\n▸ Programmets eget fönster")
+        provfonster()
     finally:
         for kund in (PROVKUND, TOMMA_DAGAR):
             shutil.rmtree(FABRIK / "kunder" / kund, ignore_errors=True)
@@ -293,6 +296,29 @@ def provarkiv(bas: str) -> None:
           "en kund som har legat i arkivet i 30 dagar tas bort med sin konversation")
     kolla(any((FABRIK / "ut" / "arkiv").glob(f"{PROVKUND}-*.html")), "underlaget sparas i ut/arkiv/ innan kunden tas bort")
     kolla(all(k["kund"] != PROVKUND for k in json.loads(fraga(bas, "GET", "/api/kunder")[1])), "kunden syns inte längre")
+
+
+
+def provfonster() -> None:
+    """Designer öppnas i programmets eget fönster bara om programmet har ett och hör till den här fabriken."""
+    import plistlib  # noqa: PLC0415
+    import tempfile  # noqa: PLC0415
+
+    from designer import server  # noqa: PLC0415
+
+    gammalt = server.PROGRAMMET
+    with tempfile.TemporaryDirectory() as tmp:
+        server.PROGRAMMET = Path(tmp) / "HJERDAL Designer.app"
+        plist = server.PROGRAMMET / "Contents" / "Info.plist"
+        kolla(not server.eget_fonster(), "utan programmet öppnas Designer i Chrome eller webbläsaren")
+        plist.parent.mkdir(parents=True)
+        plist.write_bytes(plistlib.dumps({"HJERDALFonster": True, "HJERDALFabrik": str(FABRIK)}))
+        kolla(server.eget_fonster(), "programmet med eget fönster används")
+        plist.write_bytes(plistlib.dumps({"HJERDALFonster": False, "HJERDALFabrik": str(FABRIK)}))
+        kolla(not server.eget_fonster(), "men inte startaren som öppnar Chrome")
+        plist.write_bytes(plistlib.dumps({"HJERDALFonster": True, "HJERDALFabrik": "/en/annan/fabrik"}))
+        kolla(not server.eget_fonster(), "och inte ett program som hör till en annan fabrik")
+    server.PROGRAMMET = gammalt
 
 
 if __name__ == "__main__":

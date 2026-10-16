@@ -116,10 +116,16 @@ du Designer*.
 Python, Node och git, provbygger exempelkunden, gör programmet *HJERDAL Designer*
 i Program-mappen i hemmappen, lägger det i Dock, installerar och loggar in
 Claude Code för chatten och kopplar Claude-appen om den finns. Kör skriptet igen
-om fabriken flyttas eller efter en uppdatering.
+om fabriken flyttas eller efter en uppdatering. Programmet byggs om varje gång,
+så det är också så en ny version av själva fönstret kommer till datorn.
 
-**Använda.** Klicka på ikonen. Designer öppnas i ett eget fönster (Chrome i
-appläge om Chrome finns, annars standardwebbläsaren). Startsidan visar varje kund
+**Använda.** Klicka på ikonen. Designer är ett eget program med Safaris motor:
+eget fönster, egen ikon i Dock och vanliga menyer, och Cmd + och Cmd − ändrar
+storleken. Filer som laddas ner hamnar i Hämtade filer och länkar ut ur Designer
+öppnas i webbläsaren. Första gången kan macOS fråga om programmet får använda
+mappen Dokument och Hämtade filer, och då ska svaret vara Tillåt. Finns inte
+Swift från Apples utvecklarverktyg öppnas Designer i Chrome i appläge, annars i
+standardwebbläsaren. Startsidan visar varje kund
 med en miniatyr av den senaste förhandsvisningen och hur långt den har kommit:
 *Utkast* med antalet fält kvar, *Klar att spara*, *Sparad i GitHub* eller
 *Publicerad* (efter `fabrik.py publicera`, tills kundfilen ändras igen).
@@ -302,7 +308,10 @@ designer/          HJERDAL Designer
   export.py          kundens underlag som en HTML-fil att skicka till kunden
   bild.py            gör uppladdade bilder lagom stora och tar bort metadata
   komprimera.mjs     själva bildbehandlingen, med sharp
+  fonster/           programmet: Designer.swift är fönstret, gor-app.sh gör HJERDAL Designer.app
   ikon.png           programikonen, från HJERDALs Instagram-profilbild
+  ikon/              ikonen i macOS 26:s format (Icon Composer) och Assets.car, som görs i
+                     Mac-kontrollen i GitHub med bygg-ikon.sh. Utan den krymper macOS 26 ikonen
   webb/              formuläret och chatten: HTML, CSS och JavaScript utan byggsteg
   prov.py            provkörningen som CI kör
 karna/             Astro-sajten alla kunder byggs från

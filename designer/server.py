@@ -26,6 +26,7 @@ import io
 import json
 import mimetypes
 import os
+import plistlib
 import re
 import shlex
 import shutil
@@ -49,6 +50,8 @@ IKON = Path(__file__).resolve().parent / "ikon.png"
 # Designerns byggen ligger för sig, så att de aldrig blandas ihop med ut/<kund>/ som publiceras.
 DESIGNER_UT = fabrik.UT / "designer"
 STATUSFIL = fabrik.UT / ".designer.json"
+# Programmet som installera.command gör. Med eget fönster (designer/fonster/) öppnas Designer där.
+PROGRAMMET = Path.home() / "Applications" / f"{APP}.app"
 # Servern stänger sig själv när ingen webbläsare eller Claude har hörts av på en halvtimme.
 VILA = 30 * 60
 BILDNAMN = re.compile(r"[A-Za-z0-9_][\w.-]*\.(jpe?g|png|webp|svg)", re.I)
@@ -848,8 +851,22 @@ def kor_redan() -> str | None:
     return None
 
 
+def eget_fonster() -> bool:
+    """Om programmet i Program-mappen har eget fönster och hör till just den här fabriken."""
+    try:
+        with open(PROGRAMMET / "Contents" / "Info.plist", "rb") as f:
+            plist = plistlib.load(f)
+    except (OSError, ValueError):
+        return False
+    return plist.get("HJERDALFonster") is True and plist.get("HJERDALFabrik") == str(fabrik.FABRIK)
+
+
 def oppna_fonster(adress: str) -> None:
-    """Chrome i appläge ger ett eget fönster utan flikar, som ett vanligt program. Annars standardwebbläsaren."""
+    """Designer i programmets eget fönster. Utan det Chrome i appläge, som ger ett fönster utan
+    flikar, och annars standardwebbläsaren."""
+    if sys.platform == "darwin" and eget_fonster():
+        if subprocess.run(["open", f"hjerdal-designer:{adress}"], capture_output=True).returncode == 0:
+            return
     chrome = [Path("/Applications/Google Chrome.app"), Path.home() / "Applications/Google Chrome.app"]
     if sys.platform == "darwin" and any(c.exists() for c in chrome):
         subprocess.Popen(["open", "-na", "Google Chrome", "--args", f"--app={adress}", "--window-size=1440,900"])

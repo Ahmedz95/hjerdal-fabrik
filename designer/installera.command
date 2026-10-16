@@ -52,53 +52,15 @@ rubrik "Installerar fabrikens beroenden och provbygger exempelkunden"
 
 # --- Programmet ---------------------------------------------------------------------
 rubrik "Gör programmet $APP"
-rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cat > "$APP/Contents/Info.plist" <<'PLIST'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>CFBundleName</key><string>HJERDAL Designer</string>
-  <key>CFBundleDisplayName</key><string>HJERDAL Designer</string>
-  <key>CFBundleIdentifier</key><string>se.hjerdal.designer</string>
-  <key>CFBundleExecutable</key><string>designer</string>
-  <key>CFBundleIconFile</key><string>ikon</string>
-  <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>1.0</string>
-  <key>LSMinimumSystemVersion</key><string>11.0</string>
-  <!-- Programmet startar servern och öppnar fönstret, sedan är det klart. -->
-  <key>LSUIElement</key><true/>
-</dict>
-</plist>
-PLIST
-# Startaren: sökvägarna skrivs in nu, så att programmet hittar fabriken och rätt Python.
-{
-  echo '#!/bin/bash'
-  echo '# macOS kan starta ett skriptprogram under Rosetta, och då fungerar inte git. Starta om som arm64.'
-  echo '[[ "$(sysctl -n sysctl.proc_translated 2>/dev/null)" == 1 ]] && exec /usr/bin/arch -arm64 /bin/bash "$0" "$@"'
-  echo 'export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"'
-  printf 'FABRIK=%q\n' "$FABRIK"
-  printf 'PY=%q\n' "$PY"
-  echo 'mkdir -p "$FABRIK/ut"'
-  echo 'nohup "$PY" "$FABRIK/fabrik.py" designer >> "$FABRIK/ut/designer.log" 2>&1 &'
-} > "$APP/Contents/MacOS/designer"
-chmod +x "$APP/Contents/MacOS/designer"
-
-IKONER="$(mktemp -d)/ikon.iconset"
-mkdir -p "$IKONER"
-for storlek in 16 32 128 256 512; do
-  sips -z $storlek $storlek designer/ikon.png --out "$IKONER/icon_${storlek}x${storlek}.png" >/dev/null
-  sips -z $((storlek * 2)) $((storlek * 2)) designer/ikon.png --out "$IKONER/icon_${storlek}x${storlek}@2x.png" >/dev/null
-done
-iconutil -c icns "$IKONER" -o "$APP/Contents/Resources/ikon.icns"
-touch "$APP"
-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP" >/dev/null 2>&1 || true
+# Ett program som kör från förra installationen stängs, så att det nya startar.
+pkill -f "$APP/Contents/MacOS/" 2>/dev/null || true
+designer/fonster/gor-app.sh "$APP" "$PY"
 info "Klart. Programmet finns i Program-mappen i din hemmapp."
 
 # --- Dock ---------------------------------------------------------------------------
 if defaults read com.apple.dock persistent-apps 2>/dev/null | grep -q "HJERDAL%20Designer.app"; then
   info "HJERDAL Designer finns redan i Dock."
+  killall Dock 2>/dev/null || true  # så att Dock visar den nya ikonen
 elif fraga "Lägga HJERDAL Designer i Dock?"; then
   defaults write com.apple.dock persistent-apps -array-add "<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>file://${APP// /%20}/</string><key>_CFURLStringType</key><integer>15</integer></dict></dict></dict>"
   killall Dock

@@ -1,0 +1,21 @@
+{
+  "fill" : {
+    "solid" : "srgb:0.06275,0.07451,0.08235,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "H.svg",
+          "name" : "H"
+        }
+      ]
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "macOS"
+    ]
+  }
+}
